@@ -20,7 +20,7 @@ flowchart TB
     end
 
     subgraph Supabase["Supabase Platform"]
-        Auth[Auth — GitHub OAuth]
+        Auth[Auth — Email/Password]
         Postgres[(PostgreSQL)]
         Storage[(Storage Buckets)]
         RLS[Row Level Security]
@@ -28,7 +28,7 @@ flowchart TB
     end
 
     subgraph External["External Services"]
-        GitHub[GitHub OAuth]
+        SupabaseAuth[Supabase Auth]
         Analytics[Analytics — Vercel/Plausible]
         Email[Email — Resend Phase 5]
     end
@@ -41,7 +41,7 @@ flowchart TB
     ServerActions --> Postgres
     ServerActions --> Storage
     ServerActions --> Auth
-    Auth --> GitHub
+    Auth --> SupabaseAuth
     Postgres --> RLS
     ServerActions --> Analytics
     ServerActions --> Email
@@ -89,7 +89,7 @@ flowchart TB
 - Full-text search vectors (Phase 6)
 - Contact submissions, audit logs
 
-**Access:** Service role key server-only; anon key with strict RLS for any client-side reads if needed.
+**Access:** Secret key server-only (`SUPABASE_SECRET_KEY`); publishable key with strict RLS for any client-side reads if needed.
 
 ### Storage (Supabase Storage)
 
@@ -120,10 +120,10 @@ flowchart TB
 ### Authentication
 
 **Owns:**
-- GitHub OAuth via Supabase Auth
+- Email/password authentication via Supabase Auth
 - Session cookies (HTTP-only, secure)
 - Admin route middleware protection
-- Allowlist check against `Settings.allowlist_github_ids`
+- `ADMIN_EMAIL` authorization and allowlist RLS checks
 
 **Public site:** No auth required.
 
@@ -214,7 +214,7 @@ flowchart LR
 
 - **Hosting:** Vercel (aligned with Next.js 15)
 - **Environments:** `development`, `preview`, `production`
-- **Secrets:** Vercel env vars; never expose service role to client
+- **Secrets:** Vercel env vars; never expose `SUPABASE_SECRET_KEY` to client
 - **Preview deploys:** Supabase preview branch or separate project (Phase 2 decision)
 
 ---
@@ -223,13 +223,13 @@ flowchart LR
 
 | Concern | Approach |
 |---------|----------|
-| Admin access | GitHub OAuth + allowlist |
+| Admin access | Email/password + `ADMIN_EMAIL` + allowlist |
 | Data access | RLS: public read published only; admin write via authenticated role |
 | CSRF | Server Actions built-in protection |
 | XSS | Sanitize Tiptap output on render; strict schema |
 | Upload abuse | MIME allowlist, size limits, auth required |
 | Rate limiting | Contact form + auth endpoints via middleware or Vercel firewall |
-| Secrets | Service role server-only; Vault for sensitive Settings (Phase 5) |
+| Secrets | `SUPABASE_SECRET_KEY` server-only; Vault for sensitive Settings (Phase 5) |
 
 ---
 

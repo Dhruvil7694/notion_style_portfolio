@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Engineer Portfolio
 
-## Getting Started
+A production-grade portfolio platform combining a personal website, knowledge base, CMS, resume management, and blog — inspired by Notion, Linear, Vercel Docs, and Stripe Docs.
 
-First, run the development server:
+## Architecture Summary
+
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 15 (App Router), React 19, TypeScript |
+| Styling | Tailwind CSS v4, shadcn/ui |
+| Backend | Supabase (PostgreSQL, Auth, Storage) |
+| Validation | Zod |
+| Hosting | Vercel (planned) |
+
+Full architecture documentation lives in [`docs/architecture.md`](./docs/architecture.md).
+
+## Prerequisites
+
+- Node.js 20+
+- npm 10+
+- Supabase project (for Phase 3+)
+
+## Local Setup
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd notion-style-portfolio
+
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.example .env.local
+# Edit .env.local with your Supabase credentials
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+See [`.env.example`](./.env.example) for the full list.
 
-## Learn More
+| Variable | Required | Phase | Description |
+|----------|----------|-------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | 2 | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes | 2 | Supabase publishable (client) key |
+| `SITE_URL` | Yes | 2 | Canonical site URL |
+| `SUPABASE_SECRET_KEY` | Phase 3+ | Admin operations (server-only) |
+| `ADMIN_EMAIL` | Phase 4+ | Single administrator email |
+| `RESEND_API_KEY` | Phase 5+ | Email notifications |
 
-To learn more about Next.js, take a look at the following resources:
+Environment variables are validated at runtime via Zod. Invalid configuration fails fast with descriptive errors.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Development Workflow
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run dev          # Start dev server
+npm run build        # Production build
+npm run start        # Start production server
+npm run lint         # ESLint
+npm run lint:fix     # ESLint with auto-fix
+npm run typecheck    # TypeScript check
+npm run format       # Prettier write
+npm run format:check # Prettier check
+```
 
-## Deploy on Vercel
+### Git Hooks
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Husky runs lint-staged on pre-commit:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- ESLint + Prettier on `*.{ts,tsx}`
+- Prettier on `*.{json,md,css,mjs}`
+
+## Project Structure
+
+See [`docs/folder-structure.md`](./docs/folder-structure.md) for directory purposes.
+
+## Supabase
+
+Database schema, RLS policies, and seed data are managed via the Supabase CLI in the `supabase/` directory.
+
+| Path | Purpose |
+|------|---------|
+| `supabase/migrations/` | Versioned SQL migrations applied in order |
+| `supabase/seeds/` | Development seed scripts for local/staging data |
+
+See [`docs/database-design.md`](./docs/database-design.md) for schema reference, [`docs/database-workflow.md`](./docs/database-workflow.md) for migration commands, [`docs/authentication.md`](./docs/authentication.md) for admin login, and [`docs/admin-authorization.md`](./docs/admin-authorization.md) for authorization rules.
+
+## Roadmap
+
+Implementation phases are documented in [`docs/roadmap.md`](./docs/roadmap.md).
+
+| Phase | Status |
+|-------|--------|
+| 1 — Architecture & Planning | Complete |
+| 2 — Foundation & Infrastructure | Complete |
+| 3 — Content Layer & Database | Complete |
+| 4 — Admin Authentication | Complete |
+| 5 — Admin Dashboard Shell | Complete |
+| 6 — CMS CRUD & Editors | Next |
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md).

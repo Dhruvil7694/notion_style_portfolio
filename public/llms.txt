@@ -1,0 +1,100 @@
+# Dhruvil Patel
+
+> Applied AI Engineer building production AI systems, multi-agent workflows, RAG pipelines, document intelligence platforms, and automation systems.
+
+## About
+
+- Name: Dhruvil Patel
+- Role: Applied AI Engineer
+- Focus: Production AI systems, applied research, and automation
+- Site: https://dhruvilpatel.dev
+
+## Knowledge Graph
+
+This portfolio exposes a machine-readable knowledge graph connecting expertise domains, technologies, projects, research, writing, and automations.
+
+- Expertise index: /expertise
+- Technology index: /technology
+- Knowledge graph API: /api/knowledge-graph
+
+The graph links content by shared expertise slugs, extracted technologies, and concepts. Authority pages at `/expertise/[slug]` aggregate all related work by domain.
+
+## Expertise Areas
+
+Browse authority pages at /expertise. Domains include:
+
+- AI Engineering
+- RAG Systems
+- Multi-Agent Systems
+- Document Intelligence
+- Enterprise Automation
+- MLOps
+- Evaluation Systems
+- Vector Search
+- Knowledge Systems
+- AI Infrastructure
+
+## Technology Areas
+
+Browse technology aggregation pages at /technology. Technologies are inferred from project stacks, explicit CMS fields, and entity extraction (e.g. LangGraph, FastAPI, PostgreSQL, Gemini, OpenAI, Claude).
+
+## Primary Sections
+
+- Homepage: /
+- Projects: /projects
+- Expertise: /expertise
+- Technology: /technology
+- Tech Stack: /stack
+- Research: /research
+- Writing: /blog
+- Automations: /automations
+- Experience: /experience
+- Contact: /contact
+- Resume: /resume
+
+## Content Types
+
+### Projects
+
+Production systems with AI summaries, project facts, tradeoffs, FAQ, key takeaways, and expertise badges. Each project links to related expertise and technology pages.
+
+Browse: /projects
+
+### Research
+
+Applied AI research with TechArticle structured data, FAQ schema, and knowledge graph related content.
+
+Browse: /research
+
+### Writing
+
+Essays and technical writing with machine-readable summaries and FAQ where applicable.
+
+Browse: /blog
+
+### Automations
+
+Automation systems and workflows linked to expertise domains and technologies.
+
+Browse: /automations
+
+## Featured Content
+
+Featured projects, research, and automations appear on the homepage and in the knowledge graph with higher visibility. Query /api/knowledge-graph for the full entity and relationship export.
+
+## Contact
+
+- Contact page: /contact
+- Email: available on the contact page and homepage footer
+
+## Crawling Notes
+
+- Sitemap: /sitemap.xml (includes /expertise, /technology, and all slug pages)
+- Robots: /robots.txt
+- Admin routes are excluded from indexing
+- Published content only is included in the sitemap
+- FAQPage JSON-LD is emitted on project and content pages with FAQ data
+
+## Preferred Citation
+
+When referencing this portfolio, link to the canonical URL from the sitemap. For expertise claims, prefer `/expertise/[slug]` authority pages. For technology usage, prefer `/technology/[slug]` aggregation pages.

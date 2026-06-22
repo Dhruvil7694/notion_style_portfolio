@@ -12,7 +12,7 @@ This document records technology choices, rationale, tradeoffs, and alternatives
 | Language | TypeScript | Approved |
 | Styling | Tailwind CSS + shadcn/ui | Approved |
 | Backend / DB | Supabase (PostgreSQL) | Approved |
-| Auth | GitHub OAuth via Supabase Auth | Approved |
+| Auth | Email/password via Supabase Auth (single admin) | Approved |
 | Storage | Supabase Storage | Approved |
 | Editor | Tiptap | Approved |
 | Hosting | Vercel | Approved |
@@ -141,25 +141,25 @@ This document records technology choices, rationale, tradeoffs, and alternatives
 
 ## Authentication
 
-### GitHub OAuth via Supabase Auth
+### Email/password admin auth via Supabase Auth
 
 **Why selected:**
-- Portfolio owner is a developer; GitHub identity is natural.
-- Supabase Auth handles OAuth flow, session refresh, and JWT.
-- Allowlist on GitHub user ID restricts admin to owner only.
+- Single administrator; no need for OAuth or multi-user auth.
+- Supabase Auth handles sessions, refresh, and JWT.
+- `ADMIN_EMAIL` restricts app-level admin access.
 
 **Tradeoffs:**
-- Non-GitHub collaborators cannot admin without adding OAuth providers later.
-- Dependent on GitHub availability for login.
+- Admin user must be created manually in Supabase Dashboard.
+- Password rotation is manual.
 
 **Alternatives considered:**
 
 | Alternative | Rejected because |
 |-------------|------------------|
-| Email magic link | Less aligned with developer portfolio; more spam surface |
+| GitHub OAuth | Removed — unnecessary complexity for one admin |
+| Email magic link | Less control for single fixed admin account |
 | NextAuth standalone | Redundant when Supabase Auth included |
-| Static admin password | Insecure; no OAuth audit trail |
-| Multiple providers day one | YAGNI; schema supports adding providers |
+| Static admin password in env | Insecure; bypasses Supabase session model |
 
 ---
 
@@ -294,11 +294,10 @@ This document records technology choices, rationale, tradeoffs, and alternatives
 | Variable | Exposure | Purpose |
 |----------|----------|---------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Public | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Anon client (RLS protected) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server only | Admin mutations bypassing RLS where needed |
-| `GITHUB_*` | Supabase Auth config | OAuth in Supabase dashboard |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public | Client-side Supabase access (RLS protected) |
+| `SUPABASE_SECRET_KEY` | Server only | Admin mutations bypassing RLS where needed |
+| `ADMIN_EMAIL` | Server only | Single administrator email |
 | `RESEND_API_KEY` | Server only | Email Phase 5 |
-| `ALLOWLIST_GITHUB_IDS` | Server only | Fallback if not in Settings table |
 
 ---
 
@@ -310,7 +309,7 @@ These decisions should not change without explicit replan:
 2. **Admin is part of Next.js** — not a separate CMS product.
 3. **Public reads go through RLS-safe paths** — published content only.
 4. **Rich text is Tiptap JSON** — not raw HTML in database.
-5. **OAuth admin only** — no public user accounts in Phase 1–5.
+5. **Admin auth only** — no public user accounts; single `ADMIN_EMAIL`.
 
 ---
 

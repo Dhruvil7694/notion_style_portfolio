@@ -1,0 +1,21 @@
+name: Keep alive
+
+on:
+  schedule:
+    - cron: "0 8 */3 * *" # every 3 days at 8am UTC
+  workflow_dispatch: # allow manual trigger from GitHub Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping site
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.SITE_URL }}/api/knowledge-graph")
+          echo "Response: $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 500 ]; then
+            echo "Site alive"
+          else
+            echo "Unexpected status: $STATUS"
+            exit 1
+          fi
