@@ -18,9 +18,7 @@ export const serverEnvSchema = z.object({
     .default("development"),
   SITE_URL: z.url({ error: "SITE_URL must be a valid URL" }),
   ADMIN_EMAIL: z.email({ error: "ADMIN_EMAIL must be a valid email address" }),
-  SUPABASE_SECRET_KEY: z
-    .string()
-    .min(1, "SUPABASE_SECRET_KEY is required"),
+  SUPABASE_SECRET_KEY: z.string().min(1, "SUPABASE_SECRET_KEY is required"),
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM_ADDRESS: z.email().optional(),
   EMAIL_REPLY_TO_ADDRESS: z.email().optional(),
@@ -36,6 +34,7 @@ export const serverEnvSchema = z.object({
   SENTRY_DSN: z.url().optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
   POSTHOG_API_KEY: z.string().optional(),
+  POSTHOG_PROJECT_ID: z.string().optional(),
   NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
   NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
 })

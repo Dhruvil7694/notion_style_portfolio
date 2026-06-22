@@ -5,6 +5,7 @@ import {
   Bot,
   Brain,
   Briefcase,
+  Bug,
   FileText,
   GraduationCap,
   HeartPulse,
@@ -14,6 +15,7 @@ import {
   Rocket,
   Settings,
   Sparkles,
+  Trophy,
   User,
   UserCircle,
 } from "lucide-react"
@@ -133,6 +135,30 @@ export const adminNavigation: AdminNavItem[] = [
     href: "/admin/system",
     icon: MonitorCheck,
     description: "Live system health checks",
+  },
+  {
+    title: "Launch Report",
+    href: "/admin/launch-report",
+    icon: Trophy,
+    description: "Final launch readiness score and recommendation",
+  },
+  {
+    title: "Sentry Debug",
+    href: "/admin/debug/sentry",
+    icon: Bug,
+    description: "Fire test Sentry events to verify monitoring",
+  },
+  {
+    title: "Analytics Debug",
+    href: "/admin/debug/analytics",
+    icon: BarChart2,
+    description: "Verify PostHog events are being received",
+  },
+  {
+    title: "AI Cost Debug",
+    href: "/admin/debug/ai-costs",
+    icon: BarChart2,
+    description: "Compare tracked vs actual AI provider costs",
   },
   {
     title: "Settings",
