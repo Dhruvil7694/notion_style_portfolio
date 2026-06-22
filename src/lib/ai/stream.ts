@@ -7,6 +7,8 @@ import {
   type UIMessage,
 } from "ai"
 
+import { logger } from "@/lib/monitoring/logger"
+
 import type { AssistantCitationPayload } from "./citations/citation-types"
 import { getAiSettings } from "./get-ai-settings"
 import { buildPublicAssistantPrompt } from "./prompts"
@@ -69,9 +71,13 @@ export async function streamPublicAssistantWithFailover(
         latencyMs: Date.now() - start,
       }
     } catch (error) {
-      errors.push(
-        `${entry.provider}: ${error instanceof Error ? error.message : "failed"}`
-      )
+      const msg = error instanceof Error ? error.message : "failed"
+      errors.push(`${entry.provider}: ${msg}`)
+      logger.error("[stream] provider failed", {
+        provider: entry.provider,
+        model: entry.modelId,
+        error: msg,
+      })
     } finally {
       clearTimeout(timeout)
     }

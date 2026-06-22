@@ -7,6 +7,9 @@ export const clientEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z
     .string()
     .min(1, "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is required"),
+  NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
+  NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
+  NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
 })
 
 export const serverEnvSchema = z.object({
@@ -30,6 +33,11 @@ export const serverEnvSchema = z.object({
   AI_KEYS_ENCRYPTION_SECRET: z.string().optional(),
   UPSTASH_REDIS_REST_URL: z.url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  SENTRY_DSN: z.url().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
+  POSTHOG_API_KEY: z.string().optional(),
+  NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
+  NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
 })
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>

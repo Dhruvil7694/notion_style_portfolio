@@ -1,3 +1,4 @@
+import { AnalyticsProvider } from "@/components/public/analytics-provider"
 import { AssistantShell } from "@/components/public/chat/assistant-shell"
 import { DiscoveryShell } from "@/components/public/discovery-shell"
 import { FloatingDock } from "@/components/public/floating-dock"
@@ -18,6 +19,7 @@ export async function PublicLayout({ children }: PublicLayoutProps) {
 
   return (
     <SiteThemeProvider>
+      <AnalyticsProvider>
       <SmoothScrollProvider>
         <DiscoveryShell>
           <AssistantShell>
@@ -32,6 +34,7 @@ export async function PublicLayout({ children }: PublicLayoutProps) {
           </AssistantShell>
         </DiscoveryShell>
       </SmoothScrollProvider>
+      </AnalyticsProvider>
     </SiteThemeProvider>
   )
 }

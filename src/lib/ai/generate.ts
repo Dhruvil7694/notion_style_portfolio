@@ -2,6 +2,8 @@ import "server-only"
 
 import { generateText } from "ai"
 
+import { logger } from "@/lib/monitoring/logger"
+
 import { getAiSettings } from "./get-ai-settings"
 import { resolveModelChain } from "./providers/router"
 import { trackAiUsage } from "./usage/track-usage"
@@ -37,7 +39,13 @@ export async function generateWithFailover(prompt: string, system?: string): Pro
 
       return text
     } catch (error) {
-      errors.push(`${entry.provider}: ${error instanceof Error ? error.message : "failed"}`)
+      const msg = error instanceof Error ? error.message : "failed"
+      errors.push(`${entry.provider}: ${msg}`)
+      logger.error("[generate] provider failed", {
+        provider: entry.provider,
+        model: entry.modelId,
+        error: msg,
+      })
       void trackAiUsage({
         provider: entry.provider,
         model: entry.modelId,

@@ -23,6 +23,16 @@ export class ErrorBoundary extends Component<Props, State> {
 
   override componentDidCatch(error: Error, info: { componentStack: string }): void {
     console.error("[ErrorBoundary]", error, info.componentStack)
+    // Report to Sentry when initialized (sentry.client.config.ts handles init)
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const Sentry = require("@sentry/nextjs") as {
+        captureException: (e: unknown, ctx?: unknown) => void
+      }
+      Sentry.captureException(error, { extra: { componentStack: info.componentStack } })
+    } catch {
+      // Sentry not available — swallow
+    }
   }
 
   override render(): ReactNode {

@@ -1,13 +1,17 @@
 import type { LucideIcon } from "lucide-react"
 import {
+  BarChart2,
   BookOpen,
   Bot,
   Brain,
   Briefcase,
   FileText,
   GraduationCap,
+  HeartPulse,
   Layers,
   LayoutDashboard,
+  MonitorCheck,
+  Rocket,
   Settings,
   Sparkles,
   User,
@@ -105,6 +109,30 @@ export const adminNavigation: AdminNavItem[] = [
     href: "/admin/copilot",
     icon: Bot,
     description: "AI portfolio architect",
+  },
+  {
+    title: "AI Usage",
+    href: "/admin/ai",
+    icon: BarChart2,
+    description: "Provider usage, tokens, and cost tracking",
+  },
+  {
+    title: "Content Health",
+    href: "/admin/content-health",
+    icon: HeartPulse,
+    description: "Audit content completeness and SEO readiness",
+  },
+  {
+    title: "Launch",
+    href: "/admin/launch",
+    icon: Rocket,
+    description: "Pre-deployment readiness checklist",
+  },
+  {
+    title: "System",
+    href: "/admin/system",
+    icon: MonitorCheck,
+    description: "Live system health checks",
   },
   {
     title: "Settings",
