@@ -187,6 +187,7 @@ export async function runCopilotAgent(
         toolChoice: "auto",
         stopWhen: stepCountIs(10),
         temperature: settings.temperature,
+        maxOutputTokens: settings.max_tokens,
       })
 
       void trackAiUsage({

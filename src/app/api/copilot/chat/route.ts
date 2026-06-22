@@ -355,8 +355,8 @@ export async function POST(request: Request) {
   let contextText = ""
   try {
     contextText = await fetchContextText()
-  } catch {
-    // best-effort; agent can run without it
+  } catch (err) {
+    console.error("[copilot-chat] context fetch failed:", err)
   }
 
   let result

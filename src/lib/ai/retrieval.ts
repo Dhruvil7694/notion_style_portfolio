@@ -1,5 +1,7 @@
 import "server-only"
 
+import { unstable_cache } from "next/cache"
+
 import { buildDiscoveryIndex } from "@/lib/discovery/indexer"
 import { searchDocuments } from "@/lib/discovery/search"
 import { buildKnowledgeGraph } from "@/lib/knowledge/graph"
@@ -49,33 +51,39 @@ export async function retrievePortfolioContext(
   }
 }
 
-export async function generateSuggestedQuestions(siteUrl: string): Promise<string[]> {
-  const graph = await buildKnowledgeGraph(siteUrl)
-  if (!graph) return []
-  const suggestions: string[] = []
+export function generateSuggestedQuestions(siteUrl: string): Promise<string[]> {
+  return unstable_cache(
+    async () => {
+      const graph = await buildKnowledgeGraph(siteUrl)
+      if (!graph) return []
+      const suggestions: string[] = []
 
-  const featuredProjects = graph.entities
-    .filter((e) => e.type === "project")
-    .slice(0, 2)
+      const featuredProjects = graph.entities
+        .filter((e) => e.type === "project")
+        .slice(0, 2)
 
-  for (const project of featuredProjects) {
-    suggestions.push(`Tell me about ${project.title}`)
-  }
+      for (const project of featuredProjects) {
+        suggestions.push(`Tell me about ${project.title}`)
+      }
 
-  const topTechnologies = graph.technologies.slice(0, 2)
-  for (const tech of topTechnologies) {
-    suggestions.push(`What projects use ${tech.name}?`)
-  }
+      const topTechnologies = graph.technologies.slice(0, 2)
+      for (const tech of topTechnologies) {
+        suggestions.push(`What projects use ${tech.name}?`)
+      }
 
-  const topExpertise = graph.expertise.slice(0, 2)
-  for (const area of topExpertise) {
-    suggestions.push(`Explain ${area.title} expertise`)
-  }
+      const topExpertise = graph.expertise.slice(0, 2)
+      for (const area of topExpertise) {
+        suggestions.push(`Explain ${area.title} expertise`)
+      }
 
-  suggestions.push("What experience does Dhruvil have?")
-  suggestions.push("What technologies does he specialize in?")
+      suggestions.push("What experience does Dhruvil have?")
+      suggestions.push("What technologies does he specialize in?")
 
-  return [...new Set(suggestions)].slice(0, 6)
+      return [...new Set(suggestions)].slice(0, 6)
+    },
+    ["suggested-questions", siteUrl],
+    { revalidate: 3600 }
+  )()
 }
 
 export { searchResultsToSources }

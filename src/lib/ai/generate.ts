@@ -13,6 +13,8 @@ export async function generateWithFailover(prompt: string, system?: string): Pro
 
   for (const entry of chain) {
     const start = Date.now()
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 20_000)
     try {
       const { text, usage } = await generateText({
         model: entry.model,
@@ -20,6 +22,7 @@ export async function generateWithFailover(prompt: string, system?: string): Pro
         prompt,
         temperature: settings.temperature,
         maxOutputTokens: settings.max_tokens,
+        abortSignal: controller.signal,
       })
 
       void trackAiUsage({
@@ -45,6 +48,8 @@ export async function generateWithFailover(prompt: string, system?: string): Pro
         success: false,
         error: error instanceof Error ? error.message : "Generation failed",
       })
+    } finally {
+      clearTimeout(timeout)
     }
   }
 

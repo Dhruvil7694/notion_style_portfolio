@@ -18,8 +18,8 @@ export async function getCachedPortfolioSnapshot(siteUrl: string): Promise<strin
       try {
         const audit = await auditPortfolio()
         healthScore = `${audit.score}%`
-      } catch {
-        // audit requires admin in some environments
+      } catch (err) {
+        console.error("[ai-cache] portfolio audit failed:", err)
       }
 
       return [

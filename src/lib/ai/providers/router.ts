@@ -69,8 +69,8 @@ export async function buildProviderChain(
         modelId,
         model: createLanguageModel(provider, modelId, apiKey),
       })
-    } catch {
-      // skip misconfigured provider
+    } catch (err) {
+      console.error("[provider-router] skipping misconfigured provider:", provider, err)
     }
   }
 

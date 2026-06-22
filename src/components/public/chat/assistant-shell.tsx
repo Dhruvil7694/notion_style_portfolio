@@ -2,6 +2,7 @@
 
 import { featureFlags } from "@/config/feature-flags"
 
+import { ErrorBoundary } from "../error-boundary"
 import { AssistantProvider } from "./assistant-context"
 
 type AssistantShellProps = {
@@ -13,5 +14,9 @@ export function AssistantShell({ children }: AssistantShellProps) {
     return children
   }
 
-  return <AssistantProvider>{children}</AssistantProvider>
+  return (
+    <ErrorBoundary>
+      <AssistantProvider>{children}</AssistantProvider>
+    </ErrorBoundary>
+  )
 }

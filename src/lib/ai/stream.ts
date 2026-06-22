@@ -50,6 +50,8 @@ export async function streamPublicAssistantWithFailover(
 
   for (const entry of chain) {
     const start = Date.now()
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 20_000)
     try {
       const result = streamText({
         model: entry.model,
@@ -57,6 +59,7 @@ export async function streamPublicAssistantWithFailover(
         messages: options.modelMessages,
         temperature: settings.temperature,
         maxOutputTokens: settings.max_tokens,
+        abortSignal: controller.signal,
       })
 
       return {
@@ -69,6 +72,8 @@ export async function streamPublicAssistantWithFailover(
       errors.push(
         `${entry.provider}: ${error instanceof Error ? error.message : "failed"}`
       )
+    } finally {
+      clearTimeout(timeout)
     }
   }
 

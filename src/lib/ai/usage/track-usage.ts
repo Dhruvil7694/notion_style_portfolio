@@ -37,7 +37,7 @@ export async function trackAiUsage(entry: UsageLogEntry): Promise<void> {
       success: entry.success,
       error_message: entry.error ?? null,
     } as never)
-  } catch {
-    // Usage logging is best-effort — never block AI responses
+  } catch (err) {
+    console.error("[track-usage]", err)
   }
 }

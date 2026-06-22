@@ -49,14 +49,14 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     notFound()
   }
 
-  const [relatedProjects, settings, { data: expertiseAreas }] = await Promise.all([
-    getRelatedProjects(project.id, project.tech_stack),
-    getPublicSettings(),
-    getPublishedExpertiseAreas(),
-  ])
-
+  const settings = await getPublicSettings()
   const siteUrl = resolveSiteUrl(settings.site.site_url)
-  const graph = siteUrl ? await buildKnowledgeGraph(siteUrl) : null
+
+  const [relatedProjects, { data: expertiseAreas }, graph] = await Promise.all([
+    getRelatedProjects(project.id, project.tech_stack),
+    getPublishedExpertiseAreas(),
+    siteUrl ? buildKnowledgeGraph(siteUrl) : Promise.resolve(null),
+  ])
   const extracted = extractEntitiesFromProject(project)
   const relatedKnowledge = graph
     ? findRelatedKnowledge(graph, {
