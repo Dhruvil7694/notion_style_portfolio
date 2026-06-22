@@ -4,7 +4,7 @@ import { Check, ExternalLink, RefreshCw, Send, Sparkles, X } from "lucide-react"
 import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 
-import { createAnalyticsEvent } from "@/lib/analytics/events"
+import { captureEvent } from "@/lib/analytics/posthog-client"
 import { cn } from "@/lib/utils"
 
 type ClarificationOption = {
@@ -84,7 +84,7 @@ export function CopilotClient() {
 
   useEffect(() => {
     void loadSessions()
-    void createAnalyticsEvent("copilot_opened", {})
+    captureEvent("copilot_opened", {})
   }, [loadSessions])
 
   useEffect(() => {
@@ -131,7 +131,9 @@ export function CopilotClient() {
       const { done, value } = await reader.read()
       if (done) break
       const chunk = decoder.decode(value)
-      const lines = chunk.split("\n").filter((line) => line.startsWith("data: "))
+      const lines = chunk
+        .split("\n")
+        .filter((line) => line.startsWith("data: "))
       for (const line of lines) {
         try {
           const data = JSON.parse(line.slice(6)) as {
@@ -197,7 +199,11 @@ export function CopilotClient() {
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === assistantId
-            ? { ...msg, content: "Something went wrong. Check the AI provider settings." }
+            ? {
+                ...msg,
+                content:
+                  "Something went wrong. Check the AI provider settings.",
+              }
             : msg
         )
       )
@@ -213,7 +219,9 @@ export function CopilotClient() {
         msg.pendingActions?.some((p) => p.id === pending.id)
           ? {
               ...msg,
-              pendingActions: msg.pendingActions.filter((p) => p.id !== pending.id),
+              pendingActions: msg.pendingActions.filter(
+                (p) => p.id !== pending.id
+              ),
             }
           : msg
       )
@@ -228,6 +236,9 @@ export function CopilotClient() {
     overrides?: { applyArgs?: Record<string, unknown> }
   ) {
     if (!sessionId || actionLoadingId) return
+    if (action === "confirm") {
+      captureEvent("copilot_tool_invoked", { tool: pending.applyTool })
+    }
     setActionLoadingId(pending.id)
     setIsLoading(true)
 
@@ -236,7 +247,9 @@ export function CopilotClient() {
         msg.pendingActions?.some((p) => p.id === pending.id)
           ? {
               ...msg,
-              pendingActions: msg.pendingActions.filter((p) => p.id !== pending.id),
+              pendingActions: msg.pendingActions.filter(
+                (p) => p.id !== pending.id
+              ),
             }
           : msg
       )
@@ -351,9 +364,14 @@ export function CopilotClient() {
               <p>Try:</p>
               <ul className="list-inside list-disc space-y-1">
                 <li>Audit my portfolio</li>
-                <li>In the about page, make the intro warmer but keep the SEO keywords</li>
+                <li>
+                  In the about page, make the intro warmer but keep the SEO
+                  keywords
+                </li>
                 <li>Add LangGraph as an ai_ml skill</li>
-                <li>Rewrite the summary of the BohrAI project to be more concise</li>
+                <li>
+                  Rewrite the summary of the BohrAI project to be more concise
+                </li>
                 <li>List all my draft projects</li>
               </ul>
             </div>
@@ -386,7 +404,9 @@ export function CopilotClient() {
                         key={pending.id}
                         pending={pending}
                         disabled={isLoading}
-                        onAnswer={(answer) => handleClarificationAnswer(pending, answer)}
+                        onAnswer={(answer) =>
+                          handleClarificationAnswer(pending, answer)
+                        }
                       />
                     ) : (
                       <PendingActionCard
@@ -394,13 +414,16 @@ export function CopilotClient() {
                         pending={pending}
                         busy={actionLoadingId === pending.id}
                         disabled={
-                          actionLoadingId !== null && actionLoadingId !== pending.id
+                          actionLoadingId !== null &&
+                          actionLoadingId !== pending.id
                         }
                         onConfirm={(applyArgs) =>
                           void handleAction("confirm", pending, { applyArgs })
                         }
                         onCancel={() => void handleAction("cancel", pending)}
-                        onRegenerate={() => void handleAction("regenerate", pending)}
+                        onRegenerate={() =>
+                          void handleAction("regenerate", pending)
+                        }
                       />
                     )
                   )}
@@ -410,7 +433,9 @@ export function CopilotClient() {
                     <p className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
                       Now live
                     </p>
-                    <p className="text-sm leading-relaxed">{message.finalText}</p>
+                    <p className="text-sm leading-relaxed">
+                      {message.finalText}
+                    </p>
                     {message.redirectUrl && (
                       <Link
                         className="border-border bg-background hover:bg-muted/60 mt-1 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors"
@@ -511,9 +536,9 @@ function PendingActionCard({
   const hasVariants = (pending.variants?.length ?? 0) > 0
   const [variantIndex, setVariantIndex] = useState(0)
   // Editable copy of applyArgs — admin can tweak AFTER values before confirming.
-  const [editedArgs, setEditedArgs] = useState<Record<string, unknown>>(
-    () => ({ ...pending.applyArgs })
-  )
+  const [editedArgs, setEditedArgs] = useState<Record<string, unknown>>(() => ({
+    ...pending.applyArgs,
+  }))
 
   const selectedVariant = hasVariants ? pending.variants![variantIndex] : null
 
@@ -549,7 +574,9 @@ function PendingActionCard({
           </p>
           <p className="text-sm font-medium">{pending.label}</p>
           {pending.description && (
-            <p className="text-muted-foreground text-xs">{pending.description}</p>
+            <p className="text-muted-foreground text-xs">
+              {pending.description}
+            </p>
           )}
         </div>
         <span className="text-muted-foreground bg-muted shrink-0 rounded px-1.5 py-0.5 font-mono text-[10px]">
@@ -588,7 +615,9 @@ function PendingActionCard({
             !!field.key &&
             !hasVariants &&
             (typeof field.after === "string" || Array.isArray(field.after))
-          const currentVal = field.key ? (editedArgs[field.key] ?? field.after) : field.after
+          const currentVal = field.key
+            ? (editedArgs[field.key] ?? field.after)
+            : field.after
           return (
             <FieldDiff
               key={field.key ?? field.name}
@@ -765,13 +794,17 @@ function FieldDiff({
       </div>
       <div className="grid divide-y sm:divide-x sm:divide-y-0 sm:grid-cols-2 divide-border">
         <div className="px-2 py-1.5">
-          <p className="text-muted-foreground text-[10px] uppercase mb-0.5">Before</p>
+          <p className="text-muted-foreground text-[10px] uppercase mb-0.5">
+            Before
+          </p>
           <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-wrap">
             {before}
           </p>
         </div>
         <div className="bg-muted/30 px-2 py-1.5">
-          <p className="text-muted-foreground text-[10px] uppercase mb-0.5">After</p>
+          <p className="text-muted-foreground text-[10px] uppercase mb-0.5">
+            After
+          </p>
           {editableAfter && onEdit ? (
             isArray ? (
               <textarea
@@ -793,11 +826,17 @@ function FieldDiff({
                 className="border-border bg-background focus:border-ring w-full rounded border px-2 py-1 text-xs focus:outline-none"
                 defaultValue={String(displayAfter ?? "")}
                 onChange={(e) => onEdit(e.target.value)}
-                rows={typeof displayAfter === "string" && displayAfter.length > 80 ? 3 : 1}
+                rows={
+                  typeof displayAfter === "string" && displayAfter.length > 80
+                    ? 3
+                    : 1
+                }
               />
             )
           ) : (
-            <p className="text-xs leading-relaxed whitespace-pre-wrap">{afterStr}</p>
+            <p className="text-xs leading-relaxed whitespace-pre-wrap">
+              {afterStr}
+            </p>
           )}
         </div>
       </div>

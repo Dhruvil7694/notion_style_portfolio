@@ -2,14 +2,22 @@
 
 import { useState } from "react"
 
+import { captureEvent } from "@/lib/analytics/posthog-client"
 import type { FaqItem } from "@/lib/knowledge/schemas"
 
 type FaqSectionProps = {
   items: FaqItem[]
   title?: string
+  pageType?: "project" | "research" | "writing" | "automation"
+  slug?: string
 }
 
-export function FaqSection({ items, title = "FAQ" }: FaqSectionProps) {
+export function FaqSection({
+  items,
+  title = "FAQ",
+  pageType,
+  slug,
+}: FaqSectionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   if (items.length === 0) {
@@ -24,16 +32,31 @@ export function FaqSection({ items, title = "FAQ" }: FaqSectionProps) {
           const open = openIndex === index
 
           return (
-            <article className="knowledge-faq-item" key={`${item.question}-${index}`}>
+            <article
+              className="knowledge-faq-item"
+              key={`${item.question}-${index}`}
+            >
               <button
                 aria-expanded={open}
                 className="knowledge-faq-question"
-                onClick={() => setOpenIndex(open ? null : index)}
+                onClick={() => {
+                  const willOpen = !open
+                  setOpenIndex(willOpen ? index : null)
+                  if (willOpen && pageType && slug) {
+                    captureEvent("faq_expand", {
+                      pageType,
+                      slug,
+                      question: item.question,
+                    })
+                  }
+                }}
                 type="button"
               >
                 {item.question}
               </button>
-              {open ? <p className="knowledge-faq-answer">{item.answer}</p> : null}
+              {open ? (
+                <p className="knowledge-faq-answer">{item.answer}</p>
+              ) : null}
             </article>
           )
         })}

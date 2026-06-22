@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { ContactLink } from "@/components/public/contact-link"
 import { PageShell } from "@/components/public/content-shell"
 import { getPublicSettings } from "@/lib/public/queries"
 import { buildContactMetadata } from "@/lib/seo"
@@ -25,12 +26,13 @@ export default async function ContactPage() {
             <span className="text-muted-foreground block text-xs tracking-wide uppercase">
               Email
             </span>
-            <a
+            <ContactLink
+              channel="email"
               className="text-primary hover:underline"
               href={`mailto:${contact.email}`}
             >
               {contact.email}
-            </a>
+            </ContactLink>
           </p>
         ) : null}
         {contact.location ? (
@@ -46,17 +48,21 @@ export default async function ContactPage() {
             <span className="text-muted-foreground block text-xs tracking-wide uppercase">
               Schedule
             </span>
-            <a
+            <ContactLink
+              channel="calendly"
               className="text-primary hover:underline"
               href={contact.calendly_url}
               rel="noopener noreferrer"
               target="_blank"
             >
               Book a call
-            </a>
+            </ContactLink>
           </p>
         ) : null}
-        {social.github || social.linkedin || social.twitter || social.instagram ? (
+        {social.github ||
+        social.linkedin ||
+        social.twitter ||
+        social.instagram ? (
           <div>
             <span className="text-muted-foreground mb-2 block text-xs tracking-wide uppercase">
               Social

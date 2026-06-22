@@ -6,6 +6,7 @@ import {
 } from "@/components/public/content-knowledge-blocks"
 import { ContentArticle } from "@/components/public/content-shell"
 import { PublicContent } from "@/components/public/public-content"
+import { ViewTracker } from "@/components/public/view-tracker"
 import { JsonLd } from "@/components/seo/json-ld"
 import { resolveContentKnowledge } from "@/lib/public/content-knowledge"
 import { getContentBySlug, getPublicSettings } from "@/lib/public/queries"
@@ -37,7 +38,9 @@ export async function generateMetadata({ params }: AutomationDetailPageProps) {
   return buildAutomationMetadata({ settings }, item)
 }
 
-export default async function AutomationDetailPage({ params }: AutomationDetailPageProps) {
+export default async function AutomationDetailPage({
+  params,
+}: AutomationDetailPageProps) {
   const { slug } = await params
   const { data: item } = await getContentBySlug("automation", slug)
 
@@ -48,34 +51,49 @@ export default async function AutomationDetailPage({ params }: AutomationDetailP
   const settings = await getPublicSettings()
   const siteUrl = resolveSiteUrl(settings.site.site_url)
   const knowledge = await resolveContentKnowledge(item, siteUrl)
-  const pageUrl = siteUrl ? generateCanonicalUrl(siteUrl, `/automations/${item.slug}`) : null
+  const pageUrl = siteUrl
+    ? generateCanonicalUrl(siteUrl, `/automations/${item.slug}`)
+    : null
 
-  const jsonLd =
-    siteUrl
-      ? mergeJsonLdGraph(
-          [
-            buildArticleJsonLd(item, settings, siteUrl, "Automation"),
-            buildContentBreadcrumbJsonLd(
-              "Automations",
-              item.title,
-              `/automations/${item.slug}`,
-              siteUrl
-            ),
-            pageUrl && knowledge.faqItems.length > 0
-              ? buildFaqPageJsonLd(knowledge.faqItems, pageUrl)
-              : null,
-          ].filter(Boolean) as Record<string, unknown>[]
-        )
-      : null
+  const jsonLd = siteUrl
+    ? mergeJsonLdGraph(
+        [
+          buildArticleJsonLd(item, settings, siteUrl, "Automation"),
+          buildContentBreadcrumbJsonLd(
+            "Automations",
+            item.title,
+            `/automations/${item.slug}`,
+            siteUrl
+          ),
+          pageUrl && knowledge.faqItems.length > 0
+            ? buildFaqPageJsonLd(knowledge.faqItems, pageUrl)
+            : null,
+        ].filter(Boolean) as Record<string, unknown>[]
+      )
+    : null
 
   return (
     <>
       {jsonLd ? <JsonLd data={jsonLd} /> : null}
+      <ViewTracker
+        event="automation_view"
+        payload={{ slug: item.slug, title: item.title }}
+      />
       <ContentArticle
-        afterContent={<ContentKnowledgeAfter context={knowledge} />}
+        afterContent={
+          <ContentKnowledgeAfter
+            context={knowledge}
+            pageType="automation"
+            slug={item.slug}
+          />
+        }
         beforeContent={<ContentKnowledgeBefore context={knowledge} />}
         excerpt={item.excerpt}
-        meta={item.published_at ? formatDate(item.published_at, "MMMM d, yyyy") : null}
+        meta={
+          item.published_at
+            ? formatDate(item.published_at, "MMMM d, yyyy")
+            : null
+        }
         title={item.title}
       >
         <PublicContent content={item.content} />

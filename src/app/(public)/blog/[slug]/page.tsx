@@ -6,6 +6,7 @@ import {
 } from "@/components/public/content-knowledge-blocks"
 import { ContentArticle } from "@/components/public/content-shell"
 import { PublicContent } from "@/components/public/public-content"
+import { ViewTracker } from "@/components/public/view-tracker"
 import { JsonLd } from "@/components/seo/json-ld"
 import { resolveContentKnowledge } from "@/lib/public/content-knowledge"
 import { getContentBySlug, getPublicSettings } from "@/lib/public/queries"
@@ -48,29 +49,49 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const settings = await getPublicSettings()
   const siteUrl = resolveSiteUrl(settings.site.site_url)
   const knowledge = await resolveContentKnowledge(post, siteUrl)
-  const pageUrl = siteUrl ? generateCanonicalUrl(siteUrl, `/blog/${post.slug}`) : null
+  const pageUrl = siteUrl
+    ? generateCanonicalUrl(siteUrl, `/blog/${post.slug}`)
+    : null
 
-  const jsonLd =
-    siteUrl
-      ? mergeJsonLdGraph(
-          [
-            buildArticleJsonLd(post, settings, siteUrl, "Writing"),
-            buildContentBreadcrumbJsonLd("Writing", post.title, `/blog/${post.slug}`, siteUrl),
-            pageUrl && knowledge.faqItems.length > 0
-              ? buildFaqPageJsonLd(knowledge.faqItems, pageUrl)
-              : null,
-          ].filter(Boolean) as Record<string, unknown>[]
-        )
-      : null
+  const jsonLd = siteUrl
+    ? mergeJsonLdGraph(
+        [
+          buildArticleJsonLd(post, settings, siteUrl, "Writing"),
+          buildContentBreadcrumbJsonLd(
+            "Writing",
+            post.title,
+            `/blog/${post.slug}`,
+            siteUrl
+          ),
+          pageUrl && knowledge.faqItems.length > 0
+            ? buildFaqPageJsonLd(knowledge.faqItems, pageUrl)
+            : null,
+        ].filter(Boolean) as Record<string, unknown>[]
+      )
+    : null
 
   return (
     <>
       {jsonLd ? <JsonLd data={jsonLd} /> : null}
+      <ViewTracker
+        event="article_view"
+        payload={{ slug: post.slug, title: post.title }}
+      />
       <ContentArticle
-        afterContent={<ContentKnowledgeAfter context={knowledge} />}
+        afterContent={
+          <ContentKnowledgeAfter
+            context={knowledge}
+            pageType="writing"
+            slug={post.slug}
+          />
+        }
         beforeContent={<ContentKnowledgeBefore context={knowledge} />}
         excerpt={post.excerpt}
-        meta={post.published_at ? formatDate(post.published_at, "MMMM d, yyyy") : null}
+        meta={
+          post.published_at
+            ? formatDate(post.published_at, "MMMM d, yyyy")
+            : null
+        }
         title={post.title}
       >
         <PublicContent content={post.content} />
