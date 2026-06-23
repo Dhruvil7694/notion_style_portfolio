@@ -6,10 +6,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { DiscoverySearchResults } from "@/components/public/discovery-ui"
 import { searchConfig } from "@/config/search"
-import { createAnalyticsEvent } from "@/lib/analytics/events"
+import { captureEvent } from "@/lib/analytics/posthog-client"
 import { groupSearchResults, searchDocuments } from "@/lib/discovery/search"
-import type { DiscoveryDocument, GroupedDiscoveryResults } from "@/lib/discovery/types"
-import { recordContentView, recordSearchQuery } from "@/lib/public/visitor-interest"
+import type {
+  DiscoveryDocument,
+  GroupedDiscoveryResults,
+} from "@/lib/discovery/types"
+import {
+  recordContentView,
+  recordSearchQuery,
+} from "@/lib/public/visitor-interest"
 
 type SearchPageClientProps = {
   initialQuery?: string
@@ -39,7 +45,9 @@ export function SearchPageClient({ initialQuery = "" }: SearchPageClientProps) {
           return
         }
 
-        const payload = (await response.json()) as { documents: DiscoveryDocument[] }
+        const payload = (await response.json()) as {
+          documents: DiscoveryDocument[]
+        }
         setDocuments(payload.documents ?? [])
       } finally {
         setLoading(false)
@@ -81,7 +89,7 @@ export function SearchPageClient({ initialQuery = "" }: SearchPageClientProps) {
       setGroups(groupSearchResults(results))
       setActiveIndex(0)
       recordSearchQuery(trimmed, results.length)
-      void createAnalyticsEvent("search_query", {
+      captureEvent("search_query", {
         query: trimmed,
         resultCount: results.length,
       })
@@ -97,7 +105,7 @@ export function SearchPageClient({ initialQuery = "" }: SearchPageClientProps) {
   const navigateToResult = useCallback(
     (item: DiscoveryDocument, index: number) => {
       recordContentView(item)
-      void createAnalyticsEvent("search_result_click", {
+      captureEvent("search_result_click", {
         query: query.trim(),
         resultType: item.type,
         resultSlug: item.slug,
@@ -115,7 +123,10 @@ export function SearchPageClient({ initialQuery = "" }: SearchPageClientProps) {
     }
 
     return documents
-      .filter((document) => document.type === "concept" || document.type === "expertise")
+      .filter(
+        (document) =>
+          document.type === "concept" || document.type === "expertise"
+      )
       .sort((a, b) => b.popularity - a.popularity)
       .slice(0, 8)
   }, [documents, query])
@@ -135,7 +146,9 @@ export function SearchPageClient({ initialQuery = "" }: SearchPageClientProps) {
           onKeyDown={(event) => {
             if (event.key === "ArrowDown") {
               event.preventDefault()
-              setActiveIndex((current) => Math.min(current + 1, Math.max(flatResults.length - 1, 0)))
+              setActiveIndex((current) =>
+                Math.min(current + 1, Math.max(flatResults.length - 1, 0))
+              )
             }
 
             if (event.key === "ArrowUp") {
@@ -155,7 +168,9 @@ export function SearchPageClient({ initialQuery = "" }: SearchPageClientProps) {
         />
       </div>
 
-      {loading ? <p className="discovery-search-empty">Loading search index...</p> : null}
+      {loading ? (
+        <p className="discovery-search-empty">Loading search index...</p>
+      ) : null}
 
       {!loading && !query.trim() && suggestions.length > 0 ? (
         <section className="discovery-search-group">
@@ -163,10 +178,17 @@ export function SearchPageClient({ initialQuery = "" }: SearchPageClientProps) {
           <ul className="discovery-search-group-list">
             {suggestions.map((item) => (
               <li key={item.id}>
-                <Link className="discovery-search-result discovery-search-link" href={new URL(item.url).pathname}>
-                  <span className="discovery-search-result-title">{item.title}</span>
+                <Link
+                  className="discovery-search-result discovery-search-link"
+                  href={new URL(item.url).pathname}
+                >
+                  <span className="discovery-search-result-title">
+                    {item.title}
+                  </span>
                   {item.description ? (
-                    <span className="discovery-search-result-description">{item.description}</span>
+                    <span className="discovery-search-result-description">
+                      {item.description}
+                    </span>
                   ) : null}
                 </Link>
               </li>

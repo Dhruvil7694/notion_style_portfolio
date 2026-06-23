@@ -4,6 +4,7 @@ import { PageShell } from "@/components/public/content-shell"
 import { EntityNavigationSections } from "@/components/public/discovery-ui"
 import { KeyTakeawaysList } from "@/components/public/key-takeaways-list"
 import { KnowledgeRelatedSection } from "@/components/public/knowledge-related-section"
+import { ViewTracker } from "@/components/public/view-tracker"
 import { JsonLd } from "@/components/seo/json-ld"
 import { resolveEntityNavigation } from "@/lib/discovery/explorer"
 import { buildKnowledgeGraph, getExpertiseBundle } from "@/lib/knowledge/graph"
@@ -26,7 +27,10 @@ export async function generateMetadata({ params }: ExpertiseDetailPageProps) {
   const settings = await getPublicSettings()
 
   if (!area) {
-    return { title: "Expertise Not Found", robots: { index: false, follow: false } }
+    return {
+      title: "Expertise Not Found",
+      robots: { index: false, follow: false },
+    }
   }
 
   return buildBaseMetadata(
@@ -40,7 +44,9 @@ export async function generateMetadata({ params }: ExpertiseDetailPageProps) {
   )
 }
 
-export default async function ExpertiseDetailPage({ params }: ExpertiseDetailPageProps) {
+export default async function ExpertiseDetailPage({
+  params,
+}: ExpertiseDetailPageProps) {
   const { slug } = await params
   const [{ data: area }, settings] = await Promise.all([
     getExpertiseAreaBySlug(slug),
@@ -54,7 +60,9 @@ export default async function ExpertiseDetailPage({ params }: ExpertiseDetailPag
   const siteUrl = resolveSiteUrl(settings.site.site_url)
   const graph = siteUrl ? await buildKnowledgeGraph(siteUrl) : null
   const bundle = graph ? getExpertiseBundle(graph, slug) : null
-  const navigation = graph ? resolveEntityNavigation(graph, "expertise", slug) : null
+  const navigation = graph
+    ? resolveEntityNavigation(graph, "expertise", slug)
+    : null
 
   const jsonLd =
     siteUrl && graph
@@ -72,9 +80,15 @@ export default async function ExpertiseDetailPage({ params }: ExpertiseDetailPag
   return (
     <>
       {jsonLd ? <JsonLd data={jsonLd} /> : null}
+      <ViewTracker
+        event="expertise_view"
+        payload={{ slug: area.slug, title: area.title }}
+      />
       <PageShell description={area.summary ?? undefined} title={area.title}>
         <div className="expertise-page">
-          {area.description ? <p className="expertise-page-description">{area.description}</p> : null}
+          {area.description ? (
+            <p className="expertise-page-description">{area.description}</p>
+          ) : null}
 
           {area.why_it_matters ? (
             <section className="expertise-page-section">
@@ -95,11 +109,26 @@ export default async function ExpertiseDetailPage({ params }: ExpertiseDetailPag
                   relatedTechnologies={navigation.relatedTechnologies}
                 />
               ) : null}
-              <KnowledgeRelatedSection items={bundle.projects} title="Projects Using This Expertise" />
-              <KnowledgeRelatedSection items={bundle.research} title="Related Research" />
-              <KnowledgeRelatedSection items={bundle.writing} title="Articles About This Expertise" />
-              <KnowledgeRelatedSection items={bundle.automations} title="Related Automations" />
-              <KnowledgeRelatedSection items={bundle.technologies} title="Technologies Used" />
+              <KnowledgeRelatedSection
+                items={bundle.projects}
+                title="Projects Using This Expertise"
+              />
+              <KnowledgeRelatedSection
+                items={bundle.research}
+                title="Related Research"
+              />
+              <KnowledgeRelatedSection
+                items={bundle.writing}
+                title="Articles About This Expertise"
+              />
+              <KnowledgeRelatedSection
+                items={bundle.automations}
+                title="Related Automations"
+              />
+              <KnowledgeRelatedSection
+                items={bundle.technologies}
+                title="Technologies Used"
+              />
             </>
           ) : null}
 

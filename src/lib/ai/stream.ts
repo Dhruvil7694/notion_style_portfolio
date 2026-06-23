@@ -14,6 +14,7 @@ import { getAiSettings } from "./get-ai-settings"
 import { buildPublicAssistantPrompt } from "./prompts"
 import type { AiProviderId } from "./providers/base"
 import { resolveModelChain } from "./providers/router"
+import { aiTelemetry } from "./sentry-telemetry"
 import { trackAiUsage } from "./usage/track-usage"
 
 export type PublicAssistantStreamOptions = {
@@ -30,7 +31,9 @@ type StreamSuccess = {
   latencyMs: number
 }
 
-function sanitizeHeaders(headers: Record<string, string>): Record<string, string> {
+function sanitizeHeaders(
+  headers: Record<string, string>
+): Record<string, string> {
   const safe: Record<string, string> = {}
   for (const [key, value] of Object.entries(headers)) {
     if (/^[\x00-\xFF]*$/.test(value)) {
@@ -60,8 +63,9 @@ export async function streamPublicAssistantWithFailover(
         system: options.system,
         messages: options.modelMessages,
         temperature: settings.temperature,
-        maxOutputTokens: settings.max_tokens,
+        maxOutputTokens: Math.min(settings.max_tokens, 2048),
         abortSignal: controller.signal,
+        ...aiTelemetry("stream-public-assistant"),
       })
 
       return {
@@ -97,11 +101,15 @@ export async function createPublicAssistantStreamResponse(
   const system = buildPublicAssistantPrompt(options.contextText)
 
   const modelMessages = options.messages
-    .filter((message) => message.role === "user" || message.role === "assistant")
+    .filter(
+      (message) => message.role === "user" || message.role === "assistant"
+    )
     .map((message) => ({
       role: message.role as "user" | "assistant",
       content: message.parts
-        .filter((part): part is { type: "text"; text: string } => part.type === "text")
+        .filter(
+          (part): part is { type: "text"; text: string } => part.type === "text"
+        )
         .map((part) => part.text)
         .join("\n"),
     }))

@@ -1,5 +1,6 @@
 "use client"
 
+import * as Sentry from "@sentry/nextjs"
 import { useEffect } from "react"
 
 export default function GlobalError({
@@ -10,7 +11,7 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
-    // Structured log — visible in Vercel Functions logs
+    Sentry.captureException(error)
     console.error("[GlobalError]", {
       digest: error.digest,
       message: error.message,
@@ -37,7 +38,14 @@ export default function GlobalError({
         <h2 style={{ fontSize: "1.25rem", fontWeight: 600, margin: 0 }}>
           Something went wrong
         </h2>
-        <p style={{ color: "#a1a1aa", margin: 0, maxWidth: "32rem", textAlign: "center" }}>
+        <p
+          style={{
+            color: "#a1a1aa",
+            margin: 0,
+            maxWidth: "32rem",
+            textAlign: "center",
+          }}
+        >
           An unexpected error occurred. Please try again or contact support.
         </p>
         {error.digest && (

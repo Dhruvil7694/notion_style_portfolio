@@ -6,6 +6,7 @@ import {
   Brain,
   Briefcase,
   Bug,
+  ClipboardList,
   FileText,
   GraduationCap,
   HeartPulse,
@@ -117,6 +118,12 @@ export const adminNavigation: AdminNavItem[] = [
     href: "/admin/ai",
     icon: BarChart2,
     description: "Provider usage, tokens, and cost tracking",
+  },
+  {
+    title: "Job Fit Analytics",
+    href: "/admin/job-fit-analytics",
+    icon: ClipboardList,
+    description: "JD validations, fit scores, and recruiter actions",
   },
   {
     title: "Content Health",

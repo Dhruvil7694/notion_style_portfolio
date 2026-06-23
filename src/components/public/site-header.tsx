@@ -116,7 +116,7 @@ export function SiteHeader({ settings, assistantEnabled }: SiteHeaderProps) {
           <Button
             aria-expanded={open}
             aria-label={open ? "Close menu" : "Open menu"}
-            className="size-10 p-0"
+            className="h-11 w-11 p-0"
             onClick={() => setOpen((v) => !v)}
             variant="ghost"
           >
@@ -151,7 +151,7 @@ function MobileAssistantToggle() {
     <Button
       aria-label="Open assistant"
       aria-pressed={isOpen}
-      className="size-10 p-0"
+      className="h-11 w-11 p-0"
       onClick={toggle}
       variant="ghost"
     >

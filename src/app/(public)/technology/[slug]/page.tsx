@@ -4,6 +4,7 @@ import { PageShell } from "@/components/public/content-shell"
 import { EntityNavigationSections } from "@/components/public/discovery-ui"
 import { KnowledgeRelatedSection } from "@/components/public/knowledge-related-section"
 import { TechnologyHubMeta } from "@/components/public/technology-hub-meta"
+import { ViewTracker } from "@/components/public/view-tracker"
 import { JsonLd } from "@/components/seo/json-ld"
 import { resolveEntityNavigation } from "@/lib/discovery/explorer"
 import { buildKnowledgeGraph, getTechnologyBundle } from "@/lib/knowledge/graph"
@@ -38,7 +39,9 @@ export async function generateMetadata({ params }: TechnologyDetailPageProps) {
   )
 }
 
-export default async function TechnologyDetailPage({ params }: TechnologyDetailPageProps) {
+export default async function TechnologyDetailPage({
+  params,
+}: TechnologyDetailPageProps) {
   const { slug } = await params
   const [{ data: record }, settings] = await Promise.all([
     getTechnologyBySlug(slug),
@@ -65,7 +68,9 @@ export default async function TechnologyDetailPage({ params }: TechnologyDetailP
   const jsonLd = mergeJsonLdGraph([
     buildCollectionPageJsonLd(
       bundle.technology.title,
-      record?.summary ?? record?.description ?? `Content using ${bundle.technology.title}`,
+      record?.summary ??
+        record?.description ??
+        `Content using ${bundle.technology.title}`,
       `/technology/${slug}`,
       siteUrl
     ),
@@ -74,8 +79,14 @@ export default async function TechnologyDetailPage({ params }: TechnologyDetailP
   return (
     <>
       <JsonLd data={jsonLd} />
+      <ViewTracker
+        event="technology_view"
+        payload={{ slug, title: bundle.technology.title }}
+      />
       <PageShell
-        description={record?.summary ?? bundle.technology.description ?? undefined}
+        description={
+          record?.summary ?? bundle.technology.description ?? undefined
+        }
         title={bundle.technology.title}
       >
         {record?.description ? (
@@ -83,14 +94,18 @@ export default async function TechnologyDetailPage({ params }: TechnologyDetailP
         ) : null}
 
         <TechnologyHubMeta
-          category={record?.category ?? (bundle.technology.metadata?.category as string | null)}
+          category={
+            record?.category ??
+            (bundle.technology.metadata?.category as string | null)
+          }
           documentationUrl={
             record?.documentation_url ??
             (bundle.technology.metadata?.documentationUrl as string | null)
           }
           registered={Boolean(record)}
           websiteUrl={
-            record?.website_url ?? (bundle.technology.metadata?.websiteUrl as string | null)
+            record?.website_url ??
+            (bundle.technology.metadata?.websiteUrl as string | null)
           }
         />
 
@@ -103,7 +118,10 @@ export default async function TechnologyDetailPage({ params }: TechnologyDetailP
         <KnowledgeRelatedSection items={bundle.projects} title="Projects" />
         <KnowledgeRelatedSection items={bundle.research} title="Research" />
         <KnowledgeRelatedSection items={bundle.writing} title="Writing" />
-        <KnowledgeRelatedSection items={bundle.automations} title="Automations" />
+        <KnowledgeRelatedSection
+          items={bundle.automations}
+          title="Automations"
+        />
       </PageShell>
     </>
   )

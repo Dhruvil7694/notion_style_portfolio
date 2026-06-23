@@ -6,6 +6,7 @@ import { createOpenAI } from "@ai-sdk/openai"
 import type { LanguageModel } from "ai"
 
 import { resolveProviderKey, resolveProviderKeysMap } from "../provider-keys"
+import { aiTelemetry } from "../sentry-telemetry"
 import type { AiProviderAdapter, AiProviderId, HealthCheckResult } from "./base"
 import {
   getModelsForProvider,
@@ -77,7 +78,12 @@ function buildAdapter(id: AiProviderId): AiProviderAdapter {
         const modelId = PROVIDER_CONFIGS[id].defaultModels.fast
         const model = createLanguageModel(id, modelId, apiKey)
         const { generateText } = await import("ai")
-        await generateText({ model, prompt: "ping", maxOutputTokens: 1 })
+        await generateText({
+          model,
+          prompt: "ping",
+          maxOutputTokens: 1,
+          ...aiTelemetry("provider-health-check"),
+        })
         return { ok: true, latencyMs: Date.now() - start }
       } catch (error) {
         return {
@@ -116,7 +122,7 @@ export function listAllModels() {
 
 export async function listConfiguredProviderIds(): Promise<AiProviderId[]> {
   const keys = await resolveProviderKeysMap()
-  return (Object.keys(PROVIDER_ADAPTERS) as AiProviderId[]).filter(
-    (provider) => Boolean(keys[provider])
+  return (Object.keys(PROVIDER_ADAPTERS) as AiProviderId[]).filter((provider) =>
+    Boolean(keys[provider])
   )
 }

@@ -4,14 +4,17 @@ import { Search, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import { useDockSearchRegistration } from "@/components/public/dock-search-context"
 import { DiscoverySuggestionList } from "@/components/public/discovery-ui"
+import { useDockSearchRegistration } from "@/components/public/dock-search-context"
 import { featureFlags } from "@/config/feature-flags"
 import { searchConfig } from "@/config/search"
-import { createAnalyticsEvent } from "@/lib/analytics/events"
+import { captureEvent } from "@/lib/analytics/posthog-client"
 import { groupSearchResults, searchDocuments } from "@/lib/discovery/search"
 import { formatShortcutLabel } from "@/lib/discovery/shortcuts"
-import type { DiscoveryDocument, GroupedDiscoveryResults } from "@/lib/discovery/types"
+import type {
+  DiscoveryDocument,
+  GroupedDiscoveryResults,
+} from "@/lib/discovery/types"
 import { glassPanelClass } from "@/lib/public/glass-panel"
 import {
   readVisitorProfile,
@@ -54,7 +57,8 @@ export function DockSearch() {
 
   const expanded = hovered || focused || pinned
   const trimmedQuery = query.trim()
-  const showResults = expanded && (trimmedQuery.length > 0 || recentlyViewed.length > 0)
+  const showResults =
+    expanded && (trimmedQuery.length > 0 || recentlyViewed.length > 0)
 
   const flatResults = useMemo(
     () => groups.flatMap((group) => group.items),
@@ -63,7 +67,7 @@ export function DockSearch() {
 
   const openSearch = useCallback(() => {
     setPinned(true)
-    void createAnalyticsEvent("search_opened", { source: "keyboard" })
+    captureEvent("search_opened", { source: "keyboard" })
     window.requestAnimationFrame(() => {
       inputRef.current?.focus()
       inputRef.current?.select()
@@ -105,7 +109,9 @@ export function DockSearch() {
         return
       }
 
-      const payload = (await response.json()) as { documents: DiscoveryDocument[] }
+      const payload = (await response.json()) as {
+        documents: DiscoveryDocument[]
+      }
       setDocuments(payload.documents ?? [])
       setIndexLoaded(true)
     } catch {
@@ -154,7 +160,7 @@ export function DockSearch() {
       setGroups(groupSearchResults(results))
       setActiveIndex(0)
       recordSearchQuery(trimmedQuery, results.length)
-      void createAnalyticsEvent("search_query", {
+      captureEvent("search_query", {
         query: trimmedQuery,
         resultCount: results.length,
       })
@@ -185,7 +191,7 @@ export function DockSearch() {
   const navigateToResult = useCallback(
     (item: DiscoveryDocument, index: number) => {
       recordContentView(item)
-      void createAnalyticsEvent("search_result_click", {
+      captureEvent("search_result_click", {
         query: trimmedQuery,
         resultType: item.type,
         resultSlug: item.slug,
@@ -205,13 +211,20 @@ export function DockSearch() {
 
   return (
     <div
-      className={cn("dock-search-root", expanded && "dock-search-root-expanded")}
+      className={cn(
+        "dock-search-root",
+        expanded && "dock-search-root-expanded"
+      )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       ref={rootRef}
     >
       <div
-        className={cn("dock-search", glassPanelClass, expanded && "dock-search-expanded")}
+        className={cn(
+          "dock-search",
+          glassPanelClass,
+          expanded && "dock-search-expanded"
+        )}
         onBlurCapture={(event) => {
           if (!rootRef.current?.contains(event.relatedTarget as Node | null)) {
             setFocused(false)
@@ -231,7 +244,7 @@ export function DockSearch() {
           onChange={(event) => setQuery(event.target.value)}
           onFocus={() => {
             if (!pinned) {
-              void createAnalyticsEvent("search_opened", { source: "dock" })
+              captureEvent("search_opened", { source: "dock" })
             }
           }}
           onKeyDown={(event) => {
@@ -311,7 +324,9 @@ export function DockSearch() {
             {indexLoading ? (
               <p className="dock-search-panel-empty">Loading index...</p>
             ) : indexError ? (
-              <p className="dock-search-panel-empty">Search is temporarily unavailable.</p>
+              <p className="dock-search-panel-empty">
+                Search is temporarily unavailable.
+              </p>
             ) : trimmedQuery ? (
               flatResults.length === 0 ? (
                 <p className="dock-search-panel-empty">
@@ -332,7 +347,9 @@ export function DockSearch() {
                 title="Recent"
               />
             ) : (
-              <p className="dock-search-panel-empty">Start typing to search the knowledge base.</p>
+              <p className="dock-search-panel-empty">
+                Start typing to search the knowledge base.
+              </p>
             )}
           </div>
         </div>

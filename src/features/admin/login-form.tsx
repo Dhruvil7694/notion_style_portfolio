@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import posthog from "posthog-js"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -19,16 +20,21 @@ export function AdminLoginForm() {
     setError(null)
 
     const supabase = createClient()
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const { data: signInData, error: signInError } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
     if (signInError) {
       setError(signInError.message)
       setIsSubmitting(false)
       return
     }
+
+    const userId = signInData.user?.id ?? email
+    posthog.identify(userId, { email })
+    posthog.capture("admin_login", { email })
 
     router.replace("/admin")
     router.refresh()

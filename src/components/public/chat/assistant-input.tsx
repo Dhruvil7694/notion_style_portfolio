@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowUp } from "lucide-react"
+import { ArrowUp, Square } from "lucide-react"
 import { useEffect, useRef } from "react"
 
 import { cn } from "@/lib/utils"
@@ -9,7 +9,9 @@ type AssistantInputProps = {
   value: string
   onChange: (value: string) => void
   onSubmit: () => void
+  onStop?: () => void
   disabled?: boolean
+  isLoading?: boolean
   placeholder?: string
 }
 
@@ -17,7 +19,9 @@ export function AssistantInput({
   value,
   onChange,
   onSubmit,
+  onStop,
   disabled,
+  isLoading = false,
   placeholder = "Ask me anything",
 }: AssistantInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -64,20 +68,31 @@ export function AssistantInput({
         />
 
         <div className="flex shrink-0 items-center gap-1 pb-0.5">
-          <button
-            aria-label="Send message"
-            className={cn(
-              "flex size-7 items-center justify-center rounded-full transition-all",
-              canSubmit
-                ? "bg-foreground text-background hover:opacity-80"
-                : "bg-muted/40 text-muted-foreground/30 cursor-not-allowed"
-            )}
-            disabled={!canSubmit}
-            onClick={onSubmit}
-            type="button"
-          >
-            <ArrowUp className="size-3.5" />
-          </button>
+          {isLoading ? (
+            <button
+              aria-label="Stop"
+              className="flex size-7 items-center justify-center rounded-full border border-border/60 text-foreground transition-colors hover:bg-muted/40"
+              onClick={onStop}
+              type="button"
+            >
+              <Square className="size-3 fill-current" />
+            </button>
+          ) : (
+            <button
+              aria-label="Send message"
+              className={cn(
+                "flex size-7 items-center justify-center rounded-full transition-all",
+                canSubmit
+                  ? "bg-foreground text-background hover:opacity-80"
+                  : "bg-muted/40 text-muted-foreground/30 cursor-not-allowed"
+              )}
+              disabled={!canSubmit}
+              onClick={onSubmit}
+              type="button"
+            >
+              <ArrowUp className="size-3.5" />
+            </button>
+          )}
         </div>
       </div>
     </div>

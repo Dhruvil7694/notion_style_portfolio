@@ -38,6 +38,7 @@ export const API_RATE_LIMITS = {
   chat: { limit: 20, windowMs: 60_000 },
   copilot: { limit: 30, windowMs: 60_000 },
   notifyEmployer: { limit: 3, windowMs: 60_000 },
+  jobFitExport: { limit: 10, windowMs: 60_000 },
 } as const
 
 type RateLimitName = keyof typeof API_RATE_LIMITS
@@ -83,10 +84,7 @@ function getLimiter(name: RateLimitName): Ratelimit | null {
 type Bucket = { count: number; resetAt: number }
 const buckets = new Map<string, Bucket>()
 
-function checkInMemory(
-  key: string,
-  name: RateLimitName
-): RateLimitResult {
+function checkInMemory(key: string, name: RateLimitName): RateLimitResult {
   const { limit, windowMs } = API_RATE_LIMITS[name]
   const now = Date.now()
 
@@ -109,7 +107,10 @@ function checkInMemory(
       limit,
       remaining: 0,
       resetAt: existing.resetAt,
-      retryAfterSeconds: Math.max(Math.ceil((existing.resetAt - now) / 1000), 1),
+      retryAfterSeconds: Math.max(
+        Math.ceil((existing.resetAt - now) / 1000),
+        1
+      ),
     }
   }
 
@@ -151,7 +152,9 @@ export async function checkRateLimit(
   return checkInMemory(`${name}:${ip}`, name)
 }
 
-export function rateLimitHeaders(result: RateLimitResult): Record<string, string> {
+export function rateLimitHeaders(
+  result: RateLimitResult
+): Record<string, string> {
   return {
     "RateLimit-Limit": String(result.limit),
     "RateLimit-Remaining": String(result.remaining),

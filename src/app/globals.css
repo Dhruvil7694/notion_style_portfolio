@@ -292,7 +292,8 @@
 html[data-site-theme="light"] .project-preview-root,
 html[data-site-theme="light"] .hover-preview-root,
 html[data-site-theme="light"] .ai-first-keyword-preview-root,
-html[data-site-theme="light"] .about-snake-popup-root {
+html[data-site-theme="light"] .about-snake-popup-root,
+html[data-site-theme="light"] .job-fit-comparison-modal-root {
   --background: #faf1e7;
   --foreground: #000000;
   --card: #faf1e7;
@@ -317,11 +318,17 @@ html[data-site-theme="light"] .about-snake-popup-root {
   background-color: #faf1e7;
 }
 
+html[data-site-theme="light"] .job-fit-comparison-modal-root {
+  color: #000000;
+  background-color: #faf1e7;
+}
+
 html[data-site-theme="dark"] .public-site,
 html[data-site-theme="dark"] .project-preview-root,
 html[data-site-theme="dark"] .hover-preview-root,
 html[data-site-theme="dark"] .ai-first-keyword-preview-root,
-html[data-site-theme="dark"] .about-snake-popup-root {
+html[data-site-theme="dark"] .about-snake-popup-root,
+html[data-site-theme="dark"] .job-fit-comparison-modal-root {
   --background: #0a0a0a;
   --foreground: #fafafa;
   --card: #111111;
@@ -342,6 +349,11 @@ html[data-site-theme="dark"] .about-snake-popup-root {
 }
 
 html[data-site-theme="dark"] .public-site {
+  color: #fafafa;
+  background-color: #0a0a0a;
+}
+
+html[data-site-theme="dark"] .job-fit-comparison-modal-root {
   color: #fafafa;
   background-color: #0a0a0a;
 }

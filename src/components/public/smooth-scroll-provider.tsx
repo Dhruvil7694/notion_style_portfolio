@@ -60,7 +60,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
           node instanceof Element &&
           Boolean(
             node.closest(
-              "[data-lenis-prevent], .dock-search-panel-scroll, .discovery-search-body, .projects-filters-submenu-scroll"
+              "[data-lenis-prevent], .dock-search-panel-scroll, .discovery-search-body, .projects-filters-submenu-scroll, .assistant-panel-scroll, .assistant-panel-footer"
             )
           ),
         smoothWheel: true,

@@ -23,6 +23,9 @@ const ALL_EVENTS = [
   "assistant_opened",
   "assistant_question",
   "assistant_source_click",
+  "assistant_job_fit_mode",
+  "assistant_job_fit",
+  "jd_classification_feedback",
   "copilot_opened",
   "copilot_tool_invoked",
 ] as const

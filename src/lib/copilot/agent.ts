@@ -4,6 +4,7 @@ import { generateText, stepCountIs, tool } from "ai"
 
 import { getAiSettings } from "@/lib/ai/get-ai-settings"
 import { resolveModelChain } from "@/lib/ai/providers/router"
+import { aiTelemetry } from "@/lib/ai/sentry-telemetry"
 import { trackAiUsage } from "@/lib/ai/usage/track-usage"
 
 import { getCopilotRegistry } from "./registry"
@@ -133,7 +134,11 @@ function buildAiSdkTools() {
 
 function collectPendingActions(
   steps: Array<{
-    toolResults?: Array<{ toolCallId: string; toolName: string; output: unknown }>
+    toolResults?: Array<{
+      toolCallId: string
+      toolName: string
+      output: unknown
+    }>
   }>
 ): { pending: PendingActionPayload[]; toolNames: string[] } {
   const pending: PendingActionPayload[] = []
@@ -188,6 +193,7 @@ export async function runCopilotAgent(
         stopWhen: stepCountIs(10),
         temperature: settings.temperature,
         maxOutputTokens: settings.max_tokens,
+        ...aiTelemetry("copilot-agent"),
       })
 
       void trackAiUsage({
@@ -207,12 +213,11 @@ export async function runCopilotAgent(
       // If the only pending action is a clarification, use the question as the
       // response text so it's saved to history and the LLM remembers it next turn.
       const clarification = pending.find((p) => p.clarificationQuestion)
-      const defaultResponse =
-        clarification
-          ? clarification.clarificationQuestion!
-          : pending.length > 0
-            ? "I queued up a change for you to review. Use the buttons below to confirm or cancel."
-            : "Done."
+      const defaultResponse = clarification
+        ? clarification.clarificationQuestion!
+        : pending.length > 0
+          ? "I queued up a change for you to review. Use the buttons below to confirm or cancel."
+          : "Done."
 
       return {
         response: result.text?.trim() || defaultResponse,

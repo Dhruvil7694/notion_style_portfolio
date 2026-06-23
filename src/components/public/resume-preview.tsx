@@ -1,12 +1,14 @@
 "use client"
 
+import "react-pdf/dist/Page/AnnotationLayer.css"
+import "react-pdf/dist/Page/TextLayer.css"
+
 import { Download } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Document, Page, pdfjs } from "react-pdf"
-import "react-pdf/dist/Page/AnnotationLayer.css"
-import "react-pdf/dist/Page/TextLayer.css"
 
+import { captureEvent } from "@/lib/analytics/posthog-client"
 import { cn } from "@/lib/utils"
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
@@ -41,7 +43,9 @@ export function ResumePreview({ fileUrl, downloadUrl }: Props) {
           }
           error={
             <div className="flex h-[400px] flex-col items-center justify-center gap-3 bg-muted/10">
-              <p className="text-sm text-muted-foreground">Preview unavailable</p>
+              <p className="text-sm text-muted-foreground">
+                Preview unavailable
+              </p>
               <Link
                 className="text-sm underline underline-offset-2 hover:text-foreground"
                 href={downloadUrl}
@@ -67,7 +71,8 @@ export function ResumePreview({ fileUrl, downloadUrl }: Props) {
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 h-[52%]"
         style={{
-          background: "linear-gradient(to bottom, transparent 0%, var(--background) 80%)",
+          background:
+            "linear-gradient(to bottom, transparent 0%, var(--background) 80%)",
         }}
       />
 
@@ -82,6 +87,9 @@ export function ResumePreview({ fileUrl, downloadUrl }: Props) {
             "text-[13px] font-semibold text-background shadow-lg transition-opacity hover:opacity-80"
           )}
           href={downloadUrl}
+          onClick={() =>
+            captureEvent("resume_download", { source: "resume_page" })
+          }
           rel="noopener noreferrer"
           target="_blank"
         >

@@ -19,6 +19,7 @@ import { ProjectTimeline } from "@/components/public/project-timeline"
 import { RelatedProjects } from "@/components/public/related-projects"
 import { TechStackCategories } from "@/components/public/tech-stack-categories"
 import { TradeoffsList } from "@/components/public/tradeoffs-list"
+import { ViewTracker } from "@/components/public/view-tracker"
 import { deserializeContent } from "@/lib/content/serializer"
 import {
   hasArchitectureGraph,
@@ -45,7 +46,10 @@ import {
 } from "@/lib/public/project-gallery"
 import type { Project } from "@/types/database.helpers"
 
-type RelatedProject = Pick<Project, "id" | "slug" | "title" | "summary" | "tech_stack">
+type RelatedProject = Pick<
+  Project,
+  "id" | "slug" | "title" | "summary" | "tech_stack"
+>
 
 type ProjectCaseStudyProps = {
   project: Project
@@ -78,7 +82,10 @@ function ProseParagraphs({ text }: { text: string }) {
   return (
     <>
       {paragraphs.map((paragraph, index) => (
-        <p className="case-study-paragraph" key={`${paragraph.slice(0, 24)}-${index}`}>
+        <p
+          className="case-study-paragraph"
+          key={`${paragraph.slice(0, 24)}-${index}`}
+        >
           {paragraph}
         </p>
       ))}
@@ -186,10 +193,15 @@ export function ProjectCaseStudy({
   const hasDemoVideo = Boolean(resolveVideoEmbed(demoVideoUrl))
   const showWalkthrough =
     walkthroughItems.length > 0 &&
-    (walkthroughItems.length > 1 || walkthroughItems[0]?.url !== problemScreenshot?.url)
+    (walkthroughItems.length > 1 ||
+      walkthroughItems[0]?.url !== problemScreenshot?.url)
 
   return (
     <article className="project-case-study">
+      <ViewTracker
+        event="project_view"
+        payload={{ slug: project.slug, title: project.title }}
+      />
       <header className="project-case-study-header">
         <PageBreadcrumbs currentLabel={project.title} />
         {metadataLine ? (
@@ -204,11 +216,18 @@ export function ProjectCaseStudy({
             <ProseParagraphs text={project.overview} />
           </div>
         ) : null}
-        {project.ai_summary ? <AiSummaryBlock summary={project.ai_summary} /> : null}
-        {project.expertise_slugs?.length ? (
-          <ExpertiseBadges slugs={project.expertise_slugs} titlesBySlug={expertiseTitlesBySlug} />
+        {project.ai_summary ? (
+          <AiSummaryBlock summary={project.ai_summary} />
         ) : null}
-        {coverImage ? <CaseStudyCover title={project.title} url={coverImage} /> : null}
+        {project.expertise_slugs?.length ? (
+          <ExpertiseBadges
+            slugs={project.expertise_slugs}
+            titlesBySlug={expertiseTitlesBySlug}
+          />
+        ) : null}
+        {coverImage ? (
+          <CaseStudyCover title={project.title} url={coverImage} />
+        ) : null}
       </header>
 
       {Object.keys(projectFacts).length > 0 ? (
@@ -289,7 +308,10 @@ export function ProjectCaseStudy({
 
         {showWalkthrough ? (
           <CaseStudyBlock title="System Walkthrough">
-            <CaseStudyCarousel items={walkthroughItems} projectTitle={project.title} />
+            <CaseStudyCarousel
+              items={walkthroughItems}
+              projectTitle={project.title}
+            />
           </CaseStudyBlock>
         ) : null}
 
@@ -377,16 +399,36 @@ export function ProjectCaseStudy({
         </div>
       )}
 
-      {faqItems.length > 0 ? <FaqSection items={faqItems} /> : null}
+      {faqItems.length > 0 ? (
+        <FaqSection items={faqItems} pageType="project" slug={project.slug} />
+      ) : null}
 
       {relatedKnowledge ? (
         <div className="project-case-study-knowledge-related">
-          <KnowledgeRelatedSection items={relatedKnowledge.research} title="Related Research" />
-          <KnowledgeRelatedSection items={relatedKnowledge.writing} title="Related Articles" />
-          <KnowledgeRelatedSection items={relatedKnowledge.automations} title="Related Automations" />
-          <KnowledgeRelatedSection items={relatedKnowledge.concepts} title="Related Concepts" />
-          <KnowledgeRelatedSection items={relatedKnowledge.technologies} title="Related Technologies" />
-          <KnowledgeRelatedSection items={relatedKnowledge.expertise} title="Related Expertise" />
+          <KnowledgeRelatedSection
+            items={relatedKnowledge.research}
+            title="Related Research"
+          />
+          <KnowledgeRelatedSection
+            items={relatedKnowledge.writing}
+            title="Related Articles"
+          />
+          <KnowledgeRelatedSection
+            items={relatedKnowledge.automations}
+            title="Related Automations"
+          />
+          <KnowledgeRelatedSection
+            items={relatedKnowledge.concepts}
+            title="Related Concepts"
+          />
+          <KnowledgeRelatedSection
+            items={relatedKnowledge.technologies}
+            title="Related Technologies"
+          />
+          <KnowledgeRelatedSection
+            items={relatedKnowledge.expertise}
+            title="Related Expertise"
+          />
         </div>
       ) : null}
 

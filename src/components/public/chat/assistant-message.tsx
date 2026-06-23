@@ -1,20 +1,51 @@
 "use client"
 
-import { Check, ChevronDown, Copy, Download, ExternalLink, FileText, GitFork, Link, Mail, Maximize2, X } from "lucide-react"
-import { useState } from "react"
 import {
-  Bar, BarChart, CartesianGrid, Cell, Legend,
-  Line, LineChart, Pie, PieChart,
-  RadarChart, Radar, PolarGrid, PolarAngleAxis,
-  ResponsiveContainer, Tooltip, XAxis, YAxis,
-} from "recharts"
-import ReactMarkdown from "react-markdown"
+  Check,
+  ChevronDown,
+  Copy,
+  Download,
+  ExternalLink,
+  FileText,
+  GitFork,
+  Link,
+  Mail,
+  Maximize2,
+  X,
+} from "lucide-react"
+import { useEffect, useState } from "react"
 import type { Components } from "react-markdown"
+import ReactMarkdown from "react-markdown"
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  PolarAngleAxis,
+  PolarGrid,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts"
 import remarkGfm from "remark-gfm"
 
-import type { CitationBundle } from "@/lib/ai/citations/citation-types"
 import type { EntityLink } from "@/components/public/chat/assistant-context"
+import type { CitationBundle } from "@/lib/ai/citations/citation-types"
+import { captureEvent } from "@/lib/analytics/posthog-client"
+import { parseSeniorityFit } from "@/lib/public/job-seniority"
+import { isJobFitAnalysisMessage } from "@/lib/public/parse-job-fit-result"
 import { cn } from "@/lib/utils"
+
+import { JobFitSeniorityVerdict } from "./job-fit-seniority-hint"
+import { JobFitSkillChartFromMarkdown } from "./job-fit-skill-chart"
 
 type AssistantMessageProps = {
   role: "user" | "assistant"
@@ -66,7 +97,12 @@ function TechPill({ name }: { name: string }) {
   )
   if (href) {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="no-underline">
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="no-underline"
+      >
         {inner}
       </a>
     )
@@ -76,10 +112,29 @@ function TechPill({ name }: { name: string }) {
 
 // ── Skill pills extracted from content ───────────────────────
 const SKILL_NAMES = [
-  "RAG", "LangChain", "LangGraph", "FastAPI", "Python", "PostgreSQL",
-  "Docker", "AWS", "Azure", "MLflow", "Qdrant", "FAISS", "Redis",
-  "LoRA", "QLoRA", "Transformers", "HuggingFace", "TensorFlow",
-  "Multi-Agent", "LLM", "NLP", "SSE", "LLM Evaluation",
+  "RAG",
+  "LangChain",
+  "LangGraph",
+  "FastAPI",
+  "Python",
+  "PostgreSQL",
+  "Docker",
+  "AWS",
+  "Azure",
+  "MLflow",
+  "Qdrant",
+  "FAISS",
+  "Redis",
+  "LoRA",
+  "QLoRA",
+  "Transformers",
+  "HuggingFace",
+  "TensorFlow",
+  "Multi-Agent",
+  "LLM",
+  "NLP",
+  "SSE",
+  "LLM Evaluation",
 ]
 
 function extractSkills(content: string): string[] {
@@ -88,7 +143,13 @@ function extractSkills(content: string): string[] {
   ).slice(0, 8)
 }
 
-function SkillCloud({ skills, onAsk }: { skills: string[]; onAsk: (q: string) => void }) {
+function SkillCloud({
+  skills,
+  onAsk,
+}: {
+  skills: string[]
+  onAsk: (q: string) => void
+}) {
   if (skills.length === 0) return null
   return (
     <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -101,7 +162,9 @@ function SkillCloud({ skills, onAsk }: { skills: string[]; onAsk: (q: string) =>
             "hover:border-border hover:bg-muted/60 hover:text-foreground",
             "active:scale-95"
           )}
-          onClick={() => onAsk(`Tell me more about Dhruvil's experience with ${skill}`)}
+          onClick={() =>
+            onAsk(`Tell me more about Dhruvil's experience with ${skill}`)
+          }
           title={`Ask about ${skill}`}
           type="button"
         >
@@ -112,10 +175,9 @@ function SkillCloud({ skills, onAsk }: { skills: string[]; onAsk: (q: string) =>
   )
 }
 
-
-
 // ── Contact action card ───────────────────────────────────────
-const CONTACT_TRIGGER = /\bcontact\b|\breach out\b|\bemail\b|\bhire\b|\bget in touch\b/i
+const CONTACT_TRIGGER =
+  /\bcontact\b|\breach out\b|\bemail\b|\bhire\b|\bget in touch\b/i
 
 function ContactCard() {
   const [copied, setCopied] = useState(false)
@@ -127,10 +189,12 @@ function ContactCard() {
   }
 
   return (
-    <div className={cn(
-      "mt-2 rounded-xl border border-border/50 bg-muted/20 p-3",
-      "flex flex-col gap-2"
-    )}>
+    <div
+      className={cn(
+        "mt-2 rounded-xl border border-border/50 bg-muted/20 p-3",
+        "flex flex-col gap-2"
+      )}
+    >
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
         Get in touch
       </p>
@@ -145,10 +209,11 @@ function ContactCard() {
           onClick={copyEmail}
           type="button"
         >
-          {copied
-            ? <Check className="size-3.5 shrink-0 text-emerald-500" />
-            : <Mail className="size-3.5 shrink-0 text-muted-foreground/60" />
-          }
+          {copied ? (
+            <Check className="size-3.5 shrink-0 text-emerald-500" />
+          ) : (
+            <Mail className="size-3.5 shrink-0 text-muted-foreground/60" />
+          )}
           <span className="min-w-0 flex-1 truncate text-[11px] text-foreground/80">
             {copied ? "Copied!" : "dhruvil7694@gmail.com"}
           </span>
@@ -205,8 +270,12 @@ function ResumeCard() {
         <FileText className="size-4 text-foreground/70" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[12px] font-semibold text-foreground">Dhruvil Patel — Resume</p>
-        <p className="text-[11px] text-muted-foreground/60">PDF · Applied AI Engineer</p>
+        <p className="text-[12px] font-semibold text-foreground">
+          Dhruvil Patel — Resume
+        </p>
+        <p className="text-[11px] text-muted-foreground/60">
+          PDF · Applied AI Engineer
+        </p>
       </div>
       <Download className="size-3.5 shrink-0 text-muted-foreground/40 group-hover:text-foreground/60 transition-colors" />
     </a>
@@ -214,18 +283,36 @@ function ResumeCard() {
 }
 
 // ── Citation source cards ─────────────────────────────────────
-function SourceCard({ item, type }: {
+function SourceCard({
+  item,
+  type,
+}: {
   item: { title: string; url: string }
   type: "project" | "expertise" | "technology" | "concept" | "source"
 }) {
   const badge: Record<string, { label: string; cls: string }> = {
-    project:   { label: "Project",   cls: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
-    expertise: { label: "Expertise", cls: "bg-purple-500/10 text-purple-600 dark:text-purple-400" },
-    technology:{ label: "Tech",      cls: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-    concept:   { label: "Concept",   cls: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
-    source:    { label: "Source",    cls: "bg-muted/60 text-muted-foreground" },
+    project: {
+      label: "Project",
+      cls: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    },
+    expertise: {
+      label: "Expertise",
+      cls: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+    },
+    technology: {
+      label: "Tech",
+      cls: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    },
+    concept: {
+      label: "Concept",
+      cls: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    },
+    source: { label: "Source", cls: "bg-muted/60 text-muted-foreground" },
   }
-  const { label, cls } = badge[type] ?? { label: type, cls: "bg-muted/60 text-muted-foreground" }
+  const { label, cls } = badge[type] ?? {
+    label: type,
+    cls: "bg-muted/60 text-muted-foreground",
+  }
 
   return (
     <a
@@ -236,8 +323,20 @@ function SourceCard({ item, type }: {
         "flex items-center gap-2 rounded-lg border border-border/40 bg-background/60 px-2.5 py-1.5",
         "transition-colors hover:border-border/80 hover:bg-muted/30 no-underline group"
       )}
+      onClick={() =>
+        captureEvent("assistant_source_click", {
+          sourceId: type,
+          sourceTitle: item.title,
+          sourceUrl: item.url,
+        })
+      }
     >
-      <span className={cn("shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider", cls)}>
+      <span
+        className={cn(
+          "shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider",
+          cls
+        )}
+      >
         {label}
       </span>
       <span className="min-w-0 flex-1 truncate text-[11px] text-foreground/80 group-hover:text-foreground">
@@ -250,11 +349,21 @@ function SourceCard({ item, type }: {
 
 function CitationsPanel({ citations }: { citations: CitationBundle }) {
   const cards = [
-    ...citations.sources.slice(0, 3).map(item => ({ item, type: "source" as const })),
-    ...citations.relatedProjects.slice(0, 3).map(item => ({ item, type: "project" as const })),
-    ...citations.relatedExpertise.slice(0, 2).map(item => ({ item, type: "expertise" as const })),
-    ...citations.relatedTechnologies.slice(0, 2).map(item => ({ item, type: "technology" as const })),
-    ...citations.relatedConcepts.slice(0, 2).map(item => ({ item, type: "concept" as const })),
+    ...citations.sources
+      .slice(0, 3)
+      .map((item) => ({ item, type: "source" as const })),
+    ...citations.relatedProjects
+      .slice(0, 3)
+      .map((item) => ({ item, type: "project" as const })),
+    ...citations.relatedExpertise
+      .slice(0, 2)
+      .map((item) => ({ item, type: "expertise" as const })),
+    ...citations.relatedTechnologies
+      .slice(0, 2)
+      .map((item) => ({ item, type: "technology" as const })),
+    ...citations.relatedConcepts
+      .slice(0, 2)
+      .map((item) => ({ item, type: "concept" as const })),
   ]
   if (cards.length === 0) return null
   return (
@@ -267,12 +376,23 @@ function CitationsPanel({ citations }: { citations: CitationBundle }) {
 }
 
 function hasCitations(c: CitationBundle) {
-  return c.sources.length > 0 || c.relatedProjects.length > 0 ||
-    c.relatedTechnologies.length > 0 || c.relatedExpertise.length > 0 || c.relatedConcepts.length > 0
+  return (
+    c.sources.length > 0 ||
+    c.relatedProjects.length > 0 ||
+    c.relatedTechnologies.length > 0 ||
+    c.relatedExpertise.length > 0 ||
+    c.relatedConcepts.length > 0
+  )
 }
 
 // ── Follow-up chips ───────────────────────────────────────────
-function FollowupChips({ followups, onAsk }: { followups: string[]; onAsk: (q: string) => void }) {
+function FollowupChips({
+  followups,
+  onAsk,
+}: {
+  followups: string[]
+  onAsk: (q: string) => void
+}) {
   if (followups.length === 0) return null
   return (
     <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -307,8 +427,14 @@ type ChartSpec = {
 
 const CHART_COLORS = [
   "var(--foreground)",
-  "#6366f1", "#10b981", "#f59e0b", "#ef4444",
-  "#8b5cf6", "#06b6d4", "#f97316", "#84cc16",
+  "#6366f1",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#06b6d4",
+  "#f97316",
+  "#84cc16",
 ]
 
 function ChartInner({ spec, height }: { spec: ChartSpec; height: number }) {
@@ -325,40 +451,90 @@ function ChartInner({ spec, height }: { spec: ChartSpec; height: number }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       {type === "bar" ? (
-        <BarChart data={data} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="color-mix(in srgb, var(--border) 40%, transparent)" />
-          <XAxis dataKey={x} tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} interval={0} />
+        <BarChart
+          data={data}
+          margin={{ top: 4, right: 8, left: -16, bottom: 0 }}
+        >
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="color-mix(in srgb, var(--border) 40%, transparent)"
+          />
+          <XAxis
+            dataKey={x}
+            tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+            interval={0}
+          />
           <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
           <Tooltip contentStyle={tooltipStyle} />
           <Bar dataKey={y} radius={[4, 4, 0, 0]}>
-            {data.map((_, i) => <Cell key={i} fill={colors[i % colors.length]} fillOpacity={0.85} />)}
+            {data.map((_, i) => (
+              <Cell
+                key={i}
+                fill={colors[i % colors.length]}
+                fillOpacity={0.85}
+              />
+            ))}
           </Bar>
         </BarChart>
       ) : type === "line" ? (
-        <LineChart data={data} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="color-mix(in srgb, var(--border) 40%, transparent)" />
-          <XAxis dataKey={x} tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
+        <LineChart
+          data={data}
+          margin={{ top: 4, right: 8, left: -16, bottom: 0 }}
+        >
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="color-mix(in srgb, var(--border) 40%, transparent)"
+          />
+          <XAxis
+            dataKey={x}
+            tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+          />
           <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
           <Tooltip contentStyle={tooltipStyle} />
-          <Line dataKey={y} stroke={colors[0]} strokeWidth={2} dot={{ r: 3, fill: colors[0] }} />
+          <Line
+            dataKey={y}
+            stroke={colors[0]}
+            strokeWidth={2}
+            dot={{ r: 3, fill: colors[0] }}
+          />
         </LineChart>
       ) : type === "radar" ? (
         <RadarChart data={data} cx="50%" cy="50%">
           <PolarGrid stroke="color-mix(in srgb, var(--border) 40%, transparent)" />
-          <PolarAngleAxis dataKey={x} tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
-          <Radar dataKey={y} stroke={colors[0]} fill={colors[0]} fillOpacity={0.25} strokeWidth={2} />
+          <PolarAngleAxis
+            dataKey={x}
+            tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+          />
+          <Radar
+            dataKey={y}
+            stroke={colors[0]}
+            fill={colors[0]}
+            fillOpacity={0.25}
+            strokeWidth={2}
+          />
           <Tooltip contentStyle={tooltipStyle} />
         </RadarChart>
       ) : (
         <PieChart>
           <Pie
-            data={data} dataKey={y} nameKey={x}
-            cx="50%" cy="50%"
+            data={data}
+            dataKey={y}
+            nameKey={x}
+            cx="50%"
+            cy="50%"
             outerRadius={height * 0.32}
-            label={({ name, percent }) => `${String(name).split(" ")[0]} ${Math.round((percent ?? 0) * 100)}%`}
+            label={({ name, percent }) =>
+              `${String(name).split(" ")[0]} ${Math.round((percent ?? 0) * 100)}%`
+            }
             labelLine
           >
-            {data.map((_, i) => <Cell key={i} fill={colors[i % colors.length]} fillOpacity={0.85} />)}
+            {data.map((_, i) => (
+              <Cell
+                key={i}
+                fill={colors[i % colors.length]}
+                fillOpacity={0.85}
+              />
+            ))}
           </Pie>
           <Tooltip contentStyle={tooltipStyle} />
           <Legend iconSize={8} wrapperStyle={{ fontSize: "10px" }} />
@@ -428,7 +604,8 @@ function ChatChart({ spec }: { spec: ChartSpec }) {
 function parseChartSpec(raw: string): ChartSpec | null {
   try {
     const parsed = JSON.parse(raw) as ChartSpec
-    if (!parsed.type || !Array.isArray(parsed.data) || parsed.data.length === 0) return null
+    if (!parsed.type || !Array.isArray(parsed.data) || parsed.data.length === 0)
+      return null
     return parsed
   } catch {
     return null
@@ -443,10 +620,19 @@ const markdownComponents: Components = {
       href.startsWith("/") ||
       (typeof window !== "undefined" && href.startsWith(window.location.origin))
     if (isPortfolio) {
-      return <a href={href} className="chat-link-inline">{children}</a>
+      return (
+        <a href={href} className="chat-link-inline">
+          {children}
+        </a>
+      )
     }
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="chat-link">
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="chat-link"
+      >
         {children}
         <ExternalLink className="inline ml-0.5 size-2.5 opacity-60 align-middle" />
       </a>
@@ -461,20 +647,37 @@ const markdownComponents: Components = {
     const isBlock = Boolean(className)
     if (isBlock) return <code className={className}>{children}</code>
     const text = String(children).trim()
-    if (text.length < 32 && /^[\w.\-/]+$/.test(text)) return <TechPill name={text} />
+    if (text.length < 32 && /^[\w.\-/]+$/.test(text))
+      return <TechPill name={text} />
     return <code>{children}</code>
   },
   strong({ children }) {
     return <strong className="font-semibold text-foreground">{children}</strong>
   },
-  ul({ children }) { return <ul className="chat-list-ul">{children}</ul> },
-  ol({ children }) { return <ol className="chat-list-ol">{children}</ol> },
-  li({ children }) { return <li className="chat-list-item">{children}</li> },
-  blockquote({ children }) { return <div className="chat-callout">{children}</div> },
-  hr() { return <div className="chat-divider" /> },
-  h1({ children }) { return <h1 className="chat-h1">{children}</h1> },
-  h2({ children }) { return <h2 className="chat-h2">{children}</h2> },
-  h3({ children }) { return <h3 className="chat-h3">{children}</h3> },
+  ul({ children }) {
+    return <ul className="chat-list-ul">{children}</ul>
+  },
+  ol({ children }) {
+    return <ol className="chat-list-ol">{children}</ol>
+  },
+  li({ children }) {
+    return <li className="chat-list-item">{children}</li>
+  },
+  blockquote({ children }) {
+    return <div className="chat-callout">{children}</div>
+  },
+  hr() {
+    return <div className="chat-divider" />
+  },
+  h1({ children }) {
+    return <h1 className="chat-h1">{children}</h1>
+  },
+  h2({ children }) {
+    return <h2 className="chat-h2">{children}</h2>
+  },
+  h3({ children }) {
+    return <h3 className="chat-h3">{children}</h3>
+  },
   table({ children }) {
     return (
       <div className="chat-table-wrap">
@@ -482,9 +685,15 @@ const markdownComponents: Components = {
       </div>
     )
   },
-  thead({ children }) { return <thead className="chat-thead">{children}</thead> },
-  th({ children }) { return <th className="chat-th">{children}</th> },
-  td({ children }) { return <td className="chat-td">{children}</td> },
+  thead({ children }) {
+    return <thead className="chat-thead">{children}</thead>
+  },
+  th({ children }) {
+    return <th className="chat-th">{children}</th>
+  },
+  td({ children }) {
+    return <td className="chat-td">{children}</td>
+  },
 }
 
 // ── Copy button ───────────────────────────────────────────────
@@ -519,10 +728,11 @@ function Timestamp({ ts }: { ts: number }) {
   const [label, setLabel] = useState(() => relativeTime(ts))
 
   // refresh every 30s so "just now" → "30s ago" etc.
-  useState(() => {
+  useEffect(() => {
+    setLabel(relativeTime(ts))
     const id = setInterval(() => setLabel(relativeTime(ts)), 30_000)
     return () => clearInterval(id)
-  })
+  }, [ts])
 
   return (
     <span className="text-[10px] text-muted-foreground/30 tabular-nums">
@@ -553,7 +763,11 @@ function linkifyCitations(
   // Only linkify project titles — specific enough to not cause false matches
   // Expertise/concept titles are too generic ("Multi-Agent Systems", "LLM Engineering")
   for (const e of entityLinks ?? []) {
-    if (e.path.startsWith("/projects/") && e.title.length >= 6 && !seen.has(e.title)) {
+    if (
+      e.path.startsWith("/projects/") &&
+      e.title.length >= 6 &&
+      !seen.has(e.title)
+    ) {
       seen.add(e.title)
       entities.push({ title: e.title, url: e.path })
     }
@@ -592,26 +806,42 @@ function linkifyCitations(
 
 // ── Main component ────────────────────────────────────────────
 export function AssistantMessage({
-  role, content, citations, entityLinks, followups, isStreaming, timestamp, onFollowup,
+  role,
+  content,
+  citations,
+  entityLinks,
+  followups,
+  isStreaming,
+  timestamp,
+  onFollowup,
 }: AssistantMessageProps) {
   const isUser = role === "user"
   const [citationsOpen, setCitationsOpen] = useState(false)
   const [hovered, setHovered] = useState(false)
 
   // linkify after streaming done — avoids mid-stream regex churn
-  const renderedContent = !isUser && !isStreaming
-    ? linkifyCitations(content, citations, entityLinks)
-    : content
+  const renderedContent =
+    !isUser && !isStreaming
+      ? linkifyCitations(content, citations, entityLinks)
+      : content
 
-  const showCitations = !isUser && !isStreaming && citations && hasCitations(citations)
+  const showCitations =
+    !isUser && !isStreaming && citations && hasCitations(citations)
   const showResume = !isUser && !isStreaming && RESUME_TRIGGER.test(content)
   const showContact = !isUser && !isStreaming && CONTACT_TRIGGER.test(content)
-  const showFollowups = !isUser && !isStreaming && Boolean(followups?.length) && Boolean(onFollowup)
+  const showFollowups =
+    !isUser && !isStreaming && Boolean(followups?.length) && Boolean(onFollowup)
   const skills = !isUser && !isStreaming ? extractSkills(content) : []
+  const showJobFitChart =
+    !isUser && !isStreaming && isJobFitAnalysisMessage(content)
+  const seniorityFit = showJobFitChart ? parseSeniorityFit(content) : null
 
   return (
     <div
-      className={cn("group flex gap-2", isUser ? "flex-row-reverse" : "flex-row")}
+      className={cn(
+        "group flex gap-2",
+        isUser ? "flex-row-reverse" : "flex-row"
+      )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -629,9 +859,26 @@ export function AssistantMessage({
             <p className="whitespace-pre-wrap">{content}</p>
           ) : (
             <div className="assistant-markdown">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={markdownComponents}
+              >
                 {renderedContent}
               </ReactMarkdown>
+              {seniorityFit ? (
+                <JobFitSeniorityVerdict
+                  className="mt-3"
+                  compact
+                  seniority={seniorityFit}
+                />
+              ) : null}
+              {showJobFitChart ? (
+                <JobFitSkillChartFromMarkdown
+                  className="mt-3 border-t border-border/30 pt-3"
+                  markdown={content}
+                  variant="compact"
+                />
+              ) : null}
               {isStreaming && (
                 <span className="ml-0.5 inline-block h-[14px] w-0.5 animate-pulse bg-muted-foreground/60" />
               )}
@@ -651,8 +898,14 @@ export function AssistantMessage({
                 onClick={() => setCitationsOpen((o) => !o)}
                 type="button"
               >
-                Sources{citations.confidence ? ` · ${citations.confidence}` : ""}
-                <ChevronDown className={cn("size-3 transition-transform duration-200", citationsOpen && "rotate-180")} />
+                Sources
+                {citations.confidence ? ` · ${citations.confidence}` : ""}
+                <ChevronDown
+                  className={cn(
+                    "size-3 transition-transform duration-200",
+                    citationsOpen && "rotate-180"
+                  )}
+                />
               </button>
               {citationsOpen && (
                 <div className="mt-2 border-t border-border/30 pt-2">
@@ -662,8 +915,6 @@ export function AssistantMessage({
             </div>
           )}
         </div>
-
-
 
         {/* Resume card */}
         {showResume && <ResumeCard />}
@@ -678,11 +929,13 @@ export function AssistantMessage({
 
         {/* Timestamp row */}
         {timestamp && (
-          <div className={cn(
-            "mt-1 flex items-center gap-1.5 transition-opacity duration-200",
-            isUser ? "justify-end" : "justify-start",
-            hovered ? "opacity-100" : "opacity-0"
-          )}>
+          <div
+            className={cn(
+              "mt-1 flex items-center gap-1.5 transition-opacity duration-200",
+              isUser ? "justify-end" : "justify-start",
+              hovered ? "opacity-100" : "opacity-0"
+            )}
+          >
             {!isUser && !isStreaming && <CopyButton text={content} />}
             <Timestamp ts={timestamp} />
           </div>

@@ -2,29 +2,15 @@
 
 import posthog from "posthog-js"
 
-import type { AnalyticsEvent, AnalyticsEventName } from "./events"
+import type {
+  AnalyticsEvent,
+  AnalyticsEventName,
+  AnalyticsEventPayload,
+} from "./events"
 
-let initialized = false
-
-export function initPostHog(): void {
-  if (initialized) return
-  if (typeof window === "undefined") return
-
-  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
-  if (!key) return
-
-  const host =
-    process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://app.posthog.com"
-
-  posthog.init(key, {
-    api_host: host,
-    capture_pageview: false, // we track pageviews manually
-    capture_pageleave: true,
-    persistence: "localStorage",
-  })
-
-  initialized = true
-}
+// PostHog is initialized in instrumentation-client.ts (Next.js 15.3+ pattern).
+// initPostHog is kept for backward-compatibility but is now a no-op.
+export function initPostHog(): void {}
 
 export function trackEvent<T extends AnalyticsEventName>(
   event: AnalyticsEvent<T>
@@ -36,4 +22,14 @@ export function trackEvent<T extends AnalyticsEventName>(
     ...event.payload,
     timestamp: event.timestamp,
   })
+}
+
+export function captureEvent<T extends AnalyticsEventName>(
+  name: T,
+  payload: AnalyticsEventPayload[T]
+): void {
+  if (typeof window === "undefined") return
+  if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return
+
+  posthog.capture(name, payload as Record<string, unknown>)
 }

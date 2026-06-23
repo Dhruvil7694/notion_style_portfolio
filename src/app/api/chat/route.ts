@@ -8,6 +8,7 @@ import {
   retrievePortfolioContext,
 } from "@/lib/ai"
 import { getAiSettings } from "@/lib/ai/get-ai-settings"
+import { trackServerEvent } from "@/lib/analytics/posthog-server"
 import {
   getPublicSettings,
   getPublishedContent,
@@ -27,7 +28,10 @@ export async function POST(request: Request) {
 
   if (!(await isAiConfigured())) {
     return NextResponse.json(
-      { error: "Portfolio assistant is not configured. Add an AI provider API key." },
+      {
+        error:
+          "Portfolio assistant is not configured. Add an AI provider API key.",
+      },
       { status: 503, headers: rateLimit.headers }
     )
   }
@@ -45,7 +49,9 @@ export async function POST(request: Request) {
   const queryText =
     body.query ??
     lastUserMessage?.parts
-      ?.filter((part): part is { type: "text"; text: string } => part.type === "text")
+      ?.filter(
+        (part): part is { type: "text"; text: string } => part.type === "text"
+      )
       .map((part) => part.text)
       .join("\n") ??
     ""
@@ -66,6 +72,11 @@ export async function POST(request: Request) {
       { status: 503, headers: rateLimit.headers }
     )
   }
+
+  void trackServerEvent("anonymous", "chat_request", {
+    query_length: queryText.length,
+    message_count: messages.length,
+  })
 
   const retrieval = await retrievePortfolioContext(siteUrl, queryText)
   const suggestions = await generateSuggestedQuestions(siteUrl)
@@ -104,7 +115,13 @@ export async function GET(request: Request) {
     )
   }
 
-  const [suggestions, projectsResult, researchResult, blogResult, expertiseResult] = await Promise.all([
+  const [
+    suggestions,
+    projectsResult,
+    researchResult,
+    blogResult,
+    expertiseResult,
+  ] = await Promise.all([
     generateSuggestedQuestions(siteUrl),
     getPublishedProjects(),
     getPublishedContent({ type: "research" }),
@@ -114,10 +131,22 @@ export async function GET(request: Request) {
 
   // title → relative path map for client-side linkification
   const entities: Array<{ title: string; path: string }> = [
-    ...(projectsResult.data ?? []).map((p) => ({ title: p.title, path: `/projects/${p.slug}` })),
-    ...(researchResult.data ?? []).map((c) => ({ title: c.title, path: `/research/${c.slug}` })),
-    ...(blogResult.data ?? []).map((c) => ({ title: c.title, path: `/blog/${c.slug}` })),
-    ...(expertiseResult.data ?? []).map((a) => ({ title: a.title, path: `/expertise/${a.slug}` })),
+    ...(projectsResult.data ?? []).map((p) => ({
+      title: p.title,
+      path: `/projects/${p.slug}`,
+    })),
+    ...(researchResult.data ?? []).map((c) => ({
+      title: c.title,
+      path: `/research/${c.slug}`,
+    })),
+    ...(blogResult.data ?? []).map((c) => ({
+      title: c.title,
+      path: `/blog/${c.slug}`,
+    })),
+    ...(expertiseResult.data ?? []).map((a) => ({
+      title: a.title,
+      path: `/expertise/${a.slug}`,
+    })),
   ]
 
   return NextResponse.json(
@@ -126,6 +155,7 @@ export async function GET(request: Request) {
       entities,
       welcomeText: aiSettings.assistant_welcome_text,
       placeholderText: aiSettings.assistant_placeholder_text,
+      calendlyUrl: publicSettings.contact.calendly_url ?? null,
     },
     { headers: rateLimit.headers }
   )

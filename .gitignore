@@ -43,3 +43,8 @@ next-env.d.ts
 
 # generated from node_modules by prepare script
 /public/dotlottie-player.wasm
+
+# Sentry Config File
+.env.sentry-build-plugin
+.env.local
+D:\notion-style-portfolio\.superpowers
