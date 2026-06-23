@@ -3,8 +3,15 @@
 @import "shadcn/tailwind.css";
 
 @keyframes dictation-wave {
-  0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
-  50% { transform: scaleY(1); opacity: 1; }
+  0%,
+  100% {
+    transform: scaleY(0.4);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
 }
 
 .glass-surface {
@@ -180,6 +187,19 @@
   .hover-lift:hover {
     transform: translateY(-2px);
   }
+
+  /* Responsive page padding — use on outermost page container */
+  .px-page {
+    padding-left: var(--page-px);
+    padding-right: var(--page-px);
+  }
+
+  /* Responsive content width — centred reading column */
+  .w-content {
+    margin-inline: auto;
+    max-width: var(--content-width-desktop);
+    width: 100%;
+  }
 }
 
 .public-site {
@@ -200,6 +220,58 @@
 
   font-size: var(--kb-font-body);
   line-height: var(--kb-line-body);
+}
+
+/* ── Responsive layout tokens ─────────────────────────────── */
+.public-site {
+  /* Content widths */
+  --content-width-mobile: 100%;
+  --content-width-tablet: 720px;
+  --content-width-desktop: 680px;
+
+  /* Page horizontal padding */
+  --page-px: 1rem;
+
+  /* Responsive font scale — mobile-first */
+  --kb-font-name: 1.75rem; /* 28px on mobile */
+  --kb-font-h1: 1.625rem; /* 26px */
+  --kb-font-h2: 1.25rem; /* 20px */
+  --kb-font-h3: 1.125rem; /* 18px */
+  --kb-font-section: 1rem; /* 16px on mobile (was 1.125rem) */
+  --kb-font-body: 0.9375rem; /* 15px on mobile */
+  --kb-font-meta: 0.75rem; /* 12px on mobile */
+}
+
+@media (min-width: 480px) {
+  .public-site {
+    --kb-font-name: 2rem;
+    --page-px: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .public-site {
+    --kb-font-name: 2.25rem; /* restore original at tablet+ */
+    --kb-font-h1: 1.875rem;
+    --kb-font-h2: 1.5rem;
+    --kb-font-h3: 1.25rem;
+    --kb-font-section: 1.125rem;
+    --kb-font-body: 1rem;
+    --kb-font-meta: 0.8125rem;
+    --page-px: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .public-site {
+    --page-px: 2rem;
+  }
+}
+
+@media (min-width: 1728px) {
+  .public-site {
+    --page-px: 3rem;
+  }
 }
 
 .public-site,
@@ -511,9 +583,15 @@ html[data-site-theme="dark"] .public-site {
   color: var(--foreground);
 }
 
-.assistant-markdown h1 { font-size: 0.9375rem; }
-.assistant-markdown h2 { font-size: 0.875rem; }
-.assistant-markdown h3 { font-size: 0.8125rem; }
+.assistant-markdown h1 {
+  font-size: 0.9375rem;
+}
+.assistant-markdown h2 {
+  font-size: 0.875rem;
+}
+.assistant-markdown h3 {
+  font-size: 0.8125rem;
+}
 
 .assistant-markdown h1:first-child,
 .assistant-markdown h2:first-child,
@@ -527,8 +605,12 @@ html[data-site-theme="dark"] .public-site {
   padding-left: 1.25rem;
 }
 
-.assistant-markdown ul { list-style-type: disc; }
-.assistant-markdown ol { list-style-type: decimal; }
+.assistant-markdown ul {
+  list-style-type: disc;
+}
+.assistant-markdown ol {
+  list-style-type: decimal;
+}
 
 .assistant-markdown li {
   margin-bottom: 0.2rem;
@@ -643,7 +725,9 @@ html[data-site-theme="dark"] .public-site {
   font-size: 0.72rem;
   padding: 0.08em 0.4em;
   color: var(--foreground);
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
   cursor: default;
 }
 
@@ -771,7 +855,8 @@ em .chat-link-inline:hover {
   border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
   border-radius: 0.5rem;
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--border) 70%, transparent) transparent;
+  scrollbar-color: color-mix(in srgb, var(--border) 70%, transparent)
+    transparent;
 }
 
 .chat-table-wrap::-webkit-scrollbar {
@@ -1274,8 +1359,8 @@ em .chat-link-inline:hover {
 
 /* Profile workspace — homepage identity block */
 .public-site .workspace-profile {
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  padding-left: var(--page-px);
+  padding-right: var(--page-px);
 }
 
 .public-site .workspace-profile-layout {
@@ -1516,7 +1601,11 @@ em .chat-link-inline:hover {
 .public-site .workspace-intro-more {
   color: color-mix(in srgb, var(--muted-foreground) 80%, transparent);
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--muted-foreground) 45%,
+    transparent
+  );
   text-underline-offset: 3px;
   white-space: nowrap;
 }
@@ -1559,7 +1648,11 @@ em .chat-link-inline:hover {
   color: color-mix(in srgb, var(--muted-foreground) 88%, transparent);
   font-size: 0.8125rem;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--muted-foreground) 40%, transparent);
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--muted-foreground) 40%,
+    transparent
+  );
   text-underline-offset: 3px;
   transition: color 0.15s ease;
 }
@@ -1679,7 +1772,11 @@ em .chat-link-inline:hover {
 .public-site .about-more-link {
   color: color-mix(in srgb, var(--muted-foreground) 80%, transparent);
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--muted-foreground) 45%,
+    transparent
+  );
   text-underline-offset: 3px;
   transition: color 0.15s ease;
 }
@@ -2779,7 +2876,9 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear {
   color: #fca5a5;
 }
 
-html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover {
+html[data-site-theme="dark"]
+  .public-site
+  .projects-filters-submenu-clear:hover {
   background: color-mix(in srgb, #fca5a5 12%, var(--background) 88%);
   color: #fecaca;
 }
@@ -2987,7 +3086,9 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover 
   letter-spacing: 0.01em;
   margin-top: 1rem;
   text-decoration: none;
-  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    text-decoration-color 0.15s ease;
 }
 
 .public-site .projects-section-more:hover {
@@ -3201,7 +3302,9 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover 
   letter-spacing: 0.01em;
   margin-top: 2rem;
   text-decoration: none;
-  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    text-decoration-color 0.15s ease;
 }
 
 .public-site .research-section-more:hover,
@@ -3544,7 +3647,9 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover 
   font-size: var(--kb-font-meta);
   margin-top: var(--kb-space-inline);
   text-decoration: none;
-  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    text-decoration-color 0.15s ease;
 }
 
 .public-site .kb-section-link:hover {
@@ -3594,7 +3699,11 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover 
   color: color-mix(in srgb, var(--muted-foreground) 86%, transparent);
   font-size: 0.8125rem;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--muted-foreground) 40%, transparent);
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--muted-foreground) 40%,
+    transparent
+  );
   text-underline-offset: 3px;
   width: fit-content;
 }
@@ -3681,7 +3790,11 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover 
   color: color-mix(in srgb, var(--foreground) 88%, transparent);
   font-size: 0.875rem;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--muted-foreground) 35%, transparent);
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--muted-foreground) 35%,
+    transparent
+  );
   text-underline-offset: 3px;
 }
 
@@ -4322,7 +4435,9 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover 
   font-size: 0.8125rem;
   padding: 0.25rem 0.75rem;
   text-decoration: none;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .public-site .expertise-badge:hover {
@@ -5262,7 +5377,13 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover 
     #000 94%,
     transparent
   );
-  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 6%,
+    #000 94%,
+    transparent
+  );
   overflow: hidden;
 }
 
@@ -5404,7 +5525,9 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover 
   }
 
   .public-site .skills-showcase-marquee:hover .skills-showcase-marquee-track,
-  .public-site .skills-showcase-marquee:has(.skills-showcase-chip:hover) .skills-showcase-marquee-track {
+  .public-site
+    .skills-showcase-marquee:has(.skills-showcase-chip:hover)
+    .skills-showcase-marquee-track {
     animation-play-state: paused;
   }
 }
@@ -5421,7 +5544,9 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover 
     width: 100%;
   }
 
-  .public-site .skills-showcase-marquee .skills-showcase-chips[aria-hidden="true"] {
+  .public-site
+    .skills-showcase-marquee
+    .skills-showcase-chips[aria-hidden="true"] {
     display: none;
   }
 
@@ -5447,7 +5572,9 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover 
     width: 100%;
   }
 
-  .public-site .skills-showcase-marquee .skills-showcase-chips[aria-hidden="true"] {
+  .public-site
+    .skills-showcase-marquee
+    .skills-showcase-chips[aria-hidden="true"] {
     display: none;
   }
 
@@ -6101,7 +6228,9 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover 
   margin-top: 0.625rem;
   padding-top: 0.625rem;
   text-decoration: none;
-  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    text-decoration-color 0.15s ease;
   width: 100%;
 }
 
@@ -6118,7 +6247,9 @@ html[data-site-theme="dark"] .public-site .projects-filters-submenu-clear:hover 
   border-radius: 0.625rem;
   cursor: default;
   padding: 0.625rem 0.75rem;
-  transition: border-color 0.18s ease, background-color 0.18s ease;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease;
   width: fit-content;
 }
 
