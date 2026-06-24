@@ -19,10 +19,6 @@ type StoredJobFitHistory = {
   entries: JobFitHistoryEntry[]
 }
 
-function emptyHistory(): StoredJobFitHistory {
-  return { version: 1, entries: [] }
-}
-
 export function readJobFitHistory(): JobFitHistoryEntry[] {
   if (typeof window === "undefined") return []
 

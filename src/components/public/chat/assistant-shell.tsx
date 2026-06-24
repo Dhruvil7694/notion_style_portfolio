@@ -7,11 +7,13 @@ import { featureFlags } from "@/config/feature-flags"
 import { ErrorBoundary } from "../error-boundary"
 import { AssistantProvider } from "./assistant-context"
 
-const AssistantPanel = dynamic(
+const MobileAssistantLayer = dynamic(
   () =>
-    import("@/components/public/chat/assistant-panel").then((module) => ({
-      default: module.AssistantPanel,
-    })),
+    import("@/components/public/chat/mobile-assistant-layer").then(
+      (module) => ({
+        default: module.MobileAssistantLayer,
+      })
+    ),
   { ssr: false }
 )
 
@@ -28,10 +30,7 @@ export function AssistantShell({ children }: AssistantShellProps) {
     <ErrorBoundary>
       <AssistantProvider>
         {children}
-        {/* Mobile-only assistant panel — fixed overlay, outside the hidden dock */}
-        <div className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 md:hidden">
-          <AssistantPanel />
-        </div>
+        <MobileAssistantLayer />
       </AssistantProvider>
     </ErrorBoundary>
   )

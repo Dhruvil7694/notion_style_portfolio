@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 
+import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport"
 import { caveatHandwriting } from "@/lib/fonts/caveat"
 import type { AboutContent } from "@/lib/public/about-content"
 
@@ -16,6 +17,7 @@ type AboutPageContentProps = {
 }
 
 export function AboutPageContent({ ownerName, about }: AboutPageContentProps) {
+  const isMobile = useIsMobileViewport()
   const firstName = ownerName.split(/\s+/)[0] || ownerName
 
   useEffect(() => {
@@ -47,7 +49,9 @@ export function AboutPageContent({ ownerName, about }: AboutPageContentProps) {
         <AboutScrollParagraph>{about.mcp}</AboutScrollParagraph>
       </div>
 
-      <p className={`about-signature ${caveatHandwriting.className}`}>{firstName}</p>
+      <p className={`about-signature ${caveatHandwriting.className}`}>
+        {firstName}
+      </p>
 
       <ul className="about-tags">
         {about.tags.map((tag) => (
@@ -55,7 +59,7 @@ export function AboutPageContent({ ownerName, about }: AboutPageContentProps) {
         ))}
       </ul>
 
-      <AboutSnakeGame />
+      {!isMobile ? <AboutSnakeGame /> : null}
     </div>
   )
 }

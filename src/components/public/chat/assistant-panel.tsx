@@ -16,7 +16,11 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { formatAssistantLoadingLabel } from "@/lib/public/assistant-loading-label"
 import { glassPanelClass } from "@/lib/public/glass-panel"
 import { cn } from "@/lib/utils"
-import { trapNestedScrollWheel } from "@/lib/utils/trap-nested-scroll-wheel"
+import {
+  resetNestedScrollTouch,
+  trapNestedScrollTouch,
+  trapNestedScrollWheel,
+} from "@/lib/utils/trap-nested-scroll-wheel"
 
 import { AssistantChatError } from "./assistant-chat-error"
 import { useAssistant } from "./assistant-context"
@@ -74,7 +78,11 @@ function getLastUserQuestion(
   return ""
 }
 
-export function AssistantPanel() {
+type AssistantPanelProps = {
+  mobile?: boolean
+}
+
+export function AssistantPanel({ mobile = false }: AssistantPanelProps) {
   const {
     open,
     close,
@@ -154,21 +162,40 @@ export function AssistantPanel() {
     <div
       aria-label={isJobFitMode ? "Job fit checker" : "Portfolio assistant"}
       className={cn(
-        "flex shrink-0 flex-col self-center overflow-hidden",
-        "rounded-2xl shadow-[0_4px_30px_rgba(0,0,0,0.1)]",
-        glassPanelClass,
-        "transition-all duration-300 ease-in-out",
-        expanded
-          ? "h-[min(780px,calc(100vh-3rem))] w-[min(640px,calc(100vw-2rem))]"
-          : "h-[min(600px,calc(100vh-5rem))] w-[min(420px,calc(100vw-2rem))]"
+        "flex shrink-0 flex-col overflow-hidden",
+        mobile
+          ? [
+              "assistant-panel-mobile w-full max-w-none rounded-t-2xl rounded-b-none",
+              "border-t border-border/60 bg-background",
+              "shadow-[0_-10px_40px_rgba(0,0,0,0.2)]",
+              "h-[min(88dvh,calc(100dvh-env(safe-area-inset-top)-3.5rem))]",
+            ]
+          : [
+              "self-center rounded-2xl shadow-[0_4px_30px_rgba(0,0,0,0.1)]",
+              glassPanelClass,
+              "transition-all duration-300 ease-in-out",
+              expanded
+                ? "h-[min(780px,calc(100vh-3rem))] w-[min(640px,calc(100vw-2rem))]"
+                : "h-[min(600px,calc(100vh-5rem))] w-[min(420px,calc(100vw-2rem))]",
+            ]
       )}
       data-lenis-prevent
       role="dialog"
     >
-      <header className="flex shrink-0 items-center justify-between px-4 py-3.5">
-        <div className="flex flex-col gap-0.5">
+      <header
+        className={cn(
+          "flex shrink-0 items-center justify-between",
+          mobile ? "px-4 py-4" : "px-4 py-3.5"
+        )}
+      >
+        <div className="flex min-w-0 flex-col gap-0.5">
           <div className="flex items-center gap-2">
-            <p className="text-[13px] font-semibold tracking-tight text-foreground">
+            <p
+              className={cn(
+                "font-semibold tracking-tight text-foreground",
+                mobile ? "text-sm" : "text-[13px]"
+              )}
+            >
               {isJobFitMode ? "Job Fit Check" : "Portfolio Assistant"}
             </p>
             {isJobFitMode && (
@@ -177,13 +204,20 @@ export function AssistantPanel() {
               </span>
             )}
           </div>
-          <p className="text-[11px] text-muted-foreground/60">
+          <p
+            className={cn(
+              "text-muted-foreground",
+              mobile
+                ? "text-xs leading-snug text-muted-foreground/70"
+                : "text-[11px] text-muted-foreground/60"
+            )}
+          >
             {isJobFitMode
               ? "Upload or paste a job description to analyse fit"
               : "Ask about Dhruvil's work"}
           </p>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5">
           {!isJobFitMode && (
             <button
               aria-label="Job fit check"
@@ -227,22 +261,27 @@ export function AssistantPanel() {
               <MessageSquarePlus className="size-3.5" />
             </button>
           )}
-          <button
-            aria-label={expanded ? "Collapse" : "Expand"}
-            className="flex size-7 items-center justify-center rounded-full bg-muted/40 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground"
-            onClick={() => setExpanded((e) => !e)}
-            title={expanded ? "Collapse" : "Expand"}
-            type="button"
-          >
-            {expanded ? (
-              <Minimize2 className="size-3.5" />
-            ) : (
-              <Maximize2 className="size-3.5" />
-            )}
-          </button>
+          {!mobile && (
+            <button
+              aria-label={expanded ? "Collapse" : "Expand"}
+              className="flex size-7 items-center justify-center rounded-full bg-muted/40 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground"
+              onClick={() => setExpanded((e) => !e)}
+              title={expanded ? "Collapse" : "Expand"}
+              type="button"
+            >
+              {expanded ? (
+                <Minimize2 className="size-3.5" />
+              ) : (
+                <Maximize2 className="size-3.5" />
+              )}
+            </button>
+          )}
           <button
             aria-label="Close assistant"
-            className="flex size-7 items-center justify-center rounded-full bg-muted/40 text-muted-foreground/60 transition-colors hover:bg-red-500/15 hover:text-red-500"
+            className={cn(
+              "flex items-center justify-center rounded-full bg-muted/40 text-muted-foreground/60 transition-colors hover:bg-red-500/15 hover:text-red-500",
+              mobile ? "size-9" : "size-7"
+            )}
             onClick={close}
             title="Close"
             type="button"
@@ -259,6 +298,9 @@ export function AssistantPanel() {
           ref={scrollRef}
           className="assistant-panel-scroll h-full space-y-3 overflow-y-auto overscroll-contain px-4 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           data-lenis-prevent
+          onTouchEnd={resetNestedScrollTouch}
+          onTouchMove={trapNestedScrollTouch}
+          onTouchStart={resetNestedScrollTouch}
           onWheel={trapNestedScrollWheel}
         >
           {messages.map((message, index) => {
@@ -350,6 +392,9 @@ export function AssistantPanel() {
         <div
           className="assistant-panel-footer max-h-[min(42vh,320px)] shrink-0 overflow-y-auto overscroll-contain border-t border-border/30 p-3.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           data-lenis-prevent
+          onTouchEnd={resetNestedScrollTouch}
+          onTouchMove={trapNestedScrollTouch}
+          onTouchStart={resetNestedScrollTouch}
           onWheel={trapNestedScrollWheel}
         >
           {(jobFitHistory?.length ?? 0) > 0 ? (
@@ -389,6 +434,7 @@ export function AssistantPanel() {
           {isEmpty && (
             <AssistantSuggestions
               disabled={isLoading}
+              mobile={mobile}
               onSelect={submitQuestion}
               suggestions={suggestions}
             />

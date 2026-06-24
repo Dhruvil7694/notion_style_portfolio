@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 
 import { EncryptedText } from "@/components/ui/encrypted-text"
+import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport"
 import {
   buildWorkspaceContext,
   getPresenceMessages,
@@ -19,6 +20,8 @@ const REVEAL_DELAY_MS = 35
 const DISPLAY_HOLD_MS = 2_000
 
 export function EncryptedName({ name, contextInput }: EncryptedNameProps) {
+  const isMobile = useIsMobileViewport()
+  const [ready, setReady] = useState(false)
   const [displayText, setDisplayText] = useState(name)
   const [isContextual, setIsContextual] = useState(false)
   const [minWidth, setMinWidth] = useState<number | undefined>(undefined)
@@ -27,18 +30,25 @@ export function EncryptedName({ name, contextInput }: EncryptedNameProps) {
   const measureRef = useRef<HTMLSpanElement>(null)
   const nameMeasureRef = useRef<HTMLSpanElement>(null)
 
+  useEffect(() => {
+    setReady(true)
+  }, [])
+
   const phrases = useMemo(() => {
     const context = buildWorkspaceContext({ ...contextInput, now: new Date() })
     const messages = getPresenceMessages(context, "name", 8)
     const normalizedName = name.trim().toLowerCase()
 
-    return messages.filter((message) => message.trim().toLowerCase() !== normalizedName)
+    return messages.filter(
+      (message) => message.trim().toLowerCase() !== normalizedName
+    )
   }, [contextInput, name])
 
   useLayoutEffect(() => {
-    const widths = [nameMeasureRef.current?.offsetWidth, measureRef.current?.offsetWidth].filter(
-      (value): value is number => typeof value === "number" && value > 0
-    )
+    const widths = [
+      nameMeasureRef.current?.offsetWidth,
+      measureRef.current?.offsetWidth,
+    ].filter((value): value is number => typeof value === "number" && value > 0)
 
     if (widths.length === 0) {
       return
@@ -48,7 +58,7 @@ export function EncryptedName({ name, contextInput }: EncryptedNameProps) {
   }, [name, phrases])
 
   useEffect(() => {
-    if (phrases.length === 0) {
+    if (!ready || isMobile || phrases.length === 0) {
       return
     }
 
@@ -81,12 +91,20 @@ export function EncryptedName({ name, contextInput }: EncryptedNameProps) {
     return () => {
       window.clearTimeout(timer)
     }
-  }, [name, phrases])
+  }, [name, phrases, ready, isMobile])
 
   const longestPhrase = phrases.reduce(
     (longest, phrase) => (phrase.length > longest.length ? phrase : longest),
     name
   )
+
+  if (!ready || isMobile) {
+    return (
+      <h1 aria-label={name} className="workspace-name">
+        {name}
+      </h1>
+    )
+  }
 
   return (
     <h1

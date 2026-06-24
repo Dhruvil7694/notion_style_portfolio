@@ -11,12 +11,18 @@ type AutomationPreviewSectionProps = {
   items: AutomationListItem[]
 }
 
-export function AutomationPreviewSection({ items }: AutomationPreviewSectionProps) {
+export function AutomationPreviewSection({
+  items,
+}: AutomationPreviewSectionProps) {
   return (
-    <section className="automations-section kb-section mx-auto max-w-home px-6">
+    <section className="automations-section kb-section mx-auto max-w-home px-page">
       <header className="automations-section-header">
         <h2 className="automations-section-title">
-          <Workflow aria-hidden className="automations-section-icon" strokeWidth={1.75} />
+          <Workflow
+            aria-hidden
+            className="automations-section-icon"
+            strokeWidth={1.75}
+          />
           Automations
         </h2>
         <p className="automations-section-description">

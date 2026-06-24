@@ -1,5 +1,11 @@
+import "server-only"
+
 import { PageHeader } from "@/components/admin"
-import { createAdminClient } from "@/lib/supabase/admin"
+import {
+  type CheckResult,
+  mapCheckStatusToHealth,
+  runDeploymentChecks,
+} from "@/lib/deployment/checks"
 
 export const dynamic = "force-dynamic"
 
@@ -12,110 +18,24 @@ type CheckStatus = "pass" | "warn" | "fail"
 
 type HealthCheck = {
   label: string
-  group: "Security" | "Database" | "AI" | "Infrastructure"
+  group: string
   status: CheckStatus
   message: string
 }
 
-async function runHealthChecks(): Promise<HealthCheck[]> {
-  const checks: HealthCheck[] = []
-
-  // --- Database ---
-  let dbStatus: CheckStatus = "pass"
-  let dbMessage = "Connected successfully"
-  try {
-    const supabase = createAdminClient()
-    const { error } = await supabase.from("projects").select("id").limit(1)
-    if (error) {
-      dbStatus = "fail"
-      dbMessage = error.message
-    }
-  } catch (err) {
-    dbStatus = "fail"
-    dbMessage = err instanceof Error ? err.message : "Unknown error"
-  }
-  checks.push({
-    label: "Supabase connectivity",
-    group: "Database",
-    status: dbStatus,
-    message: dbMessage,
-  })
-
-  // --- Security / required env vars ---
-  const requiredVars: Array<{ key: string; label: string }> = [
-    { key: "SITE_URL", label: "SITE_URL" },
-    { key: "ADMIN_EMAIL", label: "ADMIN_EMAIL" },
-    { key: "SUPABASE_SECRET_KEY", label: "SUPABASE_SECRET_KEY" },
-    {
-      key: "NEXT_PUBLIC_SUPABASE_URL",
-      label: "NEXT_PUBLIC_SUPABASE_URL",
-    },
-    {
-      key: "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-      label: "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-    },
-  ]
-
-  for (const { key, label } of requiredVars) {
-    const value = process.env[key]
-    checks.push({
-      label,
-      group: "Security",
-      status: value ? "pass" : "fail",
-      message: value ? "Set" : "Not set — required",
-    })
-  }
-
-  // --- AI providers ---
-  const aiProviders: Array<{ key: string; label: string }> = [
-    { key: "OPENAI_API_KEY", label: "OpenAI" },
-    { key: "ANTHROPIC_API_KEY", label: "Anthropic" },
-    { key: "GOOGLE_GENERATIVE_AI_API_KEY", label: "Google Generative AI" },
-  ]
-
-  for (const { key, label } of aiProviders) {
-    const value = process.env[key]
-    checks.push({
-      label,
-      group: "AI",
-      status: value ? "pass" : "warn",
-      message: value ? "Key set" : "Not set — optional",
-    })
-  }
-
-  // --- Infrastructure ---
-  const upstashUrl = process.env.UPSTASH_REDIS_REST_URL
-  const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN
-  const upstashOk = Boolean(upstashUrl && upstashToken)
-  const isProduction = process.env.NODE_ENV === "production"
-  checks.push({
-    label: "Rate limiting (Upstash Redis)",
-    group: "Infrastructure",
-    status: upstashOk ? "pass" : isProduction ? "fail" : "warn",
-    message: upstashOk
-      ? "UPSTASH_REDIS_REST_URL and TOKEN set"
-      : isProduction
-        ? "Required in production — public APIs return 503 until configured"
-        : "Not configured — falls back to in-memory (dev only)",
-  })
-
-  checks.push({
-    label: "Monitoring (Sentry)",
-    group: "Infrastructure",
-    status: process.env.SENTRY_DSN ? "pass" : "warn",
-    message: process.env.SENTRY_DSN ? "SENTRY_DSN set" : "Not set — optional",
-  })
-
-  checks.push({
-    label: "Analytics (PostHog)",
-    group: "Infrastructure",
-    status: process.env.NEXT_PUBLIC_POSTHOG_KEY ? "pass" : "warn",
-    message: process.env.NEXT_PUBLIC_POSTHOG_KEY
-      ? "NEXT_PUBLIC_POSTHOG_KEY set"
-      : "Not set — optional",
-  })
-
-  return checks
+function toHealthChecks(
+  sections: Awaited<ReturnType<typeof runDeploymentChecks>>["sections"]
+): HealthCheck[] {
+  return sections.flatMap((section) =>
+    section.checks.map((check: CheckResult) => ({
+      label: check.label,
+      group: section.title,
+      status: mapCheckStatusToHealth(check.status),
+      message: check.detail
+        ? `${check.message} — ${check.detail}`
+        : check.message,
+    }))
+  )
 }
 
 const STATUS_STYLES: Record<CheckStatus, string> = {
@@ -130,10 +50,10 @@ const STATUS_LABEL: Record<CheckStatus, string> = {
   fail: "Fail",
 }
 
-const GROUPS = ["Security", "Database", "AI", "Infrastructure"] as const
-
 export default async function SystemPage() {
-  const checks = await runHealthChecks()
+  const result = await runDeploymentChecks()
+  const checks = toHealthChecks(result.sections)
+  const groups = [...new Set(checks.map((check) => check.group))]
 
   const passing = checks.filter((c) => c.status === "pass").length
   const total = checks.length
@@ -141,16 +61,17 @@ export default async function SystemPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        description="Live system health checks run on each page load."
+        description="Live deployment checks — same source of truth as Launch Readiness."
         title="System Health"
       />
 
       <div className="bg-card border rounded-lg px-4 py-3 text-sm font-medium">
-        {passing}/{total} checks passing
+        {passing}/{total} checks passing · {result.overallScore}% readiness
+        score
       </div>
 
       <div className="space-y-6">
-        {GROUPS.map((group) => {
+        {groups.map((group) => {
           const groupChecks = checks.filter((c) => c.group === group)
           if (groupChecks.length === 0) return null
 

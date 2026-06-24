@@ -1,11 +1,11 @@
 "use client"
 
-import { AiFirstKeywordsList } from "@/components/public/ai-first-keywords-list"
 import { Icon } from "@iconify/react"
 import { ChevronDown } from "lucide-react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 
+import { AiFirstKeywordsList } from "@/components/public/ai-first-keywords-list"
 import {
   AI_FIRST_SUMMARY_POINTS,
   AI_FIRST_USE_CASES,
@@ -13,9 +13,11 @@ import {
 
 const AiFirstAutomationToolsTable = dynamic(
   () =>
-    import("@/components/public/ai-first-automation-tools-table").then((module) => ({
-      default: module.AiFirstAutomationToolsTable,
-    })),
+    import("@/components/public/ai-first-automation-tools-table").then(
+      (module) => ({
+        default: module.AiFirstAutomationToolsTable,
+      })
+    ),
   {
     ssr: false,
     loading: () => (
@@ -47,11 +49,17 @@ export function AiFirstPageContent() {
 
       <div className="ai-first-use-cases">
         {AI_FIRST_USE_CASES.map((useCase) => (
-          <details className="ai-first-use-case" id={useCase.id} key={useCase.id}>
+          <details
+            className="ai-first-use-case"
+            id={useCase.id}
+            key={useCase.id}
+          >
             <summary className="ai-first-use-case-trigger">
               <span className="ai-first-use-case-trigger-text">
                 <span className="ai-first-use-case-title">{useCase.title}</span>
-                <span className="ai-first-use-case-problem">{useCase.problem}</span>
+                <span className="ai-first-use-case-problem">
+                  {useCase.problem}
+                </span>
               </span>
               <ChevronDown
                 aria-hidden
@@ -70,15 +78,24 @@ export function AiFirstPageContent() {
                 <h3 className="ai-first-tools-title">Tools & stack</h3>
                 <ul className="ai-first-tools-list">
                   {useCase.tools.map((tool) => (
-                    <li className="ai-first-tool" key={`${useCase.id}-${tool.name}`}>
+                    <li
+                      className="ai-first-tool"
+                      key={`${useCase.id}-${tool.name}`}
+                    >
                       <div className="ai-first-tool-head">
                         <span className="ai-first-tool-name">
-                          <Icon aria-hidden className="ai-first-tool-icon" icon={tool.icon} />
+                          <Icon
+                            aria-hidden
+                            className="ai-first-tool-icon"
+                            icon={tool.icon}
+                          />
                           {tool.name}
                         </span>
                         <span className="ai-first-tool-role">{tool.role}</span>
                       </div>
-                      <p className="ai-first-tool-description">{tool.description}</p>
+                      <p className="ai-first-tool-description">
+                        {tool.description}
+                      </p>
                     </li>
                   ))}
                 </ul>

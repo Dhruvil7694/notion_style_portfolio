@@ -1,15 +1,10 @@
 import { Download } from "lucide-react"
 import Link from "next/link"
-import dynamic from "next/dynamic"
 
 import { PageShell } from "@/components/public/content-shell"
 import { PublicEmptyState } from "@/components/public/empty-state"
+import { ResumePreviewLazy } from "@/components/public/resume-preview-lazy"
 import { getActiveResume, getPublicSettings } from "@/lib/public/queries"
-
-const ResumePreview = dynamic(
-  () => import("@/components/public/resume-preview").then((m) => m.ResumePreview),
-  { ssr: false }
-)
 import { formatDate } from "@/lib/utils/date"
 import { createPageMetadata } from "@/lib/utils/metadata"
 
@@ -53,9 +48,9 @@ export default async function ResumePage() {
             </Link>
           </div>
 
-          <ResumePreview
-            fileUrl={resume.file_path}
+          <ResumePreviewLazy
             downloadUrl={resume.file_path}
+            fileUrl={resume.file_path}
           />
         </div>
       ) : (

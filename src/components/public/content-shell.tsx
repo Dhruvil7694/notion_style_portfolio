@@ -18,11 +18,18 @@ export function PageShell({
   className,
 }: PageShellProps) {
   return (
-    <div className={cn("kb-page mx-auto max-w-home px-6 pb-kb-section", className)}>
+    <div
+      className={cn(
+        "kb-page mx-auto max-w-home px-page pb-kb-section",
+        className
+      )}
+    >
       <header className="mb-kb-heading">
         <PageBreadcrumbs currentLabel={title} />
         <h1 className="kb-page-title">{title}</h1>
-        {description ? <p className="kb-page-description mt-3">{description}</p> : null}
+        {description ? (
+          <p className="kb-page-description mt-3">{description}</p>
+        ) : null}
       </header>
       {children}
     </div>
@@ -47,16 +54,20 @@ export function ContentArticle({
   children,
 }: ContentArticleProps) {
   return (
-    <article className="kb-page mx-auto max-w-content px-6 pb-kb-section">
+    <article className="kb-page mx-auto max-w-content px-page pb-kb-section">
       <header className="mb-kb-heading border-b border-border pb-6">
         <PageBreadcrumbs currentLabel={title} />
         {meta ? <div className="kb-entry-meta mb-3">{meta}</div> : null}
         <h1 className="kb-page-title">{title}</h1>
         {excerpt ? <p className="kb-page-description mt-3">{excerpt}</p> : null}
       </header>
-      {beforeContent ? <div className="content-knowledge-before mb-8">{beforeContent}</div> : null}
+      {beforeContent ? (
+        <div className="content-knowledge-before mb-8">{beforeContent}</div>
+      ) : null}
       <div className="article-content">{children}</div>
-      {afterContent ? <div className="content-knowledge-after mt-10">{afterContent}</div> : null}
+      {afterContent ? (
+        <div className="content-knowledge-after mt-10">{afterContent}</div>
+      ) : null}
     </article>
   )
 }
@@ -84,8 +95,12 @@ export function ContentList({ items, emptyMessage }: ContentListProps) {
       {items.map((item) => (
         <li className="kb-entry" key={item.slug}>
           <Link className="kb-entry-link group block" href={item.href}>
-            <span className="kb-entry-title group-hover:text-primary">{item.title}</span>
-            {item.meta ? <span className="kb-entry-meta">{item.meta}</span> : null}
+            <span className="kb-entry-title group-hover:text-primary">
+              {item.title}
+            </span>
+            {item.meta ? (
+              <span className="kb-entry-meta">{item.meta}</span>
+            ) : null}
             {item.excerpt ? (
               <span className="kb-entry-description">{item.excerpt}</span>
             ) : null}

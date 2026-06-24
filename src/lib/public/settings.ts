@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import { PORTRAIT_IMAGES } from "@/lib/portrait/portrait-assets"
 import {
   type AboutContent,
   aboutContentSchema,
@@ -100,4 +101,21 @@ export function parsePublicSettings(
     contact: contactInfoSchema.parse(byKey.contact_info ?? {}),
     about: aboutContentSchema.parse(byKey.about_content ?? {}),
   }
+}
+
+export const DEFAULT_PROFILE_AVATAR = PORTRAIT_IMAGES.straight
+
+export function resolveOwnerAvatar(site: SiteSettings): string | null {
+  const cmsAvatar =
+    site.owner_avatar?.trim() ||
+    site.owner_avatar_about?.trim() ||
+    site.owner_avatar_original?.trim()
+
+  return cmsAvatar || null
+}
+
+export function resolveProfileAvatarSrc(
+  site: SiteSettings
+): typeof PORTRAIT_IMAGES.straight | string {
+  return resolveOwnerAvatar(site) ?? DEFAULT_PROFILE_AVATAR
 }

@@ -13,8 +13,8 @@ import {
 import { createPortal } from "react-dom"
 
 import { caveatHandwriting } from "@/lib/fonts/caveat"
-import type { HoverPreviewCardItem } from "@/lib/public/hover-preview-types"
 import { glassPanelClass } from "@/lib/public/glass-panel"
+import type { HoverPreviewCardItem } from "@/lib/public/hover-preview-types"
 import { cn } from "@/lib/utils"
 
 export type { HoverPreviewCardItem } from "@/lib/public/hover-preview-types"
@@ -45,13 +45,19 @@ type HoverPreviewCardProps = {
   placement?: "side" | "above"
 }
 
-function computePanelPosition(anchor: DOMRect, placement: "side" | "above"): PanelPosition {
+function computePanelPosition(
+  anchor: DOMRect,
+  placement: "side" | "above"
+): PanelPosition {
   const viewportWidth = window.innerWidth
   const viewportHeight = window.innerHeight
 
   if (viewportWidth <= MOBILE_BREAKPOINT) {
     const width = viewportWidth - VIEWPORT_PADDING * 2
-    const top = Math.min(anchor.bottom + SECTION_GAP, viewportHeight - VIEWPORT_PADDING)
+    const top = Math.min(
+      anchor.bottom + SECTION_GAP,
+      viewportHeight - VIEWPORT_PADDING
+    )
 
     return {
       left: VIEWPORT_PADDING,
@@ -64,7 +70,10 @@ function computePanelPosition(anchor: DOMRect, placement: "side" | "above"): Pan
     const width = Math.min(CARD_WIDTH, viewportWidth - VIEWPORT_PADDING * 2)
     const left = Math.max(
       VIEWPORT_PADDING,
-      Math.min(anchor.left + anchor.width / 2 - width / 2, viewportWidth - width - VIEWPORT_PADDING)
+      Math.min(
+        anchor.left + anchor.width / 2 - width / 2,
+        viewportWidth - width - VIEWPORT_PADDING
+      )
     )
     const top = Math.max(VIEWPORT_PADDING, anchor.top - SECTION_GAP)
 
@@ -181,15 +190,28 @@ export function HoverPreviewCard({
           top: position.top,
           width: position.width,
           ...(placement === "above"
-            ? { transform: visible ? "translateY(calc(-100% - 0.5rem)) scale(1)" : "translateY(calc(-100% - 0.5rem)) scale(0.96)" }
+            ? {
+                transform: visible
+                  ? "translateY(calc(-100% - 0.5rem)) scale(1)"
+                  : "translateY(calc(-100% - 0.5rem)) scale(0.96)",
+              }
             : {}),
         }}
       >
         <div className="hover-preview-card-header">
           {TitleIcon ? (
-            <TitleIcon aria-hidden className="hover-preview-card-header-icon" strokeWidth={2} />
+            <TitleIcon
+              aria-hidden
+              className="hover-preview-card-header-icon"
+              strokeWidth={2}
+            />
           ) : null}
-          <p className={cn("hover-preview-card-title", caveatHandwriting.className)}>
+          <p
+            className={cn(
+              "hover-preview-card-title",
+              caveatHandwriting.className
+            )}
+          >
             {title}
           </p>
         </div>
@@ -201,7 +223,9 @@ export function HoverPreviewCard({
                 <Link className="hover-preview-card-item-link" href={item.href}>
                   <div className="hover-preview-card-item-head">
                     {item.icon ? (
-                      <span className="hover-preview-card-item-icon">{item.icon}</span>
+                      <span className="hover-preview-card-item-icon">
+                        {item.icon}
+                      </span>
                     ) : null}
                     <span
                       className={cn(
@@ -213,11 +237,16 @@ export function HoverPreviewCard({
                     </span>
                   </div>
                   {item.description ? (
-                    <p className="hover-preview-card-item-description">{item.description}</p>
+                    <p className="hover-preview-card-item-description">
+                      {item.description}
+                    </p>
                   ) : null}
                   <span className="hover-preview-card-item-action">
                     {item.actionLabel ?? "View project"}
-                    <ArrowRight aria-hidden className="hover-preview-card-item-action-icon" />
+                    <ArrowRight
+                      aria-hidden
+                      className="hover-preview-card-item-action-icon"
+                    />
                   </span>
                 </Link>
               </li>
@@ -261,16 +290,13 @@ export function useHoverPreviewDelays() {
     [clearTimers]
   )
 
-  const scheduleClose = useCallback(
-    (callback: () => void, delayMs = 120) => {
-      if (openTimerRef.current) {
-        window.clearTimeout(openTimerRef.current)
-        openTimerRef.current = null
-      }
-      closeTimerRef.current = window.setTimeout(callback, delayMs)
-    },
-    []
-  )
+  const scheduleClose = useCallback((callback: () => void, delayMs = 120) => {
+    if (openTimerRef.current) {
+      window.clearTimeout(openTimerRef.current)
+      openTimerRef.current = null
+    }
+    closeTimerRef.current = window.setTimeout(callback, delayMs)
+  }, [])
 
   useEffect(() => clearTimers, [clearTimers])
 

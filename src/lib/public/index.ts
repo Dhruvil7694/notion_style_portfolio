@@ -1,5 +1,4 @@
 export * from "./presence"
-export * from "./visitor-interest"
 export {
   getActiveResume,
   getContentBySlug,
@@ -27,3 +26,4 @@ export {
   type SocialLinks,
   socialLinksSchema,
 } from "./settings"
+export * from "./visitor-interest"

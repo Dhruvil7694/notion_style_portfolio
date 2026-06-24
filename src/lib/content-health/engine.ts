@@ -2,8 +2,8 @@ import "server-only"
 
 import { createAdminClient } from "@/lib/supabase/admin"
 
-import { scoreContent, scoreProject } from "./scoring"
 import type { ContentHealthScore } from "./scoring"
+import { scoreContent, scoreProject } from "./scoring"
 
 export type ContentHealthAuditResult = {
   projects: ContentHealthScore[]
@@ -44,9 +44,7 @@ export async function runContentHealthAudit(): Promise<ContentHealthAuditResult>
 
   const overallScore =
     totalItems > 0
-      ? Math.round(
-          allScored.reduce((sum, s) => sum + s.score, 0) / totalItems
-        )
+      ? Math.round(allScored.reduce((sum, s) => sum + s.score, 0) / totalItems)
       : 0
 
   return {

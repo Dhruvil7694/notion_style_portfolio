@@ -6,6 +6,7 @@ import { useMemo } from "react"
 import type { AboutContent } from "@/lib/public/about-content"
 import type { WorkspaceContextInput } from "@/lib/public/presence"
 import type { PublicSettings } from "@/lib/public/settings"
+import { resolveProfileAvatarSrc } from "@/lib/public/settings"
 
 import { EncryptedName } from "./encrypted-name"
 import { LiveClock } from "./live-clock"
@@ -36,7 +37,10 @@ function buildPresenceInput(settings: PublicSettings): WorkspaceContextInput {
   }
 }
 
-export function ProfileWorkspace({ settings, resumeAvailable }: ProfileWorkspaceProps) {
+export function ProfileWorkspace({
+  settings,
+  resumeAvailable,
+}: ProfileWorkspaceProps) {
   const { site, contact, about } = settings
   const name = site.owner_name || site.site_name
   const location = contact.location || DEFAULT_LOCATION
@@ -44,19 +48,35 @@ export function ProfileWorkspace({ settings, resumeAvailable }: ProfileWorkspace
   const contextInput = useMemo(() => buildPresenceInput(settings), [settings])
 
   return (
-    <section className="workspace-profile kb-section kb-section-first" id="profile">
+    <section
+      className="workspace-profile kb-section kb-section-first"
+      id="profile"
+    >
       <div className="workspace-profile-layout">
         <div className="workspace-identity">
           <div className="workspace-avatar-row">
-            <ProfileAvatar avatarUrl={site.owner_avatar} contextInput={contextInput} name={name} />
+            <ProfileAvatar
+              avatarSrc={resolveProfileAvatarSrc(site)}
+              contextInput={contextInput}
+              name={name}
+            />
+            <LiveClock
+              className="workspace-clock workspace-clock-mobile md:hidden"
+              location={location}
+            />
           </div>
 
           <div className="workspace-name-row">
             <EncryptedName contextInput={contextInput} name={name} />
-            <LiveClock className="workspace-clock" location={location} />
+            <LiveClock
+              className="workspace-clock hidden md:block"
+              location={location}
+            />
           </div>
 
-          {site.owner_title ? <p className="workspace-role">{site.owner_title}</p> : null}
+          {site.owner_title ? (
+            <p className="workspace-role">{site.owner_title}</p>
+          ) : null}
 
           {intro ? (
             <p className="workspace-intro">
@@ -68,7 +88,10 @@ export function ProfileWorkspace({ settings, resumeAvailable }: ProfileWorkspace
             </p>
           ) : null}
 
-          <WorkspaceLinks resumeAvailable={resumeAvailable} settings={settings} />
+          <WorkspaceLinks
+            resumeAvailable={resumeAvailable}
+            settings={settings}
+          />
         </div>
       </div>
     </section>

@@ -1,13 +1,30 @@
-# Dhruvil Patel
+import "server-only"
 
-> Applied AI Engineer building production AI systems, multi-agent workflows, RAG pipelines, document intelligence platforms, and automation systems.
+import type { PublicSettings } from "@/lib/public/settings"
+import { generateCanonicalUrl } from "@/lib/seo/canonical"
+
+export function buildLlmsTxt(
+  siteUrl: string,
+  settings: PublicSettings
+): string {
+  const ownerName = settings.site.owner_name?.trim() || "Portfolio Owner"
+  const ownerTitle = settings.site.owner_title?.trim() || "Applied AI Engineer"
+  const description =
+    settings.site.site_description?.trim() ||
+    "Applied AI Engineer building production AI systems, multi-agent workflows, RAG pipelines, document intelligence platforms, and automation systems."
+
+  const site = generateCanonicalUrl(siteUrl, "/")
+
+  return `# ${ownerName}
+
+> ${description}
 
 ## About
 
-- Name: Dhruvil Patel
-- Role: Applied AI Engineer
+- Name: ${ownerName}
+- Role: ${ownerTitle}
 - Focus: Production AI systems, applied research, and automation
-- Site: https://dhruvilpatel.dev
+- Site: ${site}
 
 ## Knowledge Graph
 
@@ -17,7 +34,7 @@ This portfolio exposes a machine-readable knowledge graph connecting expertise d
 - Technology index: /technology
 - Knowledge graph API: /api/knowledge-graph
 
-The graph links content by shared expertise slugs, extracted technologies, and concepts. Authority pages at `/expertise/[slug]` aggregate all related work by domain.
+The graph links content by shared expertise slugs, extracted technologies, and concepts. Authority pages at \`/expertise/[slug]\` aggregate all related work by domain.
 
 ## Expertise Areas
 
@@ -41,6 +58,7 @@ Browse technology aggregation pages at /technology. Technologies are inferred fr
 ## Primary Sections
 
 - Homepage: /
+- About: /about
 - Projects: /projects
 - Expertise: /expertise
 - Technology: /technology
@@ -89,12 +107,15 @@ Featured projects, research, and automations appear on the homepage and in the k
 
 ## Crawling Notes
 
-- Sitemap: /sitemap.xml (includes /expertise, /technology, and all slug pages)
+- Sitemap: /sitemap.xml (includes /about, /stack, /expertise, /technology, and all slug pages)
 - Robots: /robots.txt
+- LLMs: /llms.txt
 - Admin routes are excluded from indexing
 - Published content only is included in the sitemap
 - FAQPage JSON-LD is emitted on project and content pages with FAQ data
 
 ## Preferred Citation
 
-When referencing this portfolio, link to the canonical URL from the sitemap. For expertise claims, prefer `/expertise/[slug]` authority pages. For technology usage, prefer `/technology/[slug]` aggregation pages.
+When referencing this portfolio, link to the canonical URL from the sitemap. For expertise claims, prefer \`/expertise/[slug]\` authority pages. For technology usage, prefer \`/technology/[slug]\` aggregation pages.
+`
+}

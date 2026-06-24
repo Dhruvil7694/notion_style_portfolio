@@ -1,11 +1,6 @@
 "use client"
 
-import {
-  BookOpen,
-  Expand,
-  Trophy,
-  X,
-} from "lucide-react"
+import { BookOpen, Expand, Trophy, X } from "lucide-react"
 import {
   type ReactNode,
   type RefObject,
@@ -19,6 +14,7 @@ import { createPortal } from "react-dom"
 
 import { useSiteTheme } from "@/components/public/site-theme-provider"
 import { caveatHandwriting } from "@/lib/fonts/caveat"
+import { glassPanelClass } from "@/lib/public/glass-panel"
 import {
   CELL,
   createInitialState,
@@ -28,7 +24,11 @@ import {
   stepGame,
   tickMsForScore,
 } from "@/lib/public/snake-game/engine"
-import { getDefaultLevelId, getSnakeLevel, SNAKE_LEVELS } from "@/lib/public/snake-game/levels"
+import {
+  getDefaultLevelId,
+  getSnakeLevel,
+  SNAKE_LEVELS,
+} from "@/lib/public/snake-game/levels"
 import { getSnakePalette } from "@/lib/public/snake-game/palette"
 import {
   getPersonalBest,
@@ -38,8 +38,11 @@ import {
   savePlayerProfile,
   saveScoreEntry,
 } from "@/lib/public/snake-game/scoreboard"
-import type { GameState, ScoreEntry, SnakeLevelId } from "@/lib/public/snake-game/types"
-import { glassPanelClass } from "@/lib/public/glass-panel"
+import type {
+  GameState,
+  ScoreEntry,
+  SnakeLevelId,
+} from "@/lib/public/snake-game/types"
 import { cn } from "@/lib/utils"
 
 const INSTRUCTIONS = [
@@ -184,11 +187,17 @@ function SnakeScrollPanel({
       </div>
       <div
         aria-hidden
-        className={cn("about-snake-tool-panel-fade-top", fadeTop && "is-visible")}
+        className={cn(
+          "about-snake-tool-panel-fade-top",
+          fadeTop && "is-visible"
+        )}
       />
       <div
         aria-hidden
-        className={cn("about-snake-tool-panel-fade-bottom", fadeBottom && "is-visible")}
+        className={cn(
+          "about-snake-tool-panel-fade-bottom",
+          fadeBottom && "is-visible"
+        )}
       />
     </div>
   )
@@ -340,38 +349,46 @@ function GameBoard({
         {!started ? (
           <div className="about-snake-start-panel">
             <div className="about-snake-start-inner">
-            <p className={cn("about-snake-start-title", caveatHandwriting.className)}>
-              {hasProfile ? `Welcome back, ${playerName}` : "Enter your name"}
-            </p>
-            <label className="about-snake-name-label" htmlFor="about-snake-player-name">
-              Player name
-            </label>
-            <input
-              className="about-snake-name-input"
-              id="about-snake-player-name"
-              maxLength={24}
-              onChange={(event) => onPlayerNameChange(event.target.value)}
-              placeholder="Your name"
-              value={playerName}
-            />
+              <p
+                className={cn(
+                  "about-snake-start-title",
+                  caveatHandwriting.className
+                )}
+              >
+                {hasProfile ? `Welcome back, ${playerName}` : "Enter your name"}
+              </p>
+              <label
+                className="about-snake-name-label"
+                htmlFor="about-snake-player-name"
+              >
+                Player name
+              </label>
+              <input
+                className="about-snake-name-input"
+                id="about-snake-player-name"
+                maxLength={24}
+                onChange={(event) => onPlayerNameChange(event.target.value)}
+                placeholder="Your name"
+                value={playerName}
+              />
 
-            <p className="about-snake-name-label">Level</p>
-            <LevelButtonGroup
-              activeLevelId={startLevelId}
-              onSelect={onStartLevelSelect}
-            />
+              <p className="about-snake-name-label">Level</p>
+              <LevelButtonGroup
+                activeLevelId={startLevelId}
+                onSelect={onStartLevelSelect}
+              />
 
-            <button
-              className="about-snake-start-btn"
-              disabled={!playerName.trim()}
-              onClick={onStart}
-              type="button"
-            >
-              Start game
-            </button>
-            <p className="about-snake-start-note">
-              Playing on {startLevel.label}.
-            </p>
+              <button
+                className="about-snake-start-btn"
+                disabled={!playerName.trim()}
+                onClick={onStart}
+                type="button"
+              >
+                Start game
+              </button>
+              <p className="about-snake-start-note">
+                Playing on {startLevel.label}.
+              </p>
             </div>
           </div>
         ) : null}
@@ -380,10 +397,14 @@ function GameBoard({
           <div aria-live="polite" className="about-snake-scores">
             <span className="about-snake-score-current">{score}</span>
             {personalBest ? (
-              <span className="about-snake-score-best">best {personalBest.score}</span>
+              <span className="about-snake-score-best">
+                best {personalBest.score}
+              </span>
             ) : null}
             <span className="about-snake-score-level">{level.label}</span>
-            {gameOver ? <span className="about-snake-score-restart">Press R</span> : null}
+            {gameOver ? (
+              <span className="about-snake-score-restart">Press R</span>
+            ) : null}
             {deathPaused ? (
               <span className="about-snake-score-restart">Game over…</span>
             ) : null}
@@ -392,7 +413,12 @@ function GameBoard({
 
         {started && deathPaused ? (
           <div aria-live="polite" className="about-snake-death-pause">
-            <p className={cn("about-snake-death-pause-title", caveatHandwriting.className)}>
+            <p
+              className={cn(
+                "about-snake-death-pause-title",
+                caveatHandwriting.className
+              )}
+            >
               Crashed
             </p>
           </div>
@@ -400,13 +426,24 @@ function GameBoard({
 
         {started && gameOver && !deathPaused ? (
           <div className="about-snake-gameover">
-            <p className={cn("about-snake-gameover-title", caveatHandwriting.className)}>
+            <p
+              className={cn(
+                "about-snake-gameover-title",
+                caveatHandwriting.className
+              )}
+            >
               Game over
             </p>
             <p className="about-snake-gameover-copy">
-              {score > 0 ? `${playerName} scored ${score} on ${level.label}.` : "Ouch."}
+              {score > 0
+                ? `${playerName} scored ${score} on ${level.label}.`
+                : "Ouch."}
             </p>
-            <button className="about-snake-start-btn" onClick={onPlayAgain} type="button">
+            <button
+              className="about-snake-start-btn"
+              onClick={onPlayAgain}
+              type="button"
+            >
               Play again
             </button>
           </div>
@@ -414,7 +451,12 @@ function GameBoard({
 
         {started && !level.playable && !gameOver ? (
           <div className="about-snake-gameover">
-            <p className={cn("about-snake-gameover-title", caveatHandwriting.className)}>
+            <p
+              className={cn(
+                "about-snake-gameover-title",
+                caveatHandwriting.className
+              )}
+            >
               Told you so
             </p>
             <p className="about-snake-gameover-copy">
@@ -450,7 +492,8 @@ export function AboutSnakeGame({ className }: AboutSnakeGameProps) {
   const [expanded, setExpanded] = useState(false)
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null)
   const [levelId, setLevelId] = useState<SnakeLevelId>(getDefaultLevelId())
-  const [startLevelId, setStartLevelId] = useState<SnakeLevelId>(getDefaultLevelId())
+  const [startLevelId, setStartLevelId] =
+    useState<SnakeLevelId>(getDefaultLevelId())
   const [score, setScore] = useState(0)
   const [gameOver, setGameOver] = useState(false)
   const [deathPaused, setDeathPaused] = useState(false)
@@ -585,106 +628,106 @@ export function AboutSnakeGame({ className }: AboutSnakeGameProps) {
       }
 
       if (drawGameplay) {
-      drawSolidObstacles(
-        ctx,
-        state.obstacles,
-        cell,
-        dpr,
-        palette.obstacle,
-        palette.obstacleBorder
-      )
-
-      const foodPulse = 0.82 + Math.sin(pulseRef.current) * 0.18
-      const foodSize = cell * foodPulse
-      const foodOffset = (cell - foodSize) / 2
-      const foodX = state.food.x * cell + foodOffset
-      const foodY = state.food.y * cell + foodOffset
-
-      ctx.shadowBlur = 14 * dpr
-      ctx.shadowColor = palette.foodShadow
-      drawRoundedCell(ctx, foodX, foodY, foodSize, 4 * dpr, palette.food)
-      ctx.shadowBlur = 0
-
-      const snakeLen = state.snake.length
-      state.snake.forEach((segment, index) => {
-        const prev = state.prevSnake[index] ?? segment
-        const px = lerp(prev.x, segment.x, t) * cell
-        const py = lerp(prev.y, segment.y, t) * cell
-        const alpha = 0.38 + ((snakeLen - index) / snakeLen) * 0.62
-        drawRoundedCell(
+        drawSolidObstacles(
           ctx,
-          px,
-          py,
+          state.obstacles,
           cell,
-          index === 0 ? 5 * dpr : 4 * dpr,
-          index === 0 ? palette.snakeHead : palette.snakeBody(alpha)
+          dpr,
+          palette.obstacle,
+          palette.obstacleBorder
         )
 
-        if (index === 0) {
-          const eyeOffset = 3.2 * dpr
-          const cx = px + cell / 2
-          const cy = py + cell / 2
-          let ex1 = cx
-          let ey1 = cy
-          let ex2 = cx
-          let ey2 = cy
+        const foodPulse = 0.82 + Math.sin(pulseRef.current) * 0.18
+        const foodSize = cell * foodPulse
+        const foodOffset = (cell - foodSize) / 2
+        const foodX = state.food.x * cell + foodOffset
+        const foodY = state.food.y * cell + foodOffset
 
-          if (state.direction.x === 1) {
-            ex1 += eyeOffset
-            ex2 += eyeOffset
-            ey1 -= eyeOffset * 0.55
-            ey2 += eyeOffset * 0.55
-          } else if (state.direction.x === -1) {
-            ex1 -= eyeOffset
-            ex2 -= eyeOffset
-            ey1 -= eyeOffset * 0.55
-            ey2 += eyeOffset * 0.55
-          } else if (state.direction.y === -1) {
-            ey1 -= eyeOffset
-            ey2 -= eyeOffset
-            ex1 -= eyeOffset * 0.55
-            ex2 += eyeOffset * 0.55
-          } else {
-            ey1 += eyeOffset
-            ey2 += eyeOffset
-            ex1 -= eyeOffset * 0.55
-            ex2 += eyeOffset * 0.55
+        ctx.shadowBlur = 14 * dpr
+        ctx.shadowColor = palette.foodShadow
+        drawRoundedCell(ctx, foodX, foodY, foodSize, 4 * dpr, palette.food)
+        ctx.shadowBlur = 0
+
+        const snakeLen = state.snake.length
+        state.snake.forEach((segment, index) => {
+          const prev = state.prevSnake[index] ?? segment
+          const px = lerp(prev.x, segment.x, t) * cell
+          const py = lerp(prev.y, segment.y, t) * cell
+          const alpha = 0.38 + ((snakeLen - index) / snakeLen) * 0.62
+          drawRoundedCell(
+            ctx,
+            px,
+            py,
+            cell,
+            index === 0 ? 5 * dpr : 4 * dpr,
+            index === 0 ? palette.snakeHead : palette.snakeBody(alpha)
+          )
+
+          if (index === 0) {
+            const eyeOffset = 3.2 * dpr
+            const cx = px + cell / 2
+            const cy = py + cell / 2
+            let ex1 = cx
+            let ey1 = cy
+            let ex2 = cx
+            let ey2 = cy
+
+            if (state.direction.x === 1) {
+              ex1 += eyeOffset
+              ex2 += eyeOffset
+              ey1 -= eyeOffset * 0.55
+              ey2 += eyeOffset * 0.55
+            } else if (state.direction.x === -1) {
+              ex1 -= eyeOffset
+              ex2 -= eyeOffset
+              ey1 -= eyeOffset * 0.55
+              ey2 += eyeOffset * 0.55
+            } else if (state.direction.y === -1) {
+              ey1 -= eyeOffset
+              ey2 -= eyeOffset
+              ex1 -= eyeOffset * 0.55
+              ex2 += eyeOffset * 0.55
+            } else {
+              ey1 += eyeOffset
+              ey2 += eyeOffset
+              ex1 -= eyeOffset * 0.55
+              ex2 += eyeOffset * 0.55
+            }
+
+            ctx.fillStyle = palette.eye
+            ctx.beginPath()
+            ctx.arc(ex1, ey1, 1.6 * dpr, 0, Math.PI * 2)
+            ctx.arc(ex2, ey2, 1.6 * dpr, 0, Math.PI * 2)
+            ctx.fill()
           }
+        })
 
-          ctx.fillStyle = palette.eye
+        state.particles = state.particles
+          .map((particle) => ({
+            ...particle,
+            x: particle.x + particle.vx * dpr,
+            y: particle.y + particle.vy * dpr,
+            life: particle.life - 0.022,
+          }))
+          .filter((particle) => particle.life > 0)
+
+        state.particles.forEach((particle) => {
+          ctx.fillStyle = palette.particle(particle.life)
           ctx.beginPath()
-          ctx.arc(ex1, ey1, 1.6 * dpr, 0, Math.PI * 2)
-          ctx.arc(ex2, ey2, 1.6 * dpr, 0, Math.PI * 2)
+          ctx.arc(particle.x, particle.y, 1.4 * dpr, 0, Math.PI * 2)
           ctx.fill()
+        })
+
+        if (state.eatFlash > 0) {
+          ctx.fillStyle = palette.eatFlash(state.eatFlash)
+          ctx.fillRect(0, 0, w, h)
+          state.eatFlash = Math.max(0, state.eatFlash - 0.08)
         }
-      })
 
-      state.particles = state.particles
-        .map((particle) => ({
-          ...particle,
-          x: particle.x + particle.vx * dpr,
-          y: particle.y + particle.vy * dpr,
-          life: particle.life - 0.022,
-        }))
-        .filter((particle) => particle.life > 0)
-
-      state.particles.forEach((particle) => {
-        ctx.fillStyle = palette.particle(particle.life)
-        ctx.beginPath()
-        ctx.arc(particle.x, particle.y, 1.4 * dpr, 0, Math.PI * 2)
-        ctx.fill()
-      })
-
-      if (state.eatFlash > 0) {
-        ctx.fillStyle = palette.eatFlash(state.eatFlash)
-        ctx.fillRect(0, 0, w, h)
-        state.eatFlash = Math.max(0, state.eatFlash - 0.08)
-      }
-
-      if (!state.alive) {
-        ctx.fillStyle = palette.gameOverOverlay
-        ctx.fillRect(0, 0, w, h)
-      }
+        if (!state.alive) {
+          ctx.fillStyle = palette.gameOverOverlay
+          ctx.fillRect(0, 0, w, h)
+        }
       }
 
       if (!drawGameplay) {
@@ -1027,28 +1070,44 @@ export function AboutSnakeGame({ className }: AboutSnakeGameProps) {
       <div className="about-snake-toolbar-group">
         <SnakeToolHover
           label="Scoreboard"
-          icon={<Trophy aria-hidden className="about-snake-tool-icon" strokeWidth={1.75} />}
+          icon={
+            <Trophy
+              aria-hidden
+              className="about-snake-tool-icon"
+              strokeWidth={1.75}
+            />
+          }
           onClose={() => setOpenPanel(null)}
           onOpen={() => setOpenPanel("scoreboard")}
           open={openPanel === "scoreboard"}
           panelId={scoreboardPanelId}
         >
-          <p className={cn("about-snake-tool-panel-title", caveatHandwriting.className)}>
+          <p
+            className={cn(
+              "about-snake-tool-panel-title",
+              caveatHandwriting.className
+            )}
+          >
             Scoreboard
           </p>
           {winner ? (
             <p className="about-snake-winner">
-              Winner: <strong>{winner.playerName}</strong> — {winner.score} pts ({winner.levelLabel})
+              Winner: <strong>{winner.playerName}</strong> — {winner.score} pts
+              ({winner.levelLabel})
             </p>
           ) : (
-            <p className="about-snake-tool-panel-empty">No scores yet. Be the first!</p>
+            <p className="about-snake-tool-panel-empty">
+              No scores yet. Be the first!
+            </p>
           )}
           <SnakeScrollPanel>
             <ul className="about-snake-score-list">
               {scores.map((entry, index) => (
                 <li className="about-snake-score-row" key={entry.id}>
                   <span className="about-snake-score-rank">{index + 1}</span>
-                  <span className="about-snake-score-name">{entry.playerName}</span>
+                  <span className="about-snake-score-name">
+                    {entry.playerName}
+                  </span>
                   <span className="about-snake-score-meta">
                     {entry.score} · {entry.levelLabel}
                   </span>
@@ -1060,13 +1119,24 @@ export function AboutSnakeGame({ className }: AboutSnakeGameProps) {
 
         <SnakeToolHover
           label="Instructions"
-          icon={<BookOpen aria-hidden className="about-snake-tool-icon" strokeWidth={1.75} />}
+          icon={
+            <BookOpen
+              aria-hidden
+              className="about-snake-tool-icon"
+              strokeWidth={1.75}
+            />
+          }
           onClose={() => setOpenPanel(null)}
           onOpen={() => setOpenPanel("instructions")}
           open={openPanel === "instructions"}
           panelId={instructionsPanelId}
         >
-          <p className={cn("about-snake-tool-panel-title", caveatHandwriting.className)}>
+          <p
+            className={cn(
+              "about-snake-tool-panel-title",
+              caveatHandwriting.className
+            )}
+          >
             How to play
           </p>
           <SnakeScrollPanel>
@@ -1086,7 +1156,12 @@ export function AboutSnakeGame({ className }: AboutSnakeGameProps) {
           panelClassName="about-snake-level-panel"
           panelId={levelPanelId}
         >
-          <p className={cn("about-snake-tool-panel-title", caveatHandwriting.className)}>
+          <p
+            className={cn(
+              "about-snake-tool-panel-title",
+              caveatHandwriting.className
+            )}
+          >
             Choose level
           </p>
           <LevelButtonGroup
@@ -1103,7 +1178,11 @@ export function AboutSnakeGame({ className }: AboutSnakeGameProps) {
         onClick={() => setExpanded(true)}
         type="button"
       >
-        <Expand aria-hidden className="about-snake-tool-icon" strokeWidth={1.75} />
+        <Expand
+          aria-hidden
+          className="about-snake-tool-icon"
+          strokeWidth={1.75}
+        />
         Expand
       </button>
     </div>
@@ -1116,7 +1195,9 @@ export function AboutSnakeGame({ className }: AboutSnakeGameProps) {
 
         {expanded ? (
           <div aria-hidden className="about-snake-inline-placeholder">
-            <p className="about-snake-inline-placeholder-text">Snake game opened in popup</p>
+            <p className="about-snake-inline-placeholder-text">
+              Snake game opened in popup
+            </p>
           </div>
         ) : (
           <GameBoard {...boardProps} />
@@ -1145,7 +1226,11 @@ export function AboutSnakeGame({ className }: AboutSnakeGameProps) {
                   onClick={() => setExpanded(false)}
                   type="button"
                 >
-                  <X aria-hidden className="about-snake-popup-close-icon" strokeWidth={2} />
+                  <X
+                    aria-hidden
+                    className="about-snake-popup-close-icon"
+                    strokeWidth={2}
+                  />
                 </button>
                 <GameBoard {...boardProps} popup />
               </div>

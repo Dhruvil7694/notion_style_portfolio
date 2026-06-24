@@ -6,7 +6,6 @@ import { z } from "zod"
 import { logger } from "@/lib/monitoring/logger"
 import { SENIORITY_LEVELS } from "@/lib/public/job-seniority"
 
-import { getAiSettings } from "./get-ai-settings"
 import { resolveModelChain } from "./providers/router"
 import { aiTelemetry } from "./sentry-telemetry"
 import { trackAiUsage } from "./usage/track-usage"
@@ -175,7 +174,6 @@ export async function classifyJobDescriptionDocument(
     }
   }
 
-  const settings = await getAiSettings()
   const chain = await resolveModelChain("public")
   const errors: string[] = []
 

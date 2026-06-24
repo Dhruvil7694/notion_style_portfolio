@@ -21,14 +21,25 @@ export function KbSection({
   title,
 }: KbSectionProps) {
   return (
-    <section className={cn("kb-section mx-auto max-w-home px-6", className)} id={id}>
+    <section
+      className={cn("kb-section mx-auto max-w-home px-page", className)}
+      id={id}
+    >
       {title ? (
         <header className="kb-section-header">
           <h2 className="kb-section-title">
-            {Icon ? <Icon aria-hidden className="kb-section-icon" strokeWidth={1.75} /> : null}
+            {Icon ? (
+              <Icon
+                aria-hidden
+                className="kb-section-icon"
+                strokeWidth={1.75}
+              />
+            ) : null}
             {title}
           </h2>
-          {description ? <p className="kb-section-description">{description}</p> : null}
+          {description ? (
+            <p className="kb-section-description">{description}</p>
+          ) : null}
         </header>
       ) : null}
       {children}
@@ -53,8 +64,12 @@ export function KbEntryList({ items }: KbEntryListProps) {
       {items.map((item) => (
         <li className="kb-entry" key={`${item.href}-${item.title}`}>
           <Link className="kb-entry-link group block" href={item.href}>
-            <span className="kb-entry-title group-hover:text-primary">{item.title}</span>
-            {item.meta ? <span className="kb-entry-meta">{item.meta}</span> : null}
+            <span className="kb-entry-title group-hover:text-primary">
+              {item.title}
+            </span>
+            {item.meta ? (
+              <span className="kb-entry-meta">{item.meta}</span>
+            ) : null}
             {item.description ? (
               <span className="kb-entry-description">{item.description}</span>
             ) : null}

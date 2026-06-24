@@ -22,8 +22,8 @@ import {
   scrollToHomeSection,
   useHomeScrollSpy,
 } from "@/hooks/use-home-scroll-spy"
-import type { PublicSettings } from "@/lib/public/settings"
 import { glassPanelClass } from "@/lib/public/glass-panel"
+import type { PublicSettings } from "@/lib/public/settings"
 import { cn } from "@/lib/utils"
 
 const DockSearch = dynamic(
@@ -172,33 +172,40 @@ export function FloatingDock({ settings, resumeAvailable }: FloatingDockProps) {
         <DockSearch />
         <aside aria-label="Navigation dock" className="dock">
           <nav className={cn("dock-inner", glassPanelClass)}>
-          {DOCK_NAV_ITEMS.map((item) => {
-            const Icon = item.icon
+            {DOCK_NAV_ITEMS.map((item) => {
+              const Icon = item.icon
 
-            return (
+              return (
+                <DockLink
+                  active={resolveDockNavActive(
+                    item,
+                    pathname,
+                    activeSection,
+                    isHome
+                  )}
+                  href={resolveDockNavHref(item, isHome)}
+                  icon={<Icon className={iconClass} />}
+                  key={item.sectionId}
+                  label={item.label}
+                  onNavigate={(event) => handleSectionNav(item, event)}
+                />
+              )
+            })}
+            {utilityItems.length > 0 ? (
+              <div aria-hidden className="dock-divider" />
+            ) : null}
+            {utilityItems.map((item) => (
               <DockLink
-                active={resolveDockNavActive(item, pathname, activeSection, isHome)}
-                href={resolveDockNavHref(item, isHome)}
-                icon={<Icon className={iconClass} />}
-                key={item.sectionId}
+                active={pathname === item.href}
+                external={item.external}
+                href={item.href}
+                icon={item.icon}
+                key={item.href}
                 label={item.label}
-                onNavigate={(event) => handleSectionNav(item, event)}
               />
-            )
-          })}
-          {utilityItems.length > 0 ? <div aria-hidden className="dock-divider" /> : null}
-          {utilityItems.map((item) => (
-            <DockLink
-              active={pathname === item.href}
-              external={item.external}
-              href={item.href}
-              icon={item.icon}
-              key={item.href}
-              label={item.label}
-            />
-          ))}
-          <div aria-hidden className="dock-divider" />
-          <ThemeToggle />
+            ))}
+            <div aria-hidden className="dock-divider" />
+            <ThemeToggle />
           </nav>
         </aside>
         {featureFlags.enablePortfolioAssistant ? <AssistantDockButton /> : null}

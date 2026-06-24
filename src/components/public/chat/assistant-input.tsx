@@ -44,7 +44,7 @@ export function AssistantInput({
   const canSubmit = Boolean(value.trim()) && !disabled
 
   return (
-    <div className="px-3 pb-3 pt-2">
+    <div className="assistant-input-wrap px-3 pb-3 pt-2">
       <div
         className={cn(
           "flex items-end gap-1 rounded-2xl border bg-muted/20 px-3 py-2.5 transition-colors",

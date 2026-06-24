@@ -2,7 +2,10 @@ import { Microscope } from "lucide-react"
 import Link from "next/link"
 
 import { PublicEmptyState } from "@/components/public/empty-state"
-import { ResearchList,type ResearchListItem } from "@/components/public/research-list"
+import {
+  ResearchList,
+  type ResearchListItem,
+} from "@/components/public/research-list"
 
 type ResearchPreviewSectionProps = {
   items: ResearchListItem[]
@@ -10,10 +13,14 @@ type ResearchPreviewSectionProps = {
 
 export function ResearchPreviewSection({ items }: ResearchPreviewSectionProps) {
   return (
-    <section className="research-section kb-section mx-auto max-w-home px-6">
+    <section className="research-section kb-section mx-auto max-w-home px-page">
       <header className="research-section-header">
         <h2 className="research-section-title">
-          <Microscope aria-hidden className="research-section-icon" strokeWidth={1.75} />
+          <Microscope
+            aria-hidden
+            className="research-section-icon"
+            strokeWidth={1.75}
+          />
           Research
         </h2>
         <p className="research-section-description">

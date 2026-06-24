@@ -65,12 +65,8 @@ export default async function AiUsagePage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-left font-medium">
-                    Provider
-                  </th>
-                  <th className="px-4 py-3 text-right font-medium">
-                    Requests
-                  </th>
+                  <th className="px-4 py-3 text-left font-medium">Provider</th>
+                  <th className="px-4 py-3 text-right font-medium">Requests</th>
                   <th className="px-4 py-3 text-right font-medium">
                     Est. Cost
                   </th>
@@ -114,9 +110,7 @@ export default async function AiUsagePage() {
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="px-4 py-3 text-left font-medium">Model</th>
-                  <th className="px-4 py-3 text-right font-medium">
-                    Requests
-                  </th>
+                  <th className="px-4 py-3 text-right font-medium">Requests</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -146,9 +140,7 @@ export default async function AiUsagePage() {
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="px-4 py-3 text-left font-medium">Role</th>
-                  <th className="px-4 py-3 text-right font-medium">
-                    Requests
-                  </th>
+                  <th className="px-4 py-3 text-right font-medium">Requests</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -178,9 +170,7 @@ export default async function AiUsagePage() {
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="px-4 py-3 text-left font-medium">Date</th>
-                  <th className="px-4 py-3 text-right font-medium">
-                    Requests
-                  </th>
+                  <th className="px-4 py-3 text-right font-medium">Requests</th>
                   <th className="px-4 py-3 text-right font-medium">Tokens</th>
                   <th className="px-4 py-3 text-right font-medium">
                     Est. Cost
@@ -223,9 +213,7 @@ export default async function AiUsagePage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-left font-medium">
-                    Provider
-                  </th>
+                  <th className="px-4 py-3 text-left font-medium">Provider</th>
                   <th className="px-4 py-3 text-left font-medium">Model</th>
                   <th className="px-4 py-3 text-left font-medium">Error</th>
                   <th className="px-4 py-3 text-right font-medium">Time</th>
@@ -233,11 +221,7 @@ export default async function AiUsagePage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {errors.map((e, i) => (
-                  <tr
-                    // eslint-disable-next-line react/no-array-index-key
-                    key={i}
-                    className="transition-colors hover:bg-muted/30"
-                  >
+                  <tr key={i} className="transition-colors hover:bg-muted/30">
                     <td className="px-4 py-3 font-mono text-xs">
                       {e.provider}
                     </td>

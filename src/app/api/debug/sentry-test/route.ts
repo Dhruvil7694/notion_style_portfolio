@@ -1,7 +1,9 @@
+import "server-only"
+
 import * as Sentry from "@sentry/nextjs"
 import { type NextRequest, NextResponse } from "next/server"
 
-import { createAdminClient } from "@/lib/supabase/admin"
+import { authorizeAdminApi } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
@@ -17,13 +19,12 @@ function makeRequestId(): string {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  // admin-only gate
-  const supabase = await createAdminClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const auth = await authorizeAdminApi()
+  if (!auth.ok) {
+    return NextResponse.json(
+      { error: auth.status === 401 ? "Unauthorized" : "Forbidden" },
+      { status: auth.status }
+    )
   }
 
   const body = (await req.json()) as { type: TestType }

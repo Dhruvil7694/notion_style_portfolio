@@ -1,7 +1,7 @@
 "use client"
 
 import { ImageIcon, Link2, Upload } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 
 import { FormField, TextInput } from "@/components/admin/forms"
 import { CoverImageCropDialog } from "@/components/admin/forms/cover-image-crop-dialog"
@@ -116,7 +116,9 @@ export function CoverImageField({
               <div className="text-muted-foreground flex aspect-video w-full flex-col items-center justify-center gap-2">
                 <ImageIcon className="h-8 w-8" strokeWidth={1.5} />
                 <p className="text-sm">
-                  {previewError ? "Could not load image preview" : "No cover image yet"}
+                  {previewError
+                    ? "Could not load image preview"
+                    : "No cover image yet"}
                 </p>
               </div>
             )}
@@ -136,7 +138,9 @@ export function CoverImageField({
             {previewUrl ? (
               <>
                 <a
-                  className={cn(buttonVariants({ size: "sm", variant: "outline" }))}
+                  className={cn(
+                    buttonVariants({ size: "sm", variant: "outline" })
+                  )}
                   href={previewUrl}
                   rel="noopener noreferrer"
                   target="_blank"
@@ -145,7 +149,9 @@ export function CoverImageField({
                   Open link
                 </a>
                 <button
-                  className={cn(buttonVariants({ size: "sm", variant: "ghost" }))}
+                  className={cn(
+                    buttonVariants({ size: "sm", variant: "ghost" })
+                  )}
                   onClick={() => {
                     onChange("")
                     setPreviewError(false)

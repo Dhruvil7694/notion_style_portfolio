@@ -1,7 +1,11 @@
+import "server-only"
+
 import { PageHeader, StatCard } from "@/components/admin"
 import { getAiUsageSummary } from "@/lib/admin/ai-usage-queries"
 import { runContentHealthAudit } from "@/lib/content-health/engine"
 import { runDeploymentChecks } from "@/lib/deployment/checks"
+import { getPublicSettings } from "@/lib/public/queries"
+import { isDistributedRateLimitConfigured } from "@/lib/security/rate-limit"
 import { createAdminClient } from "@/lib/supabase/admin"
 
 export const dynamic = "force-dynamic"
@@ -51,14 +55,22 @@ async function computeSecurityScore(): Promise<ScoreDimension> {
     }
   }
 
-  const optional = ["SENTRY_DSN", "UPSTASH_REDIS_REST_URL"]
-  for (const key of optional) {
-    if (process.env[key]) {
-      details.push(`✓ ${key} set`)
-    } else {
-      warnings.push(`⚠ ${key} not set (optional but recommended)`)
-      score -= 5
-    }
+  const upstashOk = isDistributedRateLimitConfigured()
+  if (upstashOk) {
+    details.push("✓ UPSTASH_REDIS_REST_URL and TOKEN set")
+  } else if (process.env.NODE_ENV === "production") {
+    warnings.push("✗ Production Rate Limiting Disabled — Upstash required")
+    score -= 15
+  } else {
+    warnings.push("⚠ Upstash not set (in-memory fallback in dev)")
+    score -= 5
+  }
+
+  if (process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    details.push("✓ Sentry DSN configured")
+  } else {
+    warnings.push("⚠ Sentry DSN not set (recommended for production)")
+    score -= 5
   }
 
   return {
@@ -165,7 +177,26 @@ async function computeSeoScore(): Promise<ScoreDimension> {
     warnings.push("✗ SITE_URL missing — canonical URLs broken")
   }
 
-  // Check sitemap/robots existence via file presence
+  try {
+    const settings = await getPublicSettings()
+    const envUrl = process.env.SITE_URL?.trim().replace(/\/$/, "")
+    const cmsUrl = settings.site.site_url?.trim().replace(/\/$/, "")
+
+    if (envUrl && cmsUrl && envUrl !== cmsUrl) {
+      warnings.push(
+        `✗ SEO Configuration Mismatch: SITE_URL=${envUrl}, CMS=${cmsUrl}`
+      )
+      score -= 30
+    } else if (envUrl && cmsUrl) {
+      details.push("✓ SITE_URL matches CMS site_url")
+      score += 10
+    } else if (envUrl && !cmsUrl) {
+      warnings.push("⚠ CMS site_url not set — using SITE_URL env fallback")
+    }
+  } catch {
+    warnings.push("⚠ Could not verify SITE_URL vs CMS site_url")
+  }
+
   try {
     const fs = await import("fs/promises")
     const hasSitemap = await fs
@@ -176,26 +207,35 @@ async function computeSeoScore(): Promise<ScoreDimension> {
       .access("src/app/robots.ts")
       .then(() => true)
       .catch(() => false)
+    const hasLlms = await fs
+      .access("src/app/llms.txt/route.ts")
+      .then(() => true)
+      .catch(() => false)
 
     if (hasSitemap) {
-      score += 10
+      score += 5
       details.push("✓ sitemap.ts present")
     } else {
       warnings.push("⚠ sitemap.ts missing")
     }
     if (hasRobots) {
-      score += 10
+      score += 5
       details.push("✓ robots.ts present")
     } else {
       warnings.push("⚠ robots.ts missing")
     }
+    if (hasLlms) {
+      details.push("✓ llms.txt served dynamically from SITE_URL")
+    } else {
+      warnings.push("⚠ llms.txt route missing")
+    }
   } catch {
-    details.push("ℹ Could not verify sitemap/robots files")
+    details.push("ℹ Could not verify SEO route files")
   }
 
   return {
     label: "SEO",
-    score: Math.min(100, score),
+    score: Math.min(100, Math.max(0, score)),
     weight: 10,
     details,
     warnings,
@@ -220,11 +260,13 @@ async function computeInfraScore(): Promise<ScoreDimension> {
     warnings.push("✗ Supabase connection failed")
   }
 
-  if (process.env.UPSTASH_REDIS_REST_URL) {
+  if (isDistributedRateLimitConfigured()) {
     score += 10
     details.push("✓ Redis configured (rate limiting active)")
+  } else if (process.env.NODE_ENV === "production") {
+    warnings.push("✗ Production Rate Limiting Disabled — Upstash required")
   } else {
-    warnings.push("⚠ Redis not configured — rate limiting disabled")
+    warnings.push("⚠ Redis not configured — in-memory fallback in dev")
   }
 
   if (process.env.NEXT_PUBLIC_POSTHOG_KEY) {

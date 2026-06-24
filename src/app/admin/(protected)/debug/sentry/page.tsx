@@ -2,9 +2,7 @@
 
 import { useState } from "react"
 
-import { PageHeader } from "@/components/admin"
-
-export const metadata = undefined
+import { PageHeader } from "@/components/admin/page-header"
 
 type TestType =
   | "public-page-error"

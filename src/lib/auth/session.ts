@@ -49,3 +49,21 @@ export async function requireAdmin(): Promise<User> {
 
   return user
 }
+
+export type AdminApiAuthResult =
+  | { ok: true; user: User }
+  | { ok: false; status: 401 | 403 }
+
+export async function authorizeAdminApi(): Promise<AdminApiAuthResult> {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    return { ok: false, status: 401 }
+  }
+
+  if (!isAdminEmail(user.email)) {
+    return { ok: false, status: 403 }
+  }
+
+  return { ok: true, user }
+}

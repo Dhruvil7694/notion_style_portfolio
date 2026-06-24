@@ -1,15 +1,17 @@
 "use client"
 
-import { Bot, Menu, X } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 
 import { useAssistant } from "@/components/public/chat/assistant-context"
+import { AssistantLottieIcon } from "@/components/public/chat/assistant-lottie-icon"
 import { ThemeToggle } from "@/components/public/theme-toggle"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -56,8 +58,8 @@ export function Navigation({ className, onNavigate }: NavigationProps) {
               <Link
                 aria-current={active ? "true" : undefined}
                 className={cn(
-                  "kb-nav-link flex min-h-[44px] items-center rounded-lg px-3 py-2",
-                  active && "kb-nav-link-active"
+                  "kb-nav-link mobile-nav-link flex min-h-[48px] items-center rounded-lg px-3 py-2.5 text-[0.9375rem] text-muted-foreground transition-colors hover:text-foreground",
+                  active && "bg-foreground/[0.07] font-medium text-foreground"
                 )}
                 href={resolveMobileNavHref(item, isHome)}
                 onClick={(event) => {
@@ -110,8 +112,7 @@ export function SiteHeader({ settings, assistantEnabled }: SiteHeaderProps) {
         <Link className="kb-nav-brand" href="/">
           {brandName}
         </Link>
-        <div className="flex items-center gap-2">
-          <ThemeToggle variant="header" />
+        <div className="flex items-center gap-1">
           {assistantEnabled && <MobileAssistantToggle />}
           <Button
             aria-expanded={open}
@@ -127,16 +128,33 @@ export function SiteHeader({ settings, assistantEnabled }: SiteHeaderProps) {
 
       <Sheet onOpenChange={setOpen} open={open}>
         <SheetContent
-          className="w-[min(280px,85vw)] pt-safe pb-safe"
+          className="public-site mobile-nav-sheet w-[min(300px,88vw)] gap-0 border-border bg-background pt-safe pb-safe text-foreground shadow-xl"
+          showCloseButton={false}
           side="right"
         >
-          <SheetHeader className="px-4 pb-4 pt-2">
-            <SheetTitle className="text-left text-sm font-semibold">
-              Navigation
-            </SheetTitle>
+          <SheetHeader className="mobile-nav-sheet-header shrink-0 border-b border-border/50 px-4 py-4">
+            <div className="flex items-center justify-between gap-3">
+              <SheetTitle className="text-base font-semibold text-foreground">
+                Navigation
+              </SheetTitle>
+              <SheetClose
+                render={
+                  <button
+                    aria-label="Close navigation menu"
+                    className="mobile-nav-close flex size-10 shrink-0 items-center justify-center rounded-lg border-0 bg-transparent text-foreground outline-none hover:bg-muted/40"
+                    type="button"
+                  />
+                }
+              >
+                <X className="size-5" />
+              </SheetClose>
+            </div>
           </SheetHeader>
-          <div className="px-2">
+          <div className="mobile-nav-sheet-body flex-1 overflow-y-auto px-3 py-3">
             <Navigation onNavigate={() => setOpen(false)} />
+            <div className="mt-4 border-t border-border/50 pt-2">
+              <ThemeToggle variant="sheet" />
+            </div>
           </div>
         </SheetContent>
       </Sheet>
@@ -149,13 +167,13 @@ function MobileAssistantToggle() {
 
   return (
     <Button
-      aria-label="Open assistant"
+      aria-label={isOpen ? "Close assistant" : "Open assistant"}
       aria-pressed={isOpen}
-      className="h-11 w-11 p-0"
+      className="mobile-assistant-toggle h-11 w-11 p-0"
       onClick={toggle}
       variant="ghost"
     >
-      <Bot className="size-5" />
+      <AssistantLottieIcon size="header" />
     </Button>
   )
 }

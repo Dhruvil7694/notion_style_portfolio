@@ -1,6 +1,6 @@
 import { PageHeader, StatCard } from "@/components/admin"
-import { runDeploymentChecks } from "@/lib/deployment/checks"
 import type { CheckResult } from "@/lib/deployment/checks"
+import { runDeploymentChecks } from "@/lib/deployment/checks"
 
 export const metadata = {
   title: "Launch Readiness",
@@ -9,15 +9,23 @@ export const metadata = {
 
 function CheckIcon({ status }: { status: CheckResult["status"] }) {
   if (status === "healthy") {
-    return <span className="font-bold text-green-600 dark:text-green-400">✓</span>
+    return (
+      <span className="font-bold text-green-600 dark:text-green-400">✓</span>
+    )
   }
   if (status === "warning") {
-    return <span className="font-bold text-yellow-600 dark:text-yellow-400">⚠</span>
+    return (
+      <span className="font-bold text-yellow-600 dark:text-yellow-400">⚠</span>
+    )
   }
   return <span className="font-bold text-red-600 dark:text-red-400">✗</span>
 }
 
-function StatusBadge({ status }: { status: "healthy" | "warning" | "critical" }) {
+function StatusBadge({
+  status,
+}: {
+  status: "healthy" | "warning" | "critical"
+}) {
   const classes =
     status === "healthy"
       ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
@@ -26,7 +34,11 @@ function StatusBadge({ status }: { status: "healthy" | "warning" | "critical" })
         : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
 
   const label =
-    status === "healthy" ? "Healthy" : status === "warning" ? "Warning" : "Critical"
+    status === "healthy"
+      ? "Healthy"
+      : status === "warning"
+        ? "Warning"
+        : "Critical"
 
   return (
     <span className={`rounded px-2 py-0.5 text-xs font-medium ${classes}`}>
@@ -70,8 +82,9 @@ export default async function LaunchPage() {
           <StatCard
             label="Issues Found"
             value={
-              result.sections.flatMap((s) => s.checks).filter((c) => c.status !== "healthy")
-                .length
+              result.sections
+                .flatMap((s) => s.checks)
+                .filter((c) => c.status !== "healthy").length
             }
           />
         </div>

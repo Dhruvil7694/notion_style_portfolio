@@ -849,7 +849,7 @@ export function AssistantMessage({
         {/* Bubble */}
         <div
           className={cn(
-            "rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed",
+            "rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed max-md:text-xs max-md:leading-relaxed",
             isUser
               ? "bg-foreground text-background"
               : "border border-border/50 bg-muted/30 text-foreground"
@@ -931,7 +931,7 @@ export function AssistantMessage({
         {timestamp && (
           <div
             className={cn(
-              "mt-1 flex items-center gap-1.5 transition-opacity duration-200",
+              "assistant-message-meta mt-1 flex items-center gap-1.5 transition-opacity duration-200",
               isUser ? "justify-end" : "justify-start",
               hovered ? "opacity-100" : "opacity-0"
             )}

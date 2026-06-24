@@ -1,5 +1,7 @@
 import "server-only"
 
+import { getPublicSettings } from "@/lib/public/queries"
+import { isDistributedRateLimitConfigured } from "@/lib/security/rate-limit"
 import { createAdminClient } from "@/lib/supabase/admin"
 
 import { checkEnvVar, checkUrl } from "./validators"
@@ -26,14 +28,95 @@ function sectionStatus(
   return "healthy"
 }
 
-async function runSecurityChecks(): Promise<CheckResult[]> {
+function normalizeSiteUrl(url: string): string {
+  return url.trim().replace(/\/$/, "")
+}
+
+async function checkSiteUrlConsistency(): Promise<CheckResult> {
+  const envUrl = process.env.SITE_URL?.trim()
+  const settings = await getPublicSettings()
+  const cmsUrl = settings.site.site_url?.trim()
+
+  if (!envUrl) {
+    return {
+      id: "site_url_env",
+      label: "SITE_URL",
+      status: "critical",
+      message: "SITE_URL is not set",
+      detail:
+        "Required for canonical URLs, OG images, sitemap, JSON-LD, and llms.txt",
+    }
+  }
+
+  if (!cmsUrl) {
+    return {
+      id: "site_url_cms",
+      label: "CMS site_url",
+      status: "warning",
+      message:
+        "CMS site_url not set — canonical URLs fall back to SITE_URL env",
+    }
+  }
+
+  if (normalizeSiteUrl(envUrl) !== normalizeSiteUrl(cmsUrl)) {
+    return {
+      id: "seo_configuration_mismatch",
+      label: "SEO Configuration Mismatch",
+      status: "critical",
+      message: "SITE_URL does not match CMS site_url",
+      detail: `SITE_URL=${normalizeSiteUrl(envUrl)}, CMS=${normalizeSiteUrl(cmsUrl)}. Canonical URLs, OG images, sitemap, JSON-LD, and llms.txt depend on alignment.`,
+    }
+  }
+
+  return {
+    id: "site_url_consistency",
+    label: "Site URL Consistency",
+    status: "healthy",
+    message: "SITE_URL matches CMS site_url",
+  }
+}
+
+function checkRateLimiting(): CheckResult {
+  const configured = isDistributedRateLimitConfigured()
+  const isProduction = process.env.NODE_ENV === "production"
+
+  if (configured) {
+    return {
+      id: "upstash_redis",
+      label: "Rate Limiting (Upstash)",
+      status: "healthy",
+      message: "Distributed rate limiting configured",
+    }
+  }
+
+  if (isProduction) {
+    return {
+      id: "production_rate_limiting_disabled",
+      label: "Production Rate Limiting Disabled",
+      status: "critical",
+      message:
+        "UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required in production",
+      detail:
+        "Without Upstash, rate limits use in-memory fallback (non-functional on Vercel serverless)",
+    }
+  }
+
+  return {
+    id: "upstash_redis",
+    label: "Rate Limiting (Upstash)",
+    status: "warning",
+    message: "Using in-memory rate limiting (development only)",
+  }
+}
+
+function runSecurityChecks(): CheckResult[] {
   const checks: CheckResult[] = [
-    checkEnvVar("SUPABASE_SERVICE_ROLE_KEY"),
+    checkEnvVar("SUPABASE_SECRET_KEY"),
     checkEnvVar("ADMIN_EMAIL"),
-    checkEnvVar("NEXTAUTH_SECRET"),
+    checkEnvVar("SITE_URL"),
   ]
 
-  const nodeEnv = process.env["NODE_ENV"]
+  const nodeEnv = process.env.NODE_ENV
   checks.push(
     nodeEnv === "production"
       ? {
@@ -59,6 +142,8 @@ function runAiChecks(): CheckResult[] {
     { env: "ANTHROPIC_API_KEY", label: "Anthropic" },
     { env: "OPENAI_API_KEY", label: "OpenAI" },
     { env: "GOOGLE_GENERATIVE_AI_API_KEY", label: "Google AI" },
+    { env: "GROQ_API_KEY", label: "Groq" },
+    { env: "OPENROUTER_API_KEY", label: "OpenRouter" },
   ]
 
   const configured = providers.filter((p) => Boolean(process.env[p.env]))
@@ -69,15 +154,15 @@ function runAiChecks(): CheckResult[] {
         id: "ai_provider",
         label: "AI Provider",
         status: "warning",
-        message: "No AI provider keys found",
+        message: "No AI provider keys found in environment",
         detail:
-          "Set at least one of: ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY",
+          "Set at least one provider key in env or CMS AI settings for assistant/copilot",
       },
     ]
   }
 
   return configured.map((p) => ({
-    id: `ai_${p.label.toLowerCase()}`,
+    id: `ai_${p.label.toLowerCase().replace(/\s+/g, "_")}`,
     label: `${p.label} API Key`,
     status: "healthy" as const,
     message: `${p.label} API key is configured`,
@@ -85,10 +170,10 @@ function runAiChecks(): CheckResult[] {
 }
 
 async function runDatabaseChecks(): Promise<CheckResult[]> {
-  const supabaseUrl = checkEnvVar("NEXT_PUBLIC_SUPABASE_URL")
-  const supabaseKey = checkEnvVar("NEXT_PUBLIC_SUPABASE_ANON_KEY")
-
-  const checks: CheckResult[] = [supabaseUrl, supabaseKey]
+  const checks: CheckResult[] = [
+    checkEnvVar("NEXT_PUBLIC_SUPABASE_URL"),
+    checkEnvVar("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
+  ]
 
   try {
     const supabase = await createAdminClient()
@@ -125,18 +210,59 @@ async function runDatabaseChecks(): Promise<CheckResult[]> {
   return checks
 }
 
-function runSeoChecks(): CheckResult[] {
-  const siteUrl = process.env["NEXT_PUBLIC_SITE_URL"]
-  return [checkUrl(siteUrl, "NEXT_PUBLIC_SITE_URL")]
+async function runSeoChecks(): Promise<CheckResult[]> {
+  const siteUrlCheck = checkUrl(process.env.SITE_URL, "SITE_URL")
+  const consistencyCheck = await checkSiteUrlConsistency()
+
+  return [siteUrlCheck, consistencyCheck]
 }
 
-function runEnvChecks(): CheckResult[] {
-  return [
-    checkEnvVar("NEXT_PUBLIC_SUPABASE_URL"),
-    checkEnvVar("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-    checkEnvVar("SUPABASE_SERVICE_ROLE_KEY"),
-    checkEnvVar("ADMIN_EMAIL"),
-  ]
+function runInfrastructureChecks(): CheckResult[] {
+  const checks: CheckResult[] = [checkRateLimiting()]
+
+  checks.push(
+    process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
+      ? {
+          id: "sentry_dsn",
+          label: "Monitoring (Sentry)",
+          status: "healthy",
+          message: "Sentry DSN configured",
+        }
+      : {
+          id: "sentry_dsn",
+          label: "Monitoring (Sentry)",
+          status: "warning",
+          message: "Sentry DSN not configured",
+          detail: "Recommended for production error tracking",
+        }
+  )
+
+  checks.push(
+    process.env.NEXT_PUBLIC_POSTHOG_KEY
+      ? {
+          id: "posthog_key",
+          label: "Analytics (PostHog)",
+          status: "healthy",
+          message: "NEXT_PUBLIC_POSTHOG_KEY configured",
+        }
+      : {
+          id: "posthog_key",
+          label: "Analytics (PostHog)",
+          status: "warning",
+          message: "PostHog not configured",
+          detail: "Optional — analytics will be disabled",
+        }
+  )
+
+  return checks
+}
+
+export function mapCheckStatusToHealth(
+  status: CheckResult["status"]
+): "pass" | "warn" | "fail" {
+  if (status === "healthy") return "pass"
+  if (status === "warning") return "warn"
+  return "fail"
 }
 
 export async function runDeploymentChecks(): Promise<{
@@ -144,10 +270,14 @@ export async function runDeploymentChecks(): Promise<{
   overallScore: number
   readyToDeploy: boolean
 }> {
-  const [securityChecks, dbChecks] = await Promise.all([
-    runSecurityChecks(),
+  const [dbChecks, seoChecks] = await Promise.all([
     runDatabaseChecks(),
+    runSeoChecks(),
   ])
+
+  const securityChecks = runSecurityChecks()
+  const aiChecks = runAiChecks()
+  const infrastructureChecks = runInfrastructureChecks()
 
   const sections: DeploymentSection[] = [
     {
@@ -156,9 +286,26 @@ export async function runDeploymentChecks(): Promise<{
       status: sectionStatus(securityChecks),
     },
     {
+      title: "Environment",
+      checks: [
+        checkEnvVar("NEXT_PUBLIC_SUPABASE_URL"),
+        checkEnvVar("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
+        checkEnvVar("SUPABASE_SECRET_KEY"),
+        checkEnvVar("ADMIN_EMAIL"),
+        checkEnvVar("SITE_URL"),
+      ],
+      status: sectionStatus([
+        checkEnvVar("NEXT_PUBLIC_SUPABASE_URL"),
+        checkEnvVar("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
+        checkEnvVar("SUPABASE_SECRET_KEY"),
+        checkEnvVar("ADMIN_EMAIL"),
+        checkEnvVar("SITE_URL"),
+      ]),
+    },
+    {
       title: "AI Providers",
-      checks: runAiChecks(),
-      status: sectionStatus(runAiChecks()),
+      checks: aiChecks,
+      status: sectionStatus(aiChecks),
     },
     {
       title: "Database",
@@ -167,13 +314,13 @@ export async function runDeploymentChecks(): Promise<{
     },
     {
       title: "SEO & URLs",
-      checks: runSeoChecks(),
-      status: sectionStatus(runSeoChecks()),
+      checks: seoChecks,
+      status: sectionStatus(seoChecks),
     },
     {
-      title: "Environment",
-      checks: runEnvChecks(),
-      status: sectionStatus(runEnvChecks()),
+      title: "Infrastructure",
+      checks: infrastructureChecks,
+      status: sectionStatus(infrastructureChecks),
     },
   ]
 

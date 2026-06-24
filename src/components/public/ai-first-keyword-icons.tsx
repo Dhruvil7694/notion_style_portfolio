@@ -5,13 +5,13 @@ import {
   ClipboardCheck,
   Database,
   GitBranch,
+  type LucideIcon,
   Network,
   Rocket,
   Server,
   Sparkles,
   Wand2,
   Workflow,
-  type LucideIcon,
 } from "lucide-react"
 
 import type { AiFirstKeywordIconName } from "@/lib/public/ai-first-keyword-details"

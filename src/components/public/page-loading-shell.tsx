@@ -5,12 +5,18 @@ type PageLoadingShellProps = {
   rows?: number
 }
 
-export function PageLoadingShell({ className, rows = 6 }: PageLoadingShellProps) {
+export function PageLoadingShell({
+  className,
+  rows = 6,
+}: PageLoadingShellProps) {
   return (
     <div
       aria-busy="true"
       aria-label="Loading page"
-      className={cn("kb-page mx-auto max-w-home animate-pulse px-6 pb-kb-section", className)}
+      className={cn(
+        "kb-page mx-auto max-w-home animate-pulse px-page pb-kb-section",
+        className
+      )}
     >
       <div className="mb-kb-heading space-y-3">
         <div className="h-3 w-28 rounded bg-[color-mix(in_srgb,var(--foreground)_12%,transparent)]" />

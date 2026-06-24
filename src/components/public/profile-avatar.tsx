@@ -1,27 +1,46 @@
 "use client"
 
 import { User } from "lucide-react"
+import type { StaticImageData } from "next/image"
 import Image from "next/image"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import { useVisitorInterest } from "@/hooks/use-visitor-interest"
 import {
   buildWorkspaceContext,
   type WorkspaceContextInput,
 } from "@/lib/public/presence"
+import { DEFAULT_PROFILE_AVATAR } from "@/lib/public/settings"
 import { getPersonalizedAvatarHoverMessages } from "@/lib/public/visitor-interest"
 
 type ProfileAvatarProps = {
-  avatarUrl?: string | null
+  avatarSrc: string | StaticImageData
   name: string
   contextInput: WorkspaceContextInput
 }
 
-export function ProfileAvatar({ avatarUrl, name, contextInput }: ProfileAvatarProps) {
+function isStaticImageData(
+  value: string | StaticImageData
+): value is StaticImageData {
+  return typeof value === "object" && value !== null && "src" in value
+}
+
+export function ProfileAvatar({
+  avatarSrc,
+  name,
+  contextInput,
+}: ProfileAvatarProps) {
   const [hovering, setHovering] = useState(false)
   const [message, setMessage] = useState("")
+  const [imageError, setImageError] = useState(false)
+  const [src, setSrc] = useState<string | StaticImageData>(avatarSrc)
   const hoverSaltRef = useRef(0)
   const interest = useVisitorInterest()
+
+  useEffect(() => {
+    setSrc(avatarSrc)
+    setImageError(false)
+  }, [avatarSrc])
 
   const showTag = useCallback(() => {
     const context = buildWorkspaceContext({ ...contextInput, now: new Date() })
@@ -44,6 +63,18 @@ export function ProfileAvatar({ avatarUrl, name, contextInput }: ProfileAvatarPr
     setHovering(false)
   }, [])
 
+  function handleImageError() {
+    const currentSrc = isStaticImageData(src) ? src.src : src
+    const fallbackSrc = DEFAULT_PROFILE_AVATAR.src
+
+    if (currentSrc !== fallbackSrc) {
+      setSrc(DEFAULT_PROFILE_AVATAR)
+      return
+    }
+
+    setImageError(true)
+  }
+
   return (
     <div
       className="workspace-avatar-cluster"
@@ -58,18 +89,23 @@ export function ProfileAvatar({ avatarUrl, name, contextInput }: ProfileAvatarPr
       tabIndex={0}
     >
       <div className="workspace-avatar-wrap">
-        {avatarUrl ? (
+        {!imageError ? (
           <Image
             alt=""
             className="workspace-avatar"
             height={88}
-            key={avatarUrl}
-            src={avatarUrl}
-            unoptimized
+            key={isStaticImageData(src) ? src.src : src}
+            onError={handleImageError}
+            priority
+            src={src}
+            unoptimized={!isStaticImageData(src)}
             width={88}
           />
         ) : (
-          <div aria-hidden className="workspace-avatar workspace-avatar-fallback">
+          <div
+            aria-hidden
+            className="workspace-avatar workspace-avatar-fallback"
+          >
             <User className="workspace-avatar-icon" strokeWidth={1.5} />
           </div>
         )}

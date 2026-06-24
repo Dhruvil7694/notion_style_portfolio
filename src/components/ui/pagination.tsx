@@ -1,7 +1,11 @@
-import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  MoreHorizontalIcon,
+} from "lucide-react"
 import * as React from "react"
 
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
@@ -16,7 +20,10 @@ function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   )
 }
 
-function PaginationContent({ className, ...props }: React.ComponentProps<"ul">) {
+function PaginationContent({
+  className,
+  ...props
+}: React.ComponentProps<"ul">) {
   return (
     <ul
       className={cn("flex items-center gap-0.5", className)}
@@ -71,7 +78,11 @@ function PaginationPrevious({
       size="default"
       {...props}
     >
-      <ChevronLeftIcon aria-hidden className="cn-rtl-flip" data-icon="inline-start" />
+      <ChevronLeftIcon
+        aria-hidden
+        className="cn-rtl-flip"
+        data-icon="inline-start"
+      />
       {text}
     </PaginationLink>
   )
@@ -90,12 +101,19 @@ function PaginationNext({
       {...props}
     >
       {text}
-      <ChevronRightIcon aria-hidden className="cn-rtl-flip" data-icon="inline-end" />
+      <ChevronRightIcon
+        aria-hidden
+        className="cn-rtl-flip"
+        data-icon="inline-end"
+      />
     </PaginationLink>
   )
 }
 
-function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span">) {
+function PaginationEllipsis({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
   return (
     <span
       aria-hidden
