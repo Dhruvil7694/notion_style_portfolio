@@ -1,8 +1,12 @@
 import "server-only"
 
 import { extractEntitiesFromContent } from "@/lib/knowledge/entity-extractor"
-import { buildKnowledgeGraph, findRelatedKnowledge } from "@/lib/knowledge/graph"
-import { parseFaqItems } from "@/lib/knowledge/schemas"
+import { resolveContentFaqFromRecord } from "@/lib/knowledge/faq-templates"
+import {
+  buildKnowledgeGraph,
+  findRelatedKnowledge,
+} from "@/lib/knowledge/graph"
+import type { FaqItem } from "@/lib/knowledge/schemas"
 import type { RelatedKnowledgeBundle } from "@/lib/knowledge/types"
 import { getPublishedExpertiseAreas } from "@/lib/public/queries"
 import type { Content } from "@/types/database.helpers"
@@ -10,7 +14,7 @@ import type { Content } from "@/types/database.helpers"
 export type ContentKnowledgeContext = {
   aiSummary: string | null
   keyTakeaways: string[]
-  faqItems: ReturnType<typeof parseFaqItems>
+  faqItems: FaqItem[]
   expertiseSlugs: string[]
   expertiseTitlesBySlug: Record<string, string>
   relatedKnowledge: RelatedKnowledgeBundle | null
@@ -67,7 +71,7 @@ export async function resolveContentKnowledge(
   return {
     aiSummary: item.ai_summary?.trim() || null,
     keyTakeaways: item.key_takeaways ?? [],
-    faqItems: parseFaqItems(item.faq),
+    faqItems: resolveContentFaqFromRecord(item),
     expertiseSlugs: item.expertise_slugs ?? [],
     expertiseTitlesBySlug: Object.fromEntries(
       (expertiseAreas ?? []).map((area) => [area.slug, area.title])

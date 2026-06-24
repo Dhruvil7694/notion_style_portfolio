@@ -25,7 +25,8 @@ import {
   hasArchitectureGraph,
   parseArchitectureGraph,
 } from "@/lib/diagrams/architecture-graph.schema"
-import { parseFaqItems, parseProjectFacts } from "@/lib/knowledge/schemas"
+import { resolveProjectFaqFromRecord } from "@/lib/knowledge/faq-templates"
+import { parseProjectFacts } from "@/lib/knowledge/schemas"
 import type { RelatedKnowledgeBundle } from "@/lib/knowledge/types"
 import {
   buildProjectDetailMetadataLine,
@@ -182,7 +183,7 @@ export function ProjectCaseStudy({
   const results = parseStringArray(project.results)
   const learnings = parseStringArray(project.learnings)
   const keyTakeaways = parseStringArray(project.key_takeaways)
-  const faqItems = parseFaqItems(project.faq)
+  const faqItems = resolveProjectFaqFromRecord(project)
   const projectFacts = parseProjectFacts(project.project_facts)
   const challenges = parseProjectChallenges(project.challenges)
   const contentDocument = deserializeContent(project.content)
@@ -399,9 +400,7 @@ export function ProjectCaseStudy({
         </div>
       )}
 
-      {faqItems.length > 0 ? (
-        <FaqSection items={faqItems} pageType="project" slug={project.slug} />
-      ) : null}
+      <FaqSection items={faqItems} pageType="project" slug={project.slug} />
 
       {relatedKnowledge ? (
         <div className="project-case-study-knowledge-related">

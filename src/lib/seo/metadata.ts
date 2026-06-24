@@ -327,6 +327,14 @@ export function buildContactMetadata(context: MetadataContext): Metadata {
   })
 }
 
+export function buildPrivacyMetadata(context: MetadataContext): Metadata {
+  return buildBaseMetadata(context, {
+    title: "Privacy Policy",
+    description: `Privacy policy for ${SEO_SITE_TITLE}: analytics, error monitoring, AI assistant usage, and contact data.`,
+    path: "/privacy",
+  })
+}
+
 export function buildNotFoundMetadata(title = "Not Found"): Metadata {
   return {
     title,

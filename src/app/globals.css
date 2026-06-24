@@ -1697,6 +1697,7 @@ em .chat-link-inline:hover {
   line-height: 1.15;
   margin: 0;
   max-width: 100%;
+  min-height: 2.35rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3749,6 +3750,16 @@ html[data-site-theme="dark"]
   letter-spacing: 0.01em;
   line-height: 1.4;
   margin: 0;
+}
+
+.public-site .site-footer-legal-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.public-site .site-footer-legal-link:hover {
+  color: var(--foreground);
+  text-decoration: underline;
 }
 
 .public-site .kb-site-footer {

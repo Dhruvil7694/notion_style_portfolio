@@ -3,8 +3,11 @@ import { notFound } from "next/navigation"
 import { ProjectCaseStudy } from "@/components/public/project-case-study"
 import { JsonLd } from "@/components/seo/json-ld"
 import { extractEntitiesFromProject } from "@/lib/knowledge/entity-extractor"
-import { buildKnowledgeGraph, findRelatedKnowledge } from "@/lib/knowledge/graph"
-import { parseFaqItems } from "@/lib/knowledge/schemas"
+import { resolveProjectFaqFromRecord } from "@/lib/knowledge/faq-templates"
+import {
+  buildKnowledgeGraph,
+  findRelatedKnowledge,
+} from "@/lib/knowledge/graph"
 import {
   getProjectBySlug,
   getPublicSettings,
@@ -18,10 +21,7 @@ import {
   buildProjectJsonLd,
   mergeJsonLdGraph,
 } from "@/lib/seo/jsonld"
-import {
-  buildNotFoundMetadata,
-  buildProjectMetadata,
-} from "@/lib/seo/metadata"
+import { buildNotFoundMetadata, buildProjectMetadata } from "@/lib/seo/metadata"
 
 export const revalidate = 3600
 
@@ -41,7 +41,9 @@ export async function generateMetadata({ params }: ProjectDetailPageProps) {
   return buildProjectMetadata({ settings }, project)
 }
 
-export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+export default async function ProjectDetailPage({
+  params,
+}: ProjectDetailPageProps) {
   const { slug } = await params
   const { data: project } = await getProjectBySlug(slug)
 
@@ -71,22 +73,24 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     (expertiseAreas ?? []).map((area) => [area.slug, area.title])
   )
 
-  const faqItems = parseFaqItems(project.faq)
+  const faqItems = resolveProjectFaqFromRecord(project)
   const faqJsonLd =
     siteUrl && faqItems.length > 0
-      ? buildFaqPageJsonLd(faqItems, generateCanonicalUrl(siteUrl, `/projects/${project.slug}`))
-      : null
-
-  const jsonLd =
-    siteUrl
-      ? mergeJsonLdGraph(
-          [
-            buildProjectJsonLd(project, settings, siteUrl),
-            buildProjectBreadcrumbJsonLd(project.title, project.slug, siteUrl),
-            faqJsonLd,
-          ].filter(Boolean) as Record<string, unknown>[]
+      ? buildFaqPageJsonLd(
+          faqItems,
+          generateCanonicalUrl(siteUrl, `/projects/${project.slug}`)
         )
       : null
+
+  const jsonLd = siteUrl
+    ? mergeJsonLdGraph(
+        [
+          buildProjectJsonLd(project, settings, siteUrl),
+          buildProjectBreadcrumbJsonLd(project.title, project.slug, siteUrl),
+          faqJsonLd,
+        ].filter(Boolean) as Record<string, unknown>[]
+      )
+    : null
 
   return (
     <>

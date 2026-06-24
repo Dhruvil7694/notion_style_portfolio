@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 
 import { EncryptedText } from "@/components/ui/encrypted-text"
-import { useIsMobileViewport } from "@/hooks/use-is-mobile-viewport"
+import { deferIdleTask } from "@/lib/client/defer-idle"
 import {
   buildWorkspaceContext,
   getPresenceMessages,
@@ -18,10 +18,11 @@ type EncryptedNameProps = {
 
 const REVEAL_DELAY_MS = 35
 const DISPLAY_HOLD_MS = 2_000
+const MOBILE_QUERY = "(max-width: 767px)"
 
 export function EncryptedName({ name, contextInput }: EncryptedNameProps) {
-  const isMobile = useIsMobileViewport()
-  const [ready, setReady] = useState(false)
+  const [isMobile, setIsMobile] = useState(true)
+  const [animationsEnabled, setAnimationsEnabled] = useState(false)
   const [displayText, setDisplayText] = useState(name)
   const [isContextual, setIsContextual] = useState(false)
   const [minWidth, setMinWidth] = useState<number | undefined>(undefined)
@@ -31,7 +32,23 @@ export function EncryptedName({ name, contextInput }: EncryptedNameProps) {
   const nameMeasureRef = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
-    setReady(true)
+    const mediaQuery = window.matchMedia(MOBILE_QUERY)
+    const updateViewport = () => setIsMobile(mediaQuery.matches)
+
+    updateViewport()
+    mediaQuery.addEventListener("change", updateViewport)
+
+    const cancelDeferred = deferIdleTask(() => {
+      updateViewport()
+      if (!mediaQuery.matches) {
+        setAnimationsEnabled(true)
+      }
+    }, 3_000)
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateViewport)
+      cancelDeferred()
+    }
   }, [])
 
   const phrases = useMemo(() => {
@@ -58,7 +75,7 @@ export function EncryptedName({ name, contextInput }: EncryptedNameProps) {
   }, [name, phrases])
 
   useEffect(() => {
-    if (!ready || isMobile || phrases.length === 0) {
+    if (!animationsEnabled || isMobile || phrases.length === 0) {
       return
     }
 
@@ -91,47 +108,50 @@ export function EncryptedName({ name, contextInput }: EncryptedNameProps) {
     return () => {
       window.clearTimeout(timer)
     }
-  }, [name, phrases, ready, isMobile])
+  }, [name, phrases, animationsEnabled, isMobile])
 
   const longestPhrase = phrases.reduce(
     (longest, phrase) => (phrase.length > longest.length ? phrase : longest),
     name
   )
 
-  if (!ready || isMobile) {
-    return (
-      <h1 aria-label={name} className="workspace-name">
-        {name}
-      </h1>
-    )
-  }
+  const showAnimation = animationsEnabled && !isMobile
 
   return (
     <h1
       aria-label={name}
       className={cn(
-        "workspace-name workspace-name-animated",
-        isContextual && "is-contextual"
+        "workspace-name",
+        showAnimation && "workspace-name-animated",
+        showAnimation && isContextual && "is-contextual"
       )}
-      style={minWidth ? { minWidth: `${minWidth}px` } : undefined}
+      style={
+        showAnimation && minWidth ? { minWidth: `${minWidth}px` } : undefined
+      }
     >
-      <span className="workspace-name-measure" ref={nameMeasureRef}>
-        {name}
-      </span>
-      <span className="workspace-name-measure" ref={measureRef}>
-        {longestPhrase}
-      </span>
-      <span className="workspace-name-stage">
-        <EncryptedText
-          animateOnMount
-          encryptedClassName="workspace-name-encrypted"
-          flipDelayMs={REVEAL_DELAY_MS}
-          key={displayText}
-          revealDelayMs={REVEAL_DELAY_MS}
-          revealedClassName="workspace-name-revealed"
-          text={displayText}
-        />
-      </span>
+      {showAnimation ? (
+        <>
+          <span className="workspace-name-measure" ref={nameMeasureRef}>
+            {name}
+          </span>
+          <span className="workspace-name-measure" ref={measureRef}>
+            {longestPhrase}
+          </span>
+          <span className="workspace-name-stage">
+            <EncryptedText
+              animateOnMount
+              encryptedClassName="workspace-name-encrypted"
+              flipDelayMs={REVEAL_DELAY_MS}
+              key={displayText}
+              revealDelayMs={REVEAL_DELAY_MS}
+              revealedClassName="workspace-name-revealed"
+              text={displayText}
+            />
+          </span>
+        </>
+      ) : (
+        name
+      )}
     </h1>
   )
 }

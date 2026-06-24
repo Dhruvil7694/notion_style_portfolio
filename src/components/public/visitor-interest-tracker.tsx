@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 
+import { deferIdleTask } from "@/lib/client/defer-idle"
 import type { DiscoveryDocument } from "@/lib/discovery/types"
 import { recordContentViewByPath } from "@/lib/public/visitor-interest"
 
@@ -15,25 +16,34 @@ export function VisitorInterestTracker() {
   useEffect(() => {
     let cancelled = false
 
-    fetch("/api/discovery")
-      .then((response) => response.json())
-      .then((data: { documents?: DiscoveryDocument[] }) => {
-        if (cancelled) {
-          return
-        }
+    const cancelDeferred = deferIdleTask(() => {
+      fetch("/api/discovery")
+        .then((response) => response.json())
+        .then((data: { documents?: DiscoveryDocument[] }) => {
+          if (cancelled) {
+            return
+          }
 
-        documentsRef.current = Array.isArray(data.documents) ? data.documents : []
-        setDocumentsReady(true)
-      })
-      .catch(() => {})
+          documentsRef.current = Array.isArray(data.documents)
+            ? data.documents
+            : []
+          setDocumentsReady(true)
+        })
+        .catch(() => {})
+    }, 4_000)
 
     return () => {
       cancelled = true
+      cancelDeferred()
     }
   }, [])
 
   useEffect(() => {
-    if (!documentsReady || !pathname || pathname === lastTrackedPathRef.current) {
+    if (
+      !documentsReady ||
+      !pathname ||
+      pathname === lastTrackedPathRef.current
+    ) {
       return
     }
 

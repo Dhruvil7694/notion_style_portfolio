@@ -3,6 +3,8 @@
 import { usePathname } from "next/navigation"
 import { useEffect, useRef } from "react"
 
+import { deferIdleTask, isMobileViewport } from "@/lib/client/defer-idle"
+
 type SmoothScrollProviderProps = {
   children: React.ReactNode
 }
@@ -32,7 +34,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
   const isHome = pathname === "/"
 
   useEffect(() => {
-    if (!isHome) {
+    if (!isHome || isMobileViewport()) {
       lenisRef.current?.destroy()
       lenisRef.current = null
       return
@@ -47,39 +49,42 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       lenis?.resize()
     }, 200)
 
-    void import("lenis").then(({ default: Lenis }) => {
-      if (cancelled) {
-        return
-      }
+    const cancelDeferred = deferIdleTask(() => {
+      void import("lenis").then(({ default: Lenis }) => {
+        if (cancelled) {
+          return
+        }
 
-      lenis = new Lenis({
-        autoRaf: true,
-        autoResize: true,
-        duration: 1.1,
-        prevent: (node) =>
-          node instanceof Element &&
-          Boolean(
-            node.closest(
-              "[data-lenis-prevent], .dock-search-panel-scroll, .discovery-search-body, .projects-filters-submenu-scroll, .assistant-panel-scroll, .assistant-panel-footer"
-            )
-          ),
-        smoothWheel: true,
+        lenis = new Lenis({
+          autoRaf: true,
+          autoResize: true,
+          duration: 1.1,
+          prevent: (node) =>
+            node instanceof Element &&
+            Boolean(
+              node.closest(
+                "[data-lenis-prevent], .dock-search-panel-scroll, .discovery-search-body, .projects-filters-submenu-scroll, .assistant-panel-scroll, .assistant-panel-footer"
+              )
+            ),
+          smoothWheel: true,
+        })
+
+        lenisRef.current = lenis
+
+        window.addEventListener("load", refreshScroll)
+
+        resizeObserver = new ResizeObserver(() => {
+          refreshScroll()
+        })
+        resizeObserver.observe(document.documentElement)
+
+        delayedRefresh = window.setTimeout(refreshScroll, 400)
       })
-
-      lenisRef.current = lenis
-
-      window.addEventListener("load", refreshScroll)
-
-      resizeObserver = new ResizeObserver(() => {
-        refreshScroll()
-      })
-      resizeObserver.observe(document.documentElement)
-
-      delayedRefresh = window.setTimeout(refreshScroll, 400)
-    })
+    }, 2_500)
 
     return () => {
       cancelled = true
+      cancelDeferred()
       window.removeEventListener("load", refreshScroll)
       if (delayedRefresh) {
         window.clearTimeout(delayedRefresh)

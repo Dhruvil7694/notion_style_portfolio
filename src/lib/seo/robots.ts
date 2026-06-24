@@ -23,6 +23,7 @@ export async function buildRobots(): Promise<MetadataRoute.Robots> {
           "/ai-first",
           "/experience",
           "/contact",
+          "/privacy",
           "/resume",
           "/about",
           "/expertise",

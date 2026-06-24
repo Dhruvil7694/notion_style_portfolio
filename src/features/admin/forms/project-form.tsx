@@ -57,6 +57,7 @@ import {
   parseArchitectureGraphEdges,
   parseArchitectureGraphNodes,
 } from "@/lib/diagrams/architecture-graph.schema"
+import { buildProjectFaqTemplate } from "@/lib/knowledge/faq-templates"
 import { parseFaqItems } from "@/lib/knowledge/schemas"
 import {
   parseFlowNodes,
@@ -112,15 +113,21 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
       architecture: parseFlowNodes(project?.architecture),
       ai_design_nodes: parseArchitectureGraphNodes(project?.ai_design_nodes),
       ai_design_edges: parseArchitectureGraphEdges(project?.ai_design_edges),
-      architecture_nodes: parseArchitectureGraphNodes(project?.architecture_nodes),
-      architecture_edges: parseArchitectureGraphEdges(project?.architecture_edges),
+      architecture_nodes: parseArchitectureGraphNodes(
+        project?.architecture_nodes
+      ),
+      architecture_edges: parseArchitectureGraphEdges(
+        project?.architecture_edges
+      ),
       metrics: parseProjectMetrics(project?.metrics),
       tradeoffs: parseProjectTradeoffs(project?.tradeoffs),
       my_contribution: parseStringArray(project?.my_contribution),
-      tech_stack_groups: parseTechStackGroups(project?.tech_stack_groups).map((group) => ({
-        category: group.category,
-        items: group.items,
-      })),
+      tech_stack_groups: parseTechStackGroups(project?.tech_stack_groups).map(
+        (group) => ({
+          category: group.category,
+          items: group.items,
+        })
+      ),
       timeline: parseProjectTimeline(project?.timeline),
       gallery: parseProjectGallery(project?.gallery, project?.demo_images),
       challenges: parseProjectChallenges(project?.challenges),
@@ -193,9 +200,16 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               ? "Create a new portfolio project."
               : "Update project details and publishing status."
           }
-          title={mode === "create" ? "New project" : (project?.title ?? "Edit project")}
+          title={
+            mode === "create"
+              ? "New project"
+              : (project?.title ?? "Edit project")
+          }
         />
-        <Link className={cn(buttonVariants({ variant: "outline" }))} href={routes.list}>
+        <Link
+          className={cn(buttonVariants({ variant: "outline" }))}
+          href={routes.list}
+        >
           Back to list
         </Link>
       </div>
@@ -207,7 +221,12 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             title="Basic information"
           >
             <div className="grid gap-4 lg:grid-cols-2">
-              <FormField error={errors.title?.message} label="Title" name="title" required>
+              <FormField
+                error={errors.title?.message}
+                label="Title"
+                name="title"
+                required
+              >
                 <TextInput id="title" {...register("title")} />
               </FormField>
               <FormField
@@ -228,7 +247,11 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               name="tagline"
             >
               <div className="space-y-1">
-                <TextInput id="tagline" maxLength={120} {...register("tagline")} />
+                <TextInput
+                  id="tagline"
+                  maxLength={120}
+                  {...register("tagline")}
+                />
                 <CharacterCounter max={120} value={watched.tagline ?? ""} />
               </div>
             </FormField>
@@ -245,7 +268,9 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
 
             <StatusSelector
               error={errors.status?.message}
-              onChange={(value) => setValue("status", value, { shouldValidate: true })}
+              onChange={(value) =>
+                setValue("status", value, { shouldValidate: true })
+              }
               value={watched.status}
             />
           </FormSection>
@@ -257,7 +282,10 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             <IconPicker
               error={errors.icon_name?.message}
               onChange={(value) =>
-                setValue("icon_name", value, { shouldDirty: true, shouldValidate: true })
+                setValue("icon_name", value, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
               }
               value={watched.icon_name ?? ""}
             />
@@ -265,7 +293,10 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             <CoverImageField
               error={errors.cover_image?.message}
               onChange={(url) =>
-                setValue("cover_image", url, { shouldDirty: true, shouldValidate: true })
+                setValue("cover_image", url, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
               }
               projectId={project?.id}
               projectSlug={watched.slug}
@@ -278,7 +309,11 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               label="Thumbnail URL"
               name="thumbnail"
             >
-              <TextInput id="thumbnail" placeholder="https://..." {...register("thumbnail")} />
+              <TextInput
+                id="thumbnail"
+                placeholder="https://..."
+                {...register("thumbnail")}
+              />
             </FormField>
 
             <FormField
@@ -316,11 +351,23 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               <FormField error={errors.year?.message} label="Year" name="year">
                 <TextInput id="year" placeholder="2026" {...register("year")} />
               </FormField>
-              <FormField error={errors.category?.message} label="Category" name="category">
-                <TextInput id="category" placeholder="AI Research" {...register("category")} />
+              <FormField
+                error={errors.category?.message}
+                label="Category"
+                name="category"
+              >
+                <TextInput
+                  id="category"
+                  placeholder="AI Research"
+                  {...register("category")}
+                />
               </FormField>
               <FormField error={errors.role?.message} label="Role" name="role">
-                <TextInput id="role" placeholder="Lead Engineer" {...register("role")} />
+                <TextInput
+                  id="role"
+                  placeholder="Lead Engineer"
+                  {...register("role")}
+                />
               </FormField>
             </div>
 
@@ -334,7 +381,10 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             </FormField>
           </FormSection>
 
-          <FormSection description="External links for the project." title="Links">
+          <FormSection
+            description="External links for the project."
+            title="Links"
+          >
             <div className="grid gap-4 lg:grid-cols-2">
               <FormField
                 error={errors.project_url?.message}
@@ -343,7 +393,11 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               >
                 <TextInput id="project_url" {...register("project_url")} />
               </FormField>
-              <FormField error={errors.github_url?.message} label="GitHub URL" name="github_url">
+              <FormField
+                error={errors.github_url?.message}
+                label="GitHub URL"
+                name="github_url"
+              >
                 <TextInput id="github_url" {...register("github_url")} />
               </FormField>
             </div>
@@ -360,7 +414,12 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               name="challenge"
             >
               <div className="space-y-1">
-                <TextArea id="challenge" maxLength={300} {...register("challenge")} rows={3} />
+                <TextArea
+                  id="challenge"
+                  maxLength={300}
+                  {...register("challenge")}
+                  rows={3}
+                />
                 <CharacterCounter max={300} value={watched.challenge ?? ""} />
               </div>
             </FormField>
@@ -372,7 +431,12 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               name="solution"
             >
               <div className="space-y-1">
-                <TextArea id="solution" maxLength={300} {...register("solution")} rows={3} />
+                <TextArea
+                  id="solution"
+                  maxLength={300}
+                  {...register("solution")}
+                  rows={3}
+                />
                 <CharacterCounter max={300} value={watched.solution ?? ""} />
               </div>
             </FormField>
@@ -384,7 +448,12 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               name="impact"
             >
               <div className="space-y-1">
-                <TextArea id="impact" maxLength={300} {...register("impact")} rows={3} />
+                <TextArea
+                  id="impact"
+                  maxLength={300}
+                  {...register("impact")}
+                  rows={3}
+                />
                 <CharacterCounter max={300} value={watched.impact ?? ""} />
               </div>
             </FormField>
@@ -401,7 +470,12 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               name="overview"
             >
               <div className="space-y-1">
-                <TextArea id="overview" maxLength={500} {...register("overview")} rows={4} />
+                <TextArea
+                  id="overview"
+                  maxLength={500}
+                  {...register("overview")}
+                  rows={4}
+                />
                 <CharacterCounter max={500} value={watched.overview ?? ""} />
               </div>
             </FormField>
@@ -429,10 +503,17 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             description="Impact numbers shown below the header — value first, label second."
             title="Metrics"
           >
-            <FormField error={errors.metrics?.message} label="Impact metrics" name="metrics">
+            <FormField
+              error={errors.metrics?.message}
+              label="Impact metrics"
+              name="metrics"
+            >
               <MetricsField
                 onChange={(value) =>
-                  setValue("metrics", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("metrics", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 value={watched.metrics ?? []}
               />
@@ -443,10 +524,17 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             description="Ordered solution steps rendered as a vertical flow."
             title="Approach"
           >
-            <FormField error={errors.approach?.message} label="Steps" name="approach">
+            <FormField
+              error={errors.approach?.message}
+              label="Steps"
+              name="approach"
+            >
               <StepBuilderField
                 onChange={(value) =>
-                  setValue("approach", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("approach", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 placeholder="Query Understanding"
                 value={watched.approach ?? []}
@@ -466,7 +554,10 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               <BulletListField
                 addLabel="Add contribution"
                 onChange={(value) =>
-                  setValue("my_contribution", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("my_contribution", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 placeholder="Designed the multi-agent orchestration layer"
                 value={watched.my_contribution ?? []}
@@ -479,7 +570,10 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             title="AI system architecture"
           >
             <FormField
-              error={errors.ai_design_nodes?.message ?? errors.ai_design_edges?.message}
+              error={
+                errors.ai_design_nodes?.message ??
+                errors.ai_design_edges?.message
+              }
               label="Graph"
               name="ai_design_nodes"
             >
@@ -508,7 +602,8 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
           >
             <FormField
               error={
-                errors.architecture_nodes?.message ?? errors.architecture_edges?.message
+                errors.architecture_nodes?.message ??
+                errors.architecture_edges?.message
               }
               label="Graph"
               name="architecture_nodes"
@@ -545,7 +640,10 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             >
               <TechStackGroupsField
                 onChange={(value) =>
-                  setValue("tech_stack_groups", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("tech_stack_groups", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 value={(watched.tech_stack_groups ?? []).map((group) => ({
                   category: group.category,
@@ -559,10 +657,17 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             description="Engineering challenges and how they were resolved."
             title="Challenges"
           >
-            <FormField error={errors.challenges?.message} label="Entries" name="challenges">
+            <FormField
+              error={errors.challenges?.message}
+              label="Entries"
+              name="challenges"
+            >
               <ChallengesField
                 onChange={(value) =>
-                  setValue("challenges", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("challenges", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 value={watched.challenges ?? []}
               />
@@ -573,22 +678,39 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             description="Deliberate decisions and what they cost."
             title="Tradeoffs"
           >
-            <FormField error={errors.tradeoffs?.message} label="Decisions" name="tradeoffs">
+            <FormField
+              error={errors.tradeoffs?.message}
+              label="Decisions"
+              name="tradeoffs"
+            >
               <TradeoffsField
                 onChange={(value) =>
-                  setValue("tradeoffs", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("tradeoffs", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 value={watched.tradeoffs ?? []}
               />
             </FormField>
           </FormSection>
 
-          <FormSection description="Measurable or qualitative outcomes." title="Results">
-            <FormField error={errors.results?.message} label="Outcomes" name="results">
+          <FormSection
+            description="Measurable or qualitative outcomes."
+            title="Results"
+          >
+            <FormField
+              error={errors.results?.message}
+              label="Outcomes"
+              name="results"
+            >
               <BulletListField
                 addLabel="Add result"
                 onChange={(value) =>
-                  setValue("results", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("results", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 placeholder="Reduced manual effort"
                 value={watched.results ?? []}
@@ -600,7 +722,11 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             description="Knowledge graph fields for AEO, expertise linking, and machine-readable summaries."
             title="Knowledge graph"
           >
-            <FormField error={errors.ai_summary?.message} label="AI summary" name="ai_summary">
+            <FormField
+              error={errors.ai_summary?.message}
+              label="AI summary"
+              name="ai_summary"
+            >
               <TextArea
                 {...register("ai_summary")}
                 placeholder="2–5 sentence machine-readable explanation for LLM retrieval."
@@ -608,18 +734,29 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               />
             </FormField>
 
-            <FormField error={errors.key_takeaways?.message} label="Key takeaways" name="key_takeaways">
+            <FormField
+              error={errors.key_takeaways?.message}
+              label="Key takeaways"
+              name="key_takeaways"
+            >
               <BulletListField
                 addLabel="Add takeaway"
                 onChange={(value) =>
-                  setValue("key_takeaways", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("key_takeaways", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 placeholder="Hybrid retrieval outperformed vector-only search."
                 value={watched.key_takeaways ?? []}
               />
             </FormField>
 
-            <FormField error={errors.expertise_slugs?.message} label="Expertise slugs" name="expertise_slugs">
+            <FormField
+              error={errors.expertise_slugs?.message}
+              label="Expertise slugs"
+              name="expertise_slugs"
+            >
               <TextInput
                 placeholder="rag-systems, multi-agent-systems"
                 value={(watched.expertise_slugs ?? []).join(", ")}
@@ -636,18 +773,35 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               />
             </FormField>
 
-            <FormField error={errors.concepts?.message} label="Concepts" name="concepts">
-              <TextInput {...register("concepts")} placeholder="RAG, Multi-Agent Systems" />
+            <FormField
+              error={errors.concepts?.message}
+              label="Concepts"
+              name="concepts"
+            >
+              <TextInput
+                {...register("concepts")}
+                placeholder="RAG, Multi-Agent Systems"
+              />
             </FormField>
 
-            <FormField error={errors.technologies?.message} label="Technologies" name="technologies">
-              <TextInput {...register("technologies")} placeholder="LangGraph, FastAPI, PostgreSQL" />
+            <FormField
+              error={errors.technologies?.message}
+              label="Technologies"
+              name="technologies"
+            >
+              <TextInput
+                {...register("technologies")}
+                placeholder="LangGraph, FastAPI, PostgreSQL"
+              />
             </FormField>
 
             <FormField label="Project facts" name="project_facts">
               <FactsField
                 onChange={(value) =>
-                  setValue("project_facts", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("project_facts", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 value={watched.project_facts ?? {}}
               />
@@ -655,20 +809,57 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
 
             <FormField error={errors.faq?.message} label="FAQ" name="faq">
               <FaqField
+                onApplyTemplate={() =>
+                  buildProjectFaqTemplate({
+                    title: watched.title,
+                    summary: watched.summary,
+                    tagline: watched.tagline,
+                    overview: watched.overview,
+                    problem: watched.problem,
+                    challenge: watched.challenge,
+                    solution: watched.solution,
+                    impact: watched.impact,
+                    approach: watched.approach,
+                    tech_stack: (watched.tech_stack ?? "")
+                      .split(",")
+                      .map((item) => item.trim())
+                      .filter(Boolean),
+                    technologies: (watched.technologies ?? "")
+                      .split(",")
+                      .map((item) => item.trim())
+                      .filter(Boolean),
+                    results: watched.results,
+                    learnings: watched.learnings,
+                    role: watched.role,
+                  })
+                }
                 onChange={(value) =>
-                  setValue("faq", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("faq", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 value={watched.faq ?? []}
               />
             </FormField>
           </FormSection>
 
-          <FormSection description="Engineering insights from building the system." title="Learnings">
-            <FormField error={errors.learnings?.message} label="Insights" name="learnings">
+          <FormSection
+            description="Engineering insights from building the system."
+            title="Learnings"
+          >
+            <FormField
+              error={errors.learnings?.message}
+              label="Insights"
+              name="learnings"
+            >
               <BulletListField
                 addLabel="Add learning"
                 onChange={(value) =>
-                  setValue("learnings", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("learnings", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 placeholder="Retrieval quality dominates output quality"
                 value={watched.learnings ?? []}
@@ -676,11 +867,21 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             </FormField>
           </FormSection>
 
-          <FormSection description="Optional project milestones." title="Timeline">
-            <FormField error={errors.timeline?.message} label="Entries" name="timeline">
+          <FormSection
+            description="Optional project milestones."
+            title="Timeline"
+          >
+            <FormField
+              error={errors.timeline?.message}
+              label="Entries"
+              name="timeline"
+            >
               <TimelineField
                 onChange={(value) =>
-                  setValue("timeline", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("timeline", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 value={watched.timeline ?? []}
               />
@@ -691,10 +892,17 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             description="Typed images embedded in the case study narrative — reorder to control carousel sequence."
             title="Project gallery"
           >
-            <FormField error={errors.gallery?.message} label="Gallery" name="gallery">
+            <FormField
+              error={errors.gallery?.message}
+              label="Gallery"
+              name="gallery"
+            >
               <ProjectGalleryField
                 onChange={(value) =>
-                  setValue("gallery", value, { shouldDirty: true, shouldValidate: true })
+                  setValue("gallery", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
                 }
                 projectId={project?.id}
                 projectSlug={watched.slug}
@@ -708,7 +916,10 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
             </FormField>
           </FormSection>
 
-          <FormSection description="Homepage ordering and visibility." title="Display settings">
+          <FormSection
+            description="Homepage ordering and visibility."
+            title="Display settings"
+          >
             <FormField label="Featured" name="featured">
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" {...register("featured")} />
@@ -730,7 +941,10 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
               />
             </FormField>
 
-            <FormField label="Hover preview enabled" name="hover_preview_enabled">
+            <FormField
+              label="Hover preview enabled"
+              name="hover_preview_enabled"
+            >
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" {...register("hover_preview_enabled")} />
                 Show hover preview card on project listings
@@ -754,7 +968,10 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
                 return updateProject(project.id, { ...getValues(), content })
               }}
               onChange={(document) =>
-                setValue("content", document, { shouldValidate: true, shouldDirty: true })
+                setValue("content", document, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
               }
               value={watched.content}
             />

@@ -40,6 +40,10 @@ import {
   contentTypeSchema,
 } from "@/lib/admin/schemas"
 import { deserializeContent } from "@/lib/content/serializer"
+import {
+  buildContentFaqTemplate,
+  type ContentFaqType,
+} from "@/lib/knowledge/faq-templates"
 import { parseFaqItems } from "@/lib/knowledge/schemas"
 import { cn } from "@/lib/utils"
 import type { Content } from "@/types/database.helpers"
@@ -125,15 +129,27 @@ export function ContentForm({ mode, content }: ContentFormProps) {
               ? "Create blog, research, automation, or note content."
               : "Update content metadata and publishing status."
           }
-          title={mode === "create" ? "New content" : (content?.title ?? "Edit content")}
+          title={
+            mode === "create"
+              ? "New content"
+              : (content?.title ?? "Edit content")
+          }
         />
-        <Link className={cn(buttonVariants({ variant: "outline" }))} href={routes.list}>
+        <Link
+          className={cn(buttonVariants({ variant: "outline" }))}
+          href={routes.list}
+        >
           Back to list
         </Link>
       </div>
 
       <EntityForm formError={formError} onSubmit={onSubmit}>
-        <FormField error={errors.type?.message} label="Type" name="type" required>
+        <FormField
+          error={errors.type?.message}
+          label="Type"
+          name="type"
+          required
+        >
           <SelectInput id="type" {...register("type")}>
             {contentTypes.map((type) => (
               <option key={type} value={type}>
@@ -144,15 +160,29 @@ export function ContentForm({ mode, content }: ContentFormProps) {
         </FormField>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <FormField error={errors.title?.message} label="Title" name="title" required>
+          <FormField
+            error={errors.title?.message}
+            label="Title"
+            name="title"
+            required
+          >
             <TextInput id="title" {...register("title")} />
           </FormField>
-          <FormField error={errors.slug?.message} label="Slug" name="slug" required>
+          <FormField
+            error={errors.slug?.message}
+            label="Slug"
+            name="slug"
+            required
+          >
             <TextInput id="slug" {...register("slug")} />
           </FormField>
         </div>
 
-        <FormField error={errors.excerpt?.message} label="Excerpt" name="excerpt">
+        <FormField
+          error={errors.excerpt?.message}
+          label="Excerpt"
+          name="excerpt"
+        >
           <TextArea id="excerpt" {...register("excerpt")} />
         </FormField>
 
@@ -167,7 +197,9 @@ export function ContentForm({ mode, content }: ContentFormProps) {
 
         <StatusSelector
           error={errors.status?.message}
-          onChange={(value) => setValue("status", value, { shouldValidate: true })}
+          onChange={(value) =>
+            setValue("status", value, { shouldValidate: true })
+          }
           value={watch("status")}
         />
 
@@ -180,10 +212,16 @@ export function ContentForm({ mode, content }: ContentFormProps) {
               return { success: false, error: "Content not found" }
             }
 
-            return updateContent(content.id, { ...getValues(), content: contentDocument })
+            return updateContent(content.id, {
+              ...getValues(),
+              content: contentDocument,
+            })
           }}
           onChange={(document) =>
-            setValue("content", document, { shouldValidate: true, shouldDirty: true })
+            setValue("content", document, {
+              shouldValidate: true,
+              shouldDirty: true,
+            })
           }
           value={watch("content")}
         />
@@ -192,7 +230,11 @@ export function ContentForm({ mode, content }: ContentFormProps) {
           description="Machine-readable fields for AEO and knowledge graph linking."
           title="Knowledge graph"
         >
-          <FormField error={errors.ai_summary?.message} label="AI summary" name="ai_summary">
+          <FormField
+            error={errors.ai_summary?.message}
+            label="AI summary"
+            name="ai_summary"
+          >
             <TextArea
               id="ai_summary"
               {...register("ai_summary")}
@@ -208,7 +250,10 @@ export function ContentForm({ mode, content }: ContentFormProps) {
             <BulletListField
               addLabel="Add takeaway"
               onChange={(value) =>
-                setValue("key_takeaways", value, { shouldDirty: true, shouldValidate: true })
+                setValue("key_takeaways", value, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
               }
               value={watch("key_takeaways") ?? []}
             />
@@ -233,13 +278,42 @@ export function ContentForm({ mode, content }: ContentFormProps) {
               }
             />
           </FormField>
-          <FormField error={errors.concepts?.message} label="Concepts" name="concepts">
-            <TextInput id="concepts" {...register("concepts")} placeholder="RAG, Vector Search" />
+          <FormField
+            error={errors.concepts?.message}
+            label="Concepts"
+            name="concepts"
+          >
+            <TextInput
+              id="concepts"
+              {...register("concepts")}
+              placeholder="RAG, Vector Search"
+            />
           </FormField>
           <FormField error={errors.faq?.message} label="FAQ" name="faq">
             <FaqField
+              onApplyTemplate={() => {
+                const type = watch("type")
+                const contentType: ContentFaqType =
+                  type === "research" || type === "automation" ? type : "blog"
+
+                return buildContentFaqTemplate({
+                  type: contentType,
+                  title: watch("title"),
+                  excerpt: watch("excerpt"),
+                  ai_summary: watch("ai_summary"),
+                  key_takeaways: watch("key_takeaways"),
+                  tags: (watch("tags") ?? "")
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean),
+                  expertise_slugs: watch("expertise_slugs"),
+                })
+              }}
               onChange={(value) =>
-                setValue("faq", value, { shouldDirty: true, shouldValidate: true })
+                setValue("faq", value, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
               }
               value={watch("faq") ?? []}
             />

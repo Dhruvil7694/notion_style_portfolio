@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/nextjs"
-import posthog from "posthog-js"
+
+import { deferIdleTask } from "@/lib/client/defer-idle"
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -12,20 +13,34 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 
   enableLogs: true,
-
-  integrations: [Sentry.replayIntegration()],
 })
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart
 
-if (process.env.NEXT_PUBLIC_POSTHOG_KEY) {
-  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
-    api_host: "/ingest",
-    ui_host: "https://us.posthog.com",
-    defaults: "2026-01-30",
-    capture_pageview: "history_change",
-    capture_pageleave: true,
-    capture_exceptions: true,
-    debug: process.env.NODE_ENV === "development",
-  })
+function initDeferredClientAnalytics(): void {
+  deferIdleTask(() => {
+    void import("@sentry/browser").then(({ replayIntegration }) => {
+      Sentry.addIntegration(replayIntegration())
+    })
+  }, 5_000)
+
+  if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) {
+    return
+  }
+
+  deferIdleTask(() => {
+    void import("posthog-js").then(({ default: posthog }) => {
+      posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+        api_host: "/ingest",
+        ui_host: "https://us.posthog.com",
+        defaults: "2026-01-30",
+        capture_pageview: "history_change",
+        capture_pageleave: true,
+        capture_exceptions: true,
+        debug: process.env.NODE_ENV === "development",
+      })
+    })
+  }, 3_500)
 }
+
+initDeferredClientAnalytics()
