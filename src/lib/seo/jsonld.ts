@@ -13,7 +13,10 @@ function withContext(payload: JsonLdObject): JsonLdObject {
   }
 }
 
-export function buildPersonJsonLd(settings: PublicSettings, siteUrl: string): JsonLdObject {
+export function buildPersonJsonLd(
+  settings: PublicSettings,
+  siteUrl: string
+): JsonLdObject {
   const sameAs = [
     settings.social.github,
     settings.social.linkedin,
@@ -34,7 +37,12 @@ export function buildPersonJsonLd(settings: PublicSettings, siteUrl: string): Js
   })
 }
 
-export function buildWebsiteJsonLd(settings: PublicSettings, siteUrl: string): JsonLdObject {
+export function buildWebsiteJsonLd(
+  settings: PublicSettings,
+  siteUrl: string
+): JsonLdObject {
+  const searchUrl = generateCanonicalUrl(siteUrl, "/search")
+
   return withContext({
     "@type": "WebSite",
     name: settings.site.site_name || SEO_SITE_TITLE,
@@ -44,6 +52,38 @@ export function buildWebsiteJsonLd(settings: PublicSettings, siteUrl: string): J
       "@type": "Person",
       name: settings.site.owner_name || SEO_SITE_TITLE,
     },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${searchUrl}?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  })
+}
+
+export function buildOrganizationJsonLd(
+  settings: PublicSettings,
+  siteUrl: string
+): JsonLdObject {
+  const sameAs = [
+    settings.social.github,
+    settings.social.linkedin,
+    settings.social.twitter,
+    settings.social.substack,
+    settings.social.medium,
+    settings.social.youtube,
+    settings.social.bluesky,
+  ].filter((value): value is string => Boolean(value?.trim()))
+
+  return withContext({
+    "@type": "Organization",
+    name: settings.site.owner_name || settings.site.site_name || SEO_SITE_TITLE,
+    url: siteUrl,
+    description: settings.site.site_description || undefined,
+    ...(settings.contact.email ? { email: settings.contact.email } : {}),
+    ...(sameAs.length > 0 ? { sameAs } : {}),
   })
 }
 
@@ -133,7 +173,13 @@ export function buildArticleJsonLd(
 export function buildTechArticleJsonLd(
   item: Pick<
     Content,
-    "title" | "excerpt" | "slug" | "published_at" | "updated_at" | "tags" | "ai_summary"
+    | "title"
+    | "excerpt"
+    | "slug"
+    | "published_at"
+    | "updated_at"
+    | "tags"
+    | "ai_summary"
   >,
   settings: PublicSettings,
   siteUrl: string

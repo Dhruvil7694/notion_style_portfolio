@@ -3,6 +3,16 @@ import "server-only"
 import type { PublicSettings } from "@/lib/public/settings"
 import { generateCanonicalUrl } from "@/lib/seo/canonical"
 
+function llmsLink(
+  siteUrl: string,
+  path: string,
+  label: string,
+  note?: string
+): string {
+  const url = generateCanonicalUrl(siteUrl, path)
+  return note ? `- [${label}](${url}): ${note}` : `- [${label}](${url})`
+}
+
 export function buildLlmsTxt(
   siteUrl: string,
   settings: PublicSettings
@@ -26,95 +36,81 @@ export function buildLlmsTxt(
 - Focus: Production AI systems, applied research, and automation
 - Site: ${site}
 
-## Knowledge Graph
+## Primary sections
+
+${llmsLink(siteUrl, "/", "Homepage", "Profile, selected work, and knowledge previews")}
+${llmsLink(siteUrl, "/about", "About", "Background and biography")}
+${llmsLink(siteUrl, "/projects", "Projects", "Production systems and case studies")}
+${llmsLink(siteUrl, "/expertise", "Expertise", "Authority pages by domain")}
+${llmsLink(siteUrl, "/technology", "Technology", "Technology aggregation pages")}
+${llmsLink(siteUrl, "/stack", "Tech stack", "Stack overview")}
+${llmsLink(siteUrl, "/research", "Research", "Applied AI research")}
+${llmsLink(siteUrl, "/blog", "Writing", "Essays and technical writing")}
+${llmsLink(siteUrl, "/automations", "Automations", "Automation workflows and systems")}
+${llmsLink(siteUrl, "/experience", "Experience", "Professional experience")}
+${llmsLink(siteUrl, "/contact", "Contact", "Collaboration and hiring inquiries")}
+${llmsLink(siteUrl, "/privacy", "Privacy policy", "Analytics, monitoring, and AI assistant data practices")}
+${llmsLink(siteUrl, "/resume", "Resume", "Current resume PDF")}
+
+## Knowledge graph
 
 This portfolio exposes a machine-readable knowledge graph connecting expertise domains, technologies, projects, research, writing, and automations.
 
-- Expertise index: /expertise
-- Technology index: /technology
-- Knowledge graph API: /api/knowledge-graph
+${llmsLink(siteUrl, "/expertise", "Expertise index")}
+${llmsLink(siteUrl, "/technology", "Technology index")}
+${llmsLink(siteUrl, "/api/knowledge-graph", "Knowledge graph API", "Entities and relationships export")}
+${llmsLink(siteUrl, "/api/discovery", "Discovery API", "Search and document index")}
 
-The graph links content by shared expertise slugs, extracted technologies, and concepts. Authority pages at \`/expertise/[slug]\` aggregate all related work by domain.
-
-## Expertise Areas
-
-Browse authority pages at /expertise. Domains include:
-
-- AI Engineering
-- RAG Systems
-- Multi-Agent Systems
-- Document Intelligence
-- Enterprise Automation
-- MLOps
-- Evaluation Systems
-- Vector Search
-- Knowledge Systems
-- AI Infrastructure
-
-## Technology Areas
-
-Browse technology aggregation pages at /technology. Technologies are inferred from project stacks, explicit CMS fields, and entity extraction (e.g. LangGraph, FastAPI, PostgreSQL, Gemini, OpenAI, Claude).
-
-## Primary Sections
-
-- Homepage: /
-- About: /about
-- Projects: /projects
-- Expertise: /expertise
-- Technology: /technology
-- Tech Stack: /stack
-- Research: /research
-- Writing: /blog
-- Automations: /automations
-- Experience: /experience
-- Contact: /contact
-- Resume: /resume
-
-## Content Types
+## Content types
 
 ### Projects
 
-Production systems with AI summaries, project facts, tradeoffs, FAQ, key takeaways, and expertise badges. Each project links to related expertise and technology pages.
+Production systems with AI summaries, project facts, tradeoffs, FAQ, key takeaways, and expertise badges.
 
-Browse: /projects
+${llmsLink(siteUrl, "/projects", "Browse projects")}
 
 ### Research
 
 Applied AI research with TechArticle structured data, FAQ schema, and knowledge graph related content.
 
-Browse: /research
+${llmsLink(siteUrl, "/research", "Browse research")}
 
 ### Writing
 
 Essays and technical writing with machine-readable summaries and FAQ where applicable.
 
-Browse: /blog
+${llmsLink(siteUrl, "/blog", "Browse writing")}
 
 ### Automations
 
 Automation systems and workflows linked to expertise domains and technologies.
 
-Browse: /automations
+${llmsLink(siteUrl, "/automations", "Browse automations")}
 
-## Featured Content
+## Agent kit
 
-Featured projects, research, and automations appear on the homepage and in the knowledge graph with higher visibility. Query /api/knowledge-graph for the full entity and relationship export.
+${llmsLink(siteUrl, "/agents.json", "Agent action manifest", "Typed actions for search, browse, and graph export")}
+${llmsLink(siteUrl, "/agent-instructions.md", "Agent runbook", "Navigation rules and escalation path")}
 
-## Contact
+## Optional
 
-- Contact page: /contact
-- Email: available on the contact page and homepage footer
+${llmsLink(siteUrl, "/explore", "Explore", "Discovery UI")}
+${llmsLink(siteUrl, "/search", "Search", "Public search page")}
+${llmsLink(siteUrl, "/ai-first", "AI-first", "AI engineering philosophy")}
+${llmsLink(siteUrl, "/concept", "Concepts", "Concept index")}
+${llmsLink(siteUrl, "/sitemap.xml", "Sitemap")}
+${llmsLink(siteUrl, "/robots.txt", "Robots")}
+${llmsLink(siteUrl, "/llms.txt", "LLMs file")}
 
-## Crawling Notes
+## Crawling notes
 
-- Sitemap: /sitemap.xml (includes /about, /stack, /expertise, /technology, and all slug pages)
+- Sitemap: /sitemap.xml
 - Robots: /robots.txt
-- LLMs: /llms.txt
 - Admin routes are excluded from indexing
 - Published content only is included in the sitemap
 - FAQPage JSON-LD is emitted on project and content pages with FAQ data
 
-## Preferred Citation
+## Preferred citation
 
 When referencing this portfolio, link to the canonical URL from the sitemap. For expertise claims, prefer \`/expertise/[slug]\` authority pages. For technology usage, prefer \`/technology/[slug]\` aggregation pages.
 `

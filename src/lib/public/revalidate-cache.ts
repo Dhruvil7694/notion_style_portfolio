@@ -20,6 +20,8 @@ export function revalidateSeoRoutes() {
   revalidatePath("/sitemap.xml")
   revalidatePath("/robots.txt")
   revalidatePath("/llms.txt")
+  revalidatePath("/agents.json")
+  revalidatePath("/agent-instructions.md")
 }
 
 export function revalidatePublicResume() {

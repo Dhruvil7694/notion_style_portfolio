@@ -1,4 +1,5 @@
 import { HomePageContent } from "@/components/public/home-page-content"
+import { AgentDiscoveryLinks } from "@/components/seo/agent-discovery-links"
 import { HomeLcpPreloadLink } from "@/components/seo/home-lcp-preload-link"
 import { JsonLd } from "@/components/seo/json-ld"
 import {
@@ -12,6 +13,7 @@ import {
 import { resolveProfileAvatarSrc } from "@/lib/public/settings"
 import {
   buildHomeMetadata,
+  buildOrganizationJsonLd,
   buildPersonJsonLd,
   buildWebsiteJsonLd,
   mergeJsonLdGraph,
@@ -58,12 +60,14 @@ export default async function HomePage() {
   const jsonLd = siteUrl
     ? mergeJsonLdGraph([
         buildPersonJsonLd(settings, siteUrl),
+        buildOrganizationJsonLd(settings, siteUrl),
         buildWebsiteJsonLd(settings, siteUrl),
       ])
     : null
 
   return (
     <>
+      <AgentDiscoveryLinks />
       <HomeLcpPreloadLink avatarSrc={avatarSrc} />
       {jsonLd ? <JsonLd data={jsonLd} /> : null}
       <HomePageContent
