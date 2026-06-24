@@ -7,22 +7,19 @@ import { useCallback, useEffect, useRef, useState } from "react"
 
 import { useVisitorInterest } from "@/hooks/use-visitor-interest"
 import {
+  isStaticImageData,
+  shouldUseUnoptimizedImage,
+} from "@/lib/images/next-image"
+import {
   buildWorkspaceContext,
   type WorkspaceContextInput,
 } from "@/lib/public/presence"
 import { DEFAULT_PROFILE_AVATAR } from "@/lib/public/settings"
 import { getPersonalizedAvatarHoverMessages } from "@/lib/public/visitor-interest"
-
 type ProfileAvatarProps = {
   avatarSrc: string | StaticImageData
   name: string
   contextInput: WorkspaceContextInput
-}
-
-function isStaticImageData(
-  value: string | StaticImageData
-): value is StaticImageData {
-  return typeof value === "object" && value !== null && "src" in value
 }
 
 export function ProfileAvatar({
@@ -97,8 +94,10 @@ export function ProfileAvatar({
             key={isStaticImageData(src) ? src.src : src}
             onError={handleImageError}
             priority
+            quality={75}
+            sizes="88px"
             src={src}
-            unoptimized={!isStaticImageData(src)}
+            unoptimized={shouldUseUnoptimizedImage(src)}
             width={88}
           />
         ) : (

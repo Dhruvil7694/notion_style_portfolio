@@ -1,4 +1,5 @@
 import { HomePageContent } from "@/components/public/home-page-content"
+import { HomeLcpPreloadLink } from "@/components/seo/home-lcp-preload-link"
 import { JsonLd } from "@/components/seo/json-ld"
 import {
   getActiveResume,
@@ -8,6 +9,7 @@ import {
   getPublishedProjects,
   getSkillsList,
 } from "@/lib/public/queries"
+import { resolveProfileAvatarSrc } from "@/lib/public/settings"
 import {
   buildHomeMetadata,
   buildPersonJsonLd,
@@ -52,13 +54,17 @@ export default async function HomePage() {
   const research = (allResearch ?? []).slice(0, KNOWLEDGE_PREVIEW_LIMIT)
 
   const siteUrl = resolveSiteUrl(settings.site.site_url)
-  const jsonLd =
-    siteUrl
-      ? mergeJsonLdGraph([buildPersonJsonLd(settings, siteUrl), buildWebsiteJsonLd(settings, siteUrl)])
-      : null
+  const avatarSrc = resolveProfileAvatarSrc(settings.site)
+  const jsonLd = siteUrl
+    ? mergeJsonLdGraph([
+        buildPersonJsonLd(settings, siteUrl),
+        buildWebsiteJsonLd(settings, siteUrl),
+      ])
+    : null
 
   return (
     <>
+      <HomeLcpPreloadLink avatarSrc={avatarSrc} />
       {jsonLd ? <JsonLd data={jsonLd} /> : null}
       <HomePageContent
         allResearch={allResearch}

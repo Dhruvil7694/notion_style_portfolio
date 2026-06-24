@@ -1592,7 +1592,10 @@ em .chat-link-inline:hover {
 }
 
 .public-site .workspace-avatar-wrap {
+  flex-shrink: 0;
+  height: 5.5rem;
   position: relative;
+  width: 5.5rem;
 }
 
 .public-site .workspace-avatar {
