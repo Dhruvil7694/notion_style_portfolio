@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 
-import { deferIdleTask } from "@/lib/client/defer-idle"
+import { deferIdleTask } from "@/lib/defer-idle"
 import type { DiscoveryDocument } from "@/lib/discovery/types"
 import { recordContentViewByPath } from "@/lib/public/visitor-interest"
 

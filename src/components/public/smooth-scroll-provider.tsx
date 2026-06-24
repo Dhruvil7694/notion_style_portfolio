@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation"
 import { useEffect, useRef } from "react"
 
-import { deferIdleTask, isMobileViewport } from "@/lib/client/defer-idle"
+import { deferIdleTask, isMobileViewport } from "@/lib/defer-idle"
 
 type SmoothScrollProviderProps = {
   children: React.ReactNode

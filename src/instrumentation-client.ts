@@ -1,7 +1,5 @@
 import * as Sentry from "@sentry/nextjs"
 
-import { deferIdleTask } from "@/lib/client/defer-idle"
-
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
@@ -17,8 +15,21 @@ Sentry.init({
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart
 
+function scheduleIdleTask(task: () => void, timeoutMs: number): void {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(task, { timeout: timeoutMs })
+    return
+  }
+
+  globalThis.setTimeout(task, Math.min(timeoutMs, 2_000))
+}
+
 function initDeferredClientAnalytics(): void {
-  deferIdleTask(() => {
+  scheduleIdleTask(() => {
     void import("@sentry/browser").then(({ replayIntegration }) => {
       Sentry.addIntegration(replayIntegration())
     })
@@ -28,7 +39,7 @@ function initDeferredClientAnalytics(): void {
     return
   }
 
-  deferIdleTask(() => {
+  scheduleIdleTask(() => {
     void import("posthog-js").then(({ default: posthog }) => {
       posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
         api_host: "/ingest",

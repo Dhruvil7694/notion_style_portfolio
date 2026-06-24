@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 
 import { EncryptedText } from "@/components/ui/encrypted-text"
-import { deferIdleTask } from "@/lib/client/defer-idle"
+import { deferIdleTask } from "@/lib/defer-idle"
 import {
   buildWorkspaceContext,
   getPresenceMessages,
