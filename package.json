@@ -15,6 +15,7 @@
     "db:seed": "node scripts/seed-remote.mjs",
     "db:seed-case-study": "node scripts/seed-project-case-study-fields.mjs",
     "security:audit": "node scripts/audit-public-security.mjs",
+    "favicons:generate": "node scripts/generate-favicons.mjs",
     "load-test": "npx tsx scripts/load-test-assistant.ts",
     "prepare": "husky && node -e \"require('fs').copyFileSync('node_modules/@lottiefiles/dotlottie-web/dist/dotlottie-player.wasm','public/dotlottie-player.wasm')\" "
   },

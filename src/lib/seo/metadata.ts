@@ -4,8 +4,17 @@ import type { Metadata } from "next"
 
 import type { PublicSettings } from "@/lib/public/settings"
 
-import { generateCanonicalUrl, resolveCanonicalPath, resolveSiteUrl } from "./canonical"
-import { SEO_DEFAULT_DESCRIPTION, SEO_KEYWORDS, SEO_SITE_TITLE } from "./constants"
+import {
+  generateCanonicalUrl,
+  resolveCanonicalPath,
+  resolveSiteUrl,
+} from "./canonical"
+import {
+  SEO_DEFAULT_DESCRIPTION,
+  SEO_KEYWORDS,
+  SEO_SITE_TITLE,
+  SEO_TITLE_TEMPLATE,
+} from "./constants"
 import { truncateDescription } from "./description"
 import {
   buildOpenGraphImageDescriptor,
@@ -35,11 +44,23 @@ type BaseMetadataInput = {
 }
 
 function resolveContext(context: MetadataContext) {
-  const siteUrl = context.siteUrl ?? resolveSiteUrl(context.settings.site.site_url)
+  const siteUrl =
+    context.siteUrl ?? resolveSiteUrl(context.settings.site.site_url)
   const siteName = context.settings.site.owner_name || SEO_SITE_TITLE
   const twitterCreator = resolveTwitterHandle(context.settings.social.twitter)
 
   return { siteUrl, siteName, twitterCreator }
+}
+
+export function buildSiteTitleConfig(): Metadata["title"] {
+  return {
+    default: SEO_SITE_TITLE,
+    template: SEO_TITLE_TEMPLATE,
+  }
+}
+
+export function buildAbsolutePageTitle(title: string): Metadata["title"] {
+  return { absolute: title }
 }
 
 export function buildBaseMetadata(
@@ -47,7 +68,9 @@ export function buildBaseMetadata(
   input: BaseMetadataInput
 ): Metadata {
   const { siteUrl, siteName, twitterCreator } = resolveContext(context)
-  const description = truncateDescription(input.description ?? SEO_DEFAULT_DESCRIPTION)
+  const description = truncateDescription(
+    input.description ?? SEO_DEFAULT_DESCRIPTION
+  )
   const path = resolveCanonicalPath(input.path)
   const canonicalUrl = siteUrl ? generateCanonicalUrl(siteUrl, path) : undefined
   const title = input.title
@@ -56,7 +79,11 @@ export function buildBaseMetadata(
   const imagePath = input.imagePath ?? path
   const ogImage =
     siteUrl && imagePath
-      ? buildOpenGraphImageDescriptor(siteUrl, imagePath, input.imageAlt ?? title)
+      ? buildOpenGraphImageDescriptor(
+          siteUrl,
+          imagePath,
+          input.imageAlt ?? title
+        )
       : undefined
 
   return {
@@ -76,7 +103,9 @@ export function buildBaseMetadata(
             url: canonicalUrl,
             type: input.ogType ?? "website",
             ...(ogImage ? { images: [ogImage] } : {}),
-            ...(input.publishedTime ? { publishedTime: input.publishedTime } : {}),
+            ...(input.publishedTime
+              ? { publishedTime: input.publishedTime }
+              : {}),
             ...(input.modifiedTime ? { modifiedTime: input.modifiedTime } : {}),
             ...(input.tags?.length ? { tags: input.tags } : {}),
           },
@@ -96,13 +125,17 @@ export function buildBaseMetadata(
 export function buildHomeMetadata(context: MetadataContext): Metadata {
   const description =
     context.settings.site.site_description?.trim() || SEO_DEFAULT_DESCRIPTION
+  const siteTitle = context.settings.site.owner_name?.trim() || SEO_SITE_TITLE
 
-  return buildBaseMetadata(context, {
-    title: SEO_SITE_TITLE,
-    description,
-    path: "/",
-    imageAlt: `${SEO_SITE_TITLE} — Applied AI Engineer`,
-  })
+  return {
+    ...buildBaseMetadata(context, {
+      title: siteTitle,
+      description,
+      path: "/",
+      imageAlt: `${SEO_SITE_TITLE} — Applied AI Engineer`,
+    }),
+    title: buildAbsolutePageTitle(siteTitle),
+  }
 }
 
 export function buildProjectsIndexMetadata(context: MetadataContext): Metadata {
@@ -128,7 +161,7 @@ export function buildProjectMetadata(
     role?: string | null
   }
 ): Metadata {
-  const title = `${project.seo_title?.trim() || project.title} | ${SEO_SITE_TITLE}`
+  const title = project.seo_title?.trim() || project.title
   const description = project.seo_description?.trim() || project.summary
   const keywords = [
     ...SEO_KEYWORDS,
@@ -172,8 +205,9 @@ export function buildResearchMetadata(
     tags?: string[] | null
   }
 ): Metadata {
-  const title = `${item.seo_title?.trim() || item.title} | Research`
-  const description = item.seo_description?.trim() || item.excerpt || SEO_DEFAULT_DESCRIPTION
+  const title = item.seo_title?.trim() || item.title
+  const description =
+    item.seo_description?.trim() || item.excerpt || SEO_DEFAULT_DESCRIPTION
 
   return buildBaseMetadata(context, {
     title,
@@ -212,12 +246,13 @@ export function buildBlogMetadata(
   }
 ): Metadata {
   const readingTime = estimateContentReadingTime(item)
-  const baseDescription = item.seo_description?.trim() || item.excerpt || SEO_DEFAULT_DESCRIPTION
+  const baseDescription =
+    item.seo_description?.trim() || item.excerpt || SEO_DEFAULT_DESCRIPTION
   const description = item.published_at
     ? `${baseDescription} ${readingTime}. Published ${formatIsoDate(item.published_at)}.`
     : `${baseDescription} ${readingTime}.`
 
-  const title = `${item.seo_title?.trim() || item.title} | Writing`
+  const title = item.seo_title?.trim() || item.title
 
   return buildBaseMetadata(context, {
     title,
@@ -233,7 +268,9 @@ export function buildBlogMetadata(
   })
 }
 
-export function buildAutomationsIndexMetadata(context: MetadataContext): Metadata {
+export function buildAutomationsIndexMetadata(
+  context: MetadataContext
+): Metadata {
   return buildBaseMetadata(context, {
     title: "Automations",
     description: `Automation systems, workflows, and applied AI tooling by ${SEO_SITE_TITLE}.`,
@@ -254,8 +291,9 @@ export function buildAutomationMetadata(
     tags?: string[] | null
   }
 ): Metadata {
-  const title = `${item.seo_title?.trim() || item.title} | Automation`
-  const description = item.seo_description?.trim() || item.excerpt || SEO_DEFAULT_DESCRIPTION
+  const title = item.seo_title?.trim() || item.title
+  const description =
+    item.seo_description?.trim() || item.excerpt || SEO_DEFAULT_DESCRIPTION
 
   return buildBaseMetadata(context, {
     title,
@@ -271,7 +309,9 @@ export function buildAutomationMetadata(
   })
 }
 
-export function buildExperienceIndexMetadata(context: MetadataContext): Metadata {
+export function buildExperienceIndexMetadata(
+  context: MetadataContext
+): Metadata {
   return buildBaseMetadata(context, {
     title: "Experience",
     description: `Professional experience and engineering roles for ${SEO_SITE_TITLE}.`,
@@ -325,7 +365,10 @@ function extractPlainTextFromContent(content: unknown): string {
 
   try {
     const serialized = JSON.stringify(content)
-    return serialized.replace(/[{}\[\]",:]/g, " ").replace(/\s+/g, " ").trim()
+    return serialized
+      .replace(/[{}\[\]",:]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
   } catch {
     return ""
   }

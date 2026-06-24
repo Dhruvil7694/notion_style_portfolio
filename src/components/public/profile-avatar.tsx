@@ -91,7 +91,7 @@ export function ProfileAvatar({
       <div className="workspace-avatar-wrap">
         {!imageError ? (
           <Image
-            alt=""
+            alt={`${name} profile photo`}
             className="workspace-avatar"
             height={88}
             key={isStaticImageData(src) ? src.src : src}
@@ -115,7 +115,6 @@ export function ProfileAvatar({
           {message}
         </span>
       ) : null}
-      <span className="sr-only">{name}</span>
     </div>
   )
 }

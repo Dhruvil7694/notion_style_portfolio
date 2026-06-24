@@ -8,7 +8,11 @@ import { resolveEntityNavigation } from "@/lib/discovery/explorer"
 import { buildKnowledgeGraph, getConceptBundle } from "@/lib/knowledge/graph"
 import { getConceptBySlug, getPublicSettings } from "@/lib/public/queries"
 import { resolveSiteUrl } from "@/lib/seo/canonical"
-import { buildCollectionPageJsonLd, buildDefinedTermJsonLd, mergeJsonLdGraph } from "@/lib/seo/jsonld"
+import {
+  buildCollectionPageJsonLd,
+  buildDefinedTermJsonLd,
+  mergeJsonLdGraph,
+} from "@/lib/seo/jsonld"
 import { buildBaseMetadata } from "@/lib/seo/metadata"
 
 type ConceptDetailPageProps = {
@@ -25,14 +29,16 @@ export async function generateMetadata({ params }: ConceptDetailPageProps) {
   return buildBaseMetadata(
     { settings },
     {
-      title: `${title} | Concept`,
+      title: title,
       description: record?.summary ?? record?.description ?? undefined,
       path: `/concept/${slug}`,
     }
   )
 }
 
-export default async function ConceptDetailPage({ params }: ConceptDetailPageProps) {
+export default async function ConceptDetailPage({
+  params,
+}: ConceptDetailPageProps) {
   const { slug } = await params
   const [{ data: record }, settings] = await Promise.all([
     getConceptBySlug(slug),
@@ -93,13 +99,24 @@ export default async function ConceptDetailPage({ params }: ConceptDetailPagePro
             </section>
           ) : null}
 
-          <KnowledgeRelatedSection items={bundle.relatedExpertise} title="Related Expertise" />
-          <KnowledgeRelatedSection items={bundle.relatedConcepts} title="Related Concepts" />
-          <EntityNavigationSections relatedTechnologies={navigation.relatedTechnologies} />
+          <KnowledgeRelatedSection
+            items={bundle.relatedExpertise}
+            title="Related Expertise"
+          />
+          <KnowledgeRelatedSection
+            items={bundle.relatedConcepts}
+            title="Related Concepts"
+          />
+          <EntityNavigationSections
+            relatedTechnologies={navigation.relatedTechnologies}
+          />
           <KnowledgeRelatedSection items={bundle.projects} title="Projects" />
           <KnowledgeRelatedSection items={bundle.research} title="Research" />
           <KnowledgeRelatedSection items={bundle.writing} title="Articles" />
-          <KnowledgeRelatedSection items={bundle.automations} title="Automations" />
+          <KnowledgeRelatedSection
+            items={bundle.automations}
+            title="Automations"
+          />
         </div>
       </PageShell>
     </>

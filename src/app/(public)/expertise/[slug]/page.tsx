@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: ExpertiseDetailPageProps) {
   return buildBaseMetadata(
     { settings },
     {
-      title: `${area.title} | Expertise`,
+      title: area.title,
       description: area.summary ?? area.description ?? undefined,
       path: `/expertise/${area.slug}`,
       keywords: area.keywords,

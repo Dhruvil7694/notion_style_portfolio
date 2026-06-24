@@ -1,5 +1,7 @@
 export const SEO_SITE_TITLE = "Dhruvil Patel"
 
+export const SEO_TITLE_TEMPLATE = `%s | ${SEO_SITE_TITLE}` as const
+
 export const SEO_DEFAULT_DESCRIPTION =
   "Applied AI Engineer building production AI systems, multi-agent workflows, RAG pipelines, document intelligence platforms, and automation systems."
 

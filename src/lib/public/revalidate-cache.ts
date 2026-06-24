@@ -1,6 +1,6 @@
 import "server-only"
 
-import { revalidateTag } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 
 import type { Content } from "@/types/database.helpers"
 
@@ -12,6 +12,14 @@ import {
 
 export function revalidatePublicSettings() {
   revalidateTag(PUBLIC_CACHE_TAGS.settings)
+  revalidateSeoRoutes()
+}
+
+/** Sitemap, robots, and llms.txt read site_url from CMS — refresh when settings change. */
+export function revalidateSeoRoutes() {
+  revalidatePath("/sitemap.xml")
+  revalidatePath("/robots.txt")
+  revalidatePath("/llms.txt")
 }
 
 export function revalidatePublicResume() {

@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: TechnologyDetailPageProps) {
   return buildBaseMetadata(
     { settings },
     {
-      title: `${label} | Technology`,
+      title: label,
       description:
         record?.summary ??
         record?.description ??

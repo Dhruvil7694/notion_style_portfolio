@@ -6,8 +6,13 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { SiteThemeScript } from "@/components/public/site-theme-script"
 import { DEFAULT_PUBLIC_SETTINGS } from "@/lib/public/settings"
 import { SITE_THEME_DEFAULT } from "@/lib/public/site-theme"
-import { SEO_DEFAULT_DESCRIPTION, SEO_KEYWORDS, SEO_SITE_TITLE } from "@/lib/seo/constants"
-import { buildBaseMetadata } from "@/lib/seo/metadata"
+import {
+  SEO_DEFAULT_DESCRIPTION,
+  SEO_KEYWORDS,
+  SEO_SITE_TITLE,
+} from "@/lib/seo/constants"
+import { FAVICON_METADATA } from "@/lib/seo/favicons"
+import { buildBaseMetadata, buildSiteTitleConfig } from "@/lib/seo/metadata"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,7 +24,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 })
 
-export const metadata: Metadata = buildBaseMetadata(
+const rootMetadata = buildBaseMetadata(
   { settings: DEFAULT_PUBLIC_SETTINGS },
   {
     title: SEO_SITE_TITLE,
@@ -27,6 +32,13 @@ export const metadata: Metadata = buildBaseMetadata(
     keywords: [...SEO_KEYWORDS],
   }
 )
+
+export const metadata: Metadata = {
+  title: buildSiteTitleConfig(),
+  description: rootMetadata.description,
+  keywords: rootMetadata.keywords,
+  icons: FAVICON_METADATA,
+}
 
 export default function RootLayout({
   children,

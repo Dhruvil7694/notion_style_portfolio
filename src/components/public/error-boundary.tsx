@@ -4,6 +4,7 @@ import { Component, type ReactNode } from "react"
 
 import { AdminErrorState } from "@/components/admin/admin-error-state"
 import { PublicErrorState } from "@/components/public/public-error-state"
+import { logClientError } from "@/lib/logging/client"
 
 type Props = {
   children: ReactNode
@@ -29,7 +30,10 @@ export class ErrorBoundary extends Component<Props, State> {
     error: Error,
     info: { componentStack: string }
   ): void {
-    console.error("[ErrorBoundary]", error, info.componentStack)
+    logClientError("[ErrorBoundary]", {
+      error,
+      componentStack: info.componentStack,
+    })
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const Sentry = require("@sentry/nextjs") as {

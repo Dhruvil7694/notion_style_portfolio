@@ -1,16 +1,14 @@
-import { NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 
-import { getServerEnv } from "@/lib/env/server"
 import { createClient } from "@/lib/supabase/server"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabase = await createClient()
   await supabase.auth.signOut()
 
-  const { SITE_URL } = getServerEnv()
-  return NextResponse.redirect(`${SITE_URL}/admin/login`)
+  return NextResponse.redirect(new URL("/admin/login", request.url))
 }
 
-export async function POST() {
-  return GET()
+export async function POST(request: NextRequest) {
+  return GET(request)
 }

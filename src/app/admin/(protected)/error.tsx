@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/nextjs"
 import { useEffect } from "react"
 
 import { AdminErrorState } from "@/components/admin/admin-error-state"
+import { logClientError } from "@/lib/logging/client"
 
 export default function AdminProtectedError({
   error,
@@ -14,7 +15,7 @@ export default function AdminProtectedError({
 }) {
   useEffect(() => {
     Sentry.captureException(error)
-    console.error("[AdminError]", {
+    logClientError("[AdminError]", {
       digest: error.digest,
       message: error.message,
     })

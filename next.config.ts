@@ -14,6 +14,7 @@ const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
 const securityHeaders = buildSecurityHeaders({
   supabaseOrigin,
   isProduction: process.env.NODE_ENV === "production",
+  allowVercelLive: process.env.VERCEL_ENV === "preview",
 })
 
 const nextConfig: NextConfig = {

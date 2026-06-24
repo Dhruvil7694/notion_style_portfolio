@@ -6,6 +6,8 @@ type SecurityHeader = {
 type BuildSecurityHeadersOptions = {
   supabaseOrigin?: string
   isProduction?: boolean
+  /** Vercel preview toolbar (feedback.js) — harmless on production custom domains */
+  allowVercelLive?: boolean
 }
 
 function joinSources(sources: Array<string | undefined>) {
@@ -20,17 +22,15 @@ export function buildContentSecurityPolicy(
     "script-src 'self'",
     "'unsafe-inline'",
     "https://unpkg.com",
-    options.isProduction ? undefined : "'unsafe-eval'",
+    options.allowVercelLive ? "https://vercel.live" : undefined,
+    options.isProduction ? "'wasm-unsafe-eval'" : "'unsafe-eval'",
   ])
 
   return [
     "default-src 'self'",
     scriptSrc,
     "style-src 'self' 'unsafe-inline'",
-    joinSources([
-      "img-src 'self' data: blob:",
-      supabaseOrigin,
-    ]),
+    joinSources(["img-src 'self' data: blob:", supabaseOrigin]),
     "font-src 'self' data:",
     joinSources([
       "connect-src 'self'",

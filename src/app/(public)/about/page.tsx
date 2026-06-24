@@ -8,7 +8,7 @@ export async function generateMetadata() {
   const name = settings.site.owner_name || settings.site.site_name
 
   return createPageMetadata({
-    title: `About — ${name}`,
+    title: "About",
     description: `More about ${name}: AI systems, RAG, agent workflows, and building things that ship.`,
     path: "/about",
     siteName: settings.site.site_name,
@@ -29,7 +29,8 @@ export default async function AboutPage() {
           <AboutPageContent
             about={settings.about}
             avatarUrl={
-              settings.site.owner_avatar_about ?? settings.site.owner_avatar_original
+              settings.site.owner_avatar_about ??
+              settings.site.owner_avatar_original
             }
             ownerName={name}
           />
