@@ -3,8 +3,13 @@
 import { Download, Loader2 } from "lucide-react"
 import { useState } from "react"
 
+import { ErrorAlert } from "@/components/shared/error-alert"
 import { captureEvent } from "@/lib/analytics/posthog-client"
 import { requestJobFitPdfExport } from "@/lib/public/job-fit-pdf-export"
+import {
+  formatUserFacingError,
+  type UserFacingErrorDisplay,
+} from "@/lib/public/user-facing-error"
 import { cn } from "@/lib/utils"
 
 type JobFitExportPdfButtonProps = {
@@ -21,7 +26,7 @@ export function JobFitExportPdfButton({
   variant = "default",
 }: JobFitExportPdfButtonProps) {
   const [isExporting, setIsExporting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<UserFacingErrorDisplay | null>(null)
 
   async function handleExport() {
     if (isExporting) return
@@ -33,7 +38,7 @@ export function JobFitExportPdfButton({
     setIsExporting(false)
 
     if (!result.ok) {
-      setError(result.error)
+      setError(formatUserFacingError(result.error))
       return
     }
 
@@ -44,10 +49,12 @@ export function JobFitExportPdfButton({
 
   if (variant === "icon") {
     return (
-      <div className={cn("inline-flex flex-col items-center", className)}>
+      <div
+        className={cn("inline-flex flex-col items-stretch gap-1.5", className)}
+      >
         <button
           aria-label="Export job fit PDF"
-          className="inline-flex size-5 items-center justify-center rounded text-muted-foreground/40 transition-colors hover:text-foreground disabled:opacity-50"
+          className="inline-flex size-5 items-center justify-center self-center rounded text-muted-foreground/40 transition-colors hover:text-foreground disabled:opacity-50"
           disabled={isExporting}
           onClick={() => void handleExport()}
           title="Export PDF"
@@ -60,9 +67,12 @@ export function JobFitExportPdfButton({
           )}
         </button>
         {error ? (
-          <span className="mt-1 max-w-[120px] text-center text-[9px] text-red-500/80">
-            {error}
-          </span>
+          <ErrorAlert
+            error={error}
+            onDismiss={() => setError(null)}
+            onRetry={() => void handleExport()}
+            size="sm"
+          />
         ) : null}
       </div>
     )
@@ -88,7 +98,13 @@ export function JobFitExportPdfButton({
         {isExporting ? "Exporting…" : label}
       </button>
       {error ? (
-        <p className="mt-1.5 text-[10px] text-red-500/80">{error}</p>
+        <ErrorAlert
+          className="mt-2"
+          error={error}
+          onDismiss={() => setError(null)}
+          onRetry={() => void handleExport()}
+          size="sm"
+        />
       ) : null}
     </div>
   )

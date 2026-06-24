@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { DiscoverySuggestionList } from "@/components/public/discovery-ui"
 import { useDockSearchRegistration } from "@/components/public/dock-search-context"
+import { ErrorAlert } from "@/components/shared/error-alert"
 import { featureFlags } from "@/config/feature-flags"
 import { searchConfig } from "@/config/search"
 import { captureEvent } from "@/lib/analytics/posthog-client"
@@ -16,6 +17,10 @@ import type {
   GroupedDiscoveryResults,
 } from "@/lib/discovery/types"
 import { glassPanelClass } from "@/lib/public/glass-panel"
+import {
+  formatUserFacingError,
+  type UserFacingErrorDisplay,
+} from "@/lib/public/user-facing-error"
 import {
   readVisitorProfile,
   recordContentView,
@@ -48,7 +53,9 @@ export function DockSearch() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [indexLoading, setIndexLoading] = useState(false)
   const [indexLoaded, setIndexLoaded] = useState(false)
-  const [indexError, setIndexError] = useState(false)
+  const [indexError, setIndexError] = useState<UserFacingErrorDisplay | null>(
+    null
+  )
   const [recentlyViewed, setRecentlyViewed] = useState<DiscoveryDocument[]>([])
   const [shortcutLabel, setShortcutLabel] = useState("Ctrl K")
   const fetchStartedRef = useRef(false)
@@ -100,12 +107,16 @@ export function DockSearch() {
 
     fetchStartedRef.current = true
     setIndexLoading(true)
-    setIndexError(false)
+    setIndexError(null)
 
     try {
       const response = await fetch("/api/discovery")
       if (!response.ok) {
-        setIndexError(true)
+        setIndexError(
+          formatUserFacingError(
+            "Search index couldn't load. Please refresh and try again."
+          )
+        )
         return
       }
 
@@ -115,12 +126,22 @@ export function DockSearch() {
       setDocuments(payload.documents ?? [])
       setIndexLoaded(true)
     } catch {
-      setIndexError(true)
+      setIndexError(
+        formatUserFacingError(
+          "Search index couldn't load. Check your connection and retry."
+        )
+      )
     } finally {
       fetchStartedRef.current = false
       setIndexLoading(false)
     }
   }, [indexLoaded])
+
+  const retryLoadIndex = useCallback(() => {
+    fetchStartedRef.current = false
+    setIndexError(null)
+    void loadIndex()
+  }, [loadIndex])
 
   useEffect(() => {
     setShortcutLabel(
@@ -324,9 +345,13 @@ export function DockSearch() {
             {indexLoading ? (
               <p className="dock-search-panel-empty">Loading index...</p>
             ) : indexError ? (
-              <p className="dock-search-panel-empty">
-                Search is temporarily unavailable.
-              </p>
+              <div className="p-3">
+                <ErrorAlert
+                  error={indexError}
+                  onRetry={retryLoadIndex}
+                  size="sm"
+                />
+              </div>
             ) : trimmedQuery ? (
               flatResults.length === 0 ? (
                 <p className="dock-search-panel-empty">

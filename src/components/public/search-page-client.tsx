@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { DiscoverySearchResults } from "@/components/public/discovery-ui"
+import { ErrorAlert } from "@/components/shared/error-alert"
 import { searchConfig } from "@/config/search"
 import { captureEvent } from "@/lib/analytics/posthog-client"
 import { groupSearchResults, searchDocuments } from "@/lib/discovery/search"
@@ -12,6 +13,7 @@ import type {
   DiscoveryDocument,
   GroupedDiscoveryResults,
 } from "@/lib/discovery/types"
+import { formatUserFacingError } from "@/lib/public/user-facing-error"
 import {
   recordContentView,
   recordSearchQuery,
@@ -29,6 +31,7 @@ export function SearchPageClient({ initialQuery = "" }: SearchPageClientProps) {
   const [groups, setGroups] = useState<GroupedDiscoveryResults[]>([])
   const [activeIndex, setActiveIndex] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const debounceRef = useRef<number | null>(null)
 
   const flatResults = useMemo(
@@ -39,9 +42,14 @@ export function SearchPageClient({ initialQuery = "" }: SearchPageClientProps) {
   useEffect(() => {
     async function loadIndex() {
       setLoading(true)
+      setLoadError(null)
       try {
         const response = await fetch("/api/discovery")
         if (!response.ok) {
+          setLoadError(
+            "Search index couldn't load. Please refresh and try again."
+          )
+          setDocuments([])
           return
         }
 
@@ -49,12 +57,49 @@ export function SearchPageClient({ initialQuery = "" }: SearchPageClientProps) {
           documents: DiscoveryDocument[]
         }
         setDocuments(payload.documents ?? [])
+      } catch {
+        setLoadError(
+          "Search index couldn't load. Check your connection and retry."
+        )
+        setDocuments([])
       } finally {
         setLoading(false)
       }
     }
 
     void loadIndex()
+  }, [])
+
+  const searchLoadError = loadError ? formatUserFacingError(loadError) : null
+
+  const retrySearchIndex = useCallback(() => {
+    async function reload() {
+      setLoading(true)
+      setLoadError(null)
+      try {
+        const response = await fetch("/api/discovery")
+        if (!response.ok) {
+          setLoadError(
+            "Search index couldn't load. Please refresh and try again."
+          )
+          setDocuments([])
+          return
+        }
+        const payload = (await response.json()) as {
+          documents: DiscoveryDocument[]
+        }
+        setDocuments(payload.documents ?? [])
+      } catch {
+        setLoadError(
+          "Search index couldn't load. Check your connection and retry."
+        )
+        setDocuments([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void reload()
   }, [])
 
   useEffect(() => {
@@ -172,7 +217,16 @@ export function SearchPageClient({ initialQuery = "" }: SearchPageClientProps) {
         <p className="discovery-search-empty">Loading search index...</p>
       ) : null}
 
-      {!loading && !query.trim() && suggestions.length > 0 ? (
+      {!loading && searchLoadError ? (
+        <ErrorAlert
+          className="max-w-xl"
+          error={searchLoadError}
+          onRetry={retrySearchIndex}
+          size="md"
+        />
+      ) : null}
+
+      {!loading && !loadError && !query.trim() && suggestions.length > 0 ? (
         <section className="discovery-search-group">
           <h2 className="discovery-search-group-title">Popular Topics</h2>
           <ul className="discovery-search-group-list">
@@ -197,7 +251,7 @@ export function SearchPageClient({ initialQuery = "" }: SearchPageClientProps) {
         </section>
       ) : null}
 
-      {!loading && query.trim() ? (
+      {!loading && !loadError && query.trim() ? (
         <DiscoverySearchResults
           activeIndex={activeIndex}
           groups={groups}

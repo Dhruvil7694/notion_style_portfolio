@@ -13,10 +13,18 @@ import {
 } from "react"
 
 import { DiscoverySearchResults } from "@/components/public/discovery-ui"
+import { ErrorAlert } from "@/components/shared/error-alert"
 import { searchConfig } from "@/config/search"
 import { createAnalyticsEvent } from "@/lib/analytics/events"
 import { groupSearchResults, searchDocuments } from "@/lib/discovery/search"
-import type { DiscoveryDocument, GroupedDiscoveryResults } from "@/lib/discovery/types"
+import type {
+  DiscoveryDocument,
+  GroupedDiscoveryResults,
+} from "@/lib/discovery/types"
+import {
+  formatUserFacingError,
+  type UserFacingErrorDisplay,
+} from "@/lib/public/user-facing-error"
 import {
   readVisitorProfile,
   recordContentView,
@@ -50,10 +58,13 @@ type DiscoveryProviderProps = {
 export function DiscoveryProvider({ children }: DiscoveryProviderProps) {
   const [open, setOpen] = useState(false)
 
-  const openPalette = useCallback((source: "keyboard" | "header" | "search_page" | "dock" = "keyboard") => {
-    setOpen(true)
-    void createAnalyticsEvent("search_opened", { source })
-  }, [])
+  const openPalette = useCallback(
+    (source: "keyboard" | "header" | "search_page" | "dock" = "keyboard") => {
+      setOpen(true)
+      void createAnalyticsEvent("search_opened", { source })
+    },
+    []
+  )
 
   const closePalette = useCallback(() => {
     setOpen(false)
@@ -68,7 +79,11 @@ export function DiscoveryProvider({ children }: DiscoveryProviderProps) {
     [closePalette, open, openPalette]
   )
 
-  return <DiscoveryContext.Provider value={value}>{children}</DiscoveryContext.Provider>
+  return (
+    <DiscoveryContext.Provider value={value}>
+      {children}
+    </DiscoveryContext.Provider>
+  )
 }
 
 type CommandPaletteProps = {
@@ -83,6 +98,9 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
   const [groups, setGroups] = useState<GroupedDiscoveryResults[]>([])
   const [activeIndex, setActiveIndex] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState<UserFacingErrorDisplay | null>(
+    null
+  )
   const [recentlyViewed, setRecentlyViewed] = useState<DiscoveryDocument[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<number | null>(null)
@@ -103,7 +121,10 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
 
     return {
       popularTopics: documents
-        .filter((document) => document.type === "concept" || document.type === "expertise")
+        .filter(
+          (document) =>
+            document.type === "concept" || document.type === "expertise"
+        )
         .sort((a, b) => b.popularity - a.popularity)
         .slice(0, 5),
       featuredProjects: documents
@@ -119,14 +140,30 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
 
   const loadIndex = useCallback(async () => {
     setLoading(true)
+    setLoadError(null)
     try {
       const response = await fetch("/api/discovery")
       if (!response.ok) {
+        setLoadError(
+          formatUserFacingError(
+            "Search index couldn't load. Please refresh and try again."
+          )
+        )
+        setDocuments([])
         return
       }
 
-      const payload = (await response.json()) as { documents: DiscoveryDocument[] }
+      const payload = (await response.json()) as {
+        documents: DiscoveryDocument[]
+      }
       setDocuments(payload.documents ?? [])
+    } catch {
+      setLoadError(
+        formatUserFacingError(
+          "Search index couldn't load. Check your connection and retry."
+        )
+      )
+      setDocuments([])
     } finally {
       setLoading(false)
     }
@@ -170,7 +207,9 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
 
       if (event.key === "ArrowDown") {
         event.preventDefault()
-        setActiveIndex((current) => Math.min(current + 1, Math.max(flatResults.length - 1, 0)))
+        setActiveIndex((current) =>
+          Math.min(current + 1, Math.max(flatResults.length - 1, 0))
+        )
         return
       }
 
@@ -280,13 +319,27 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
         </div>
 
         <div className="discovery-search-body" data-lenis-prevent>
-          {loading ? <p className="discovery-search-empty">Loading index...</p> : null}
+          {loading ? (
+            <p className="discovery-search-empty">Loading index...</p>
+          ) : null}
 
-          {!loading && showSuggestions ? (
+          {!loading && loadError ? (
+            <div className="p-4">
+              <ErrorAlert
+                error={loadError}
+                onRetry={() => void loadIndex()}
+                size="md"
+              />
+            </div>
+          ) : null}
+
+          {!loading && !loadError && showSuggestions ? (
             <div className="discovery-search-results">
               {recentlyViewed.length > 0 ? (
                 <section className="discovery-search-group">
-                  <h3 className="discovery-search-group-title">Recently Viewed</h3>
+                  <h3 className="discovery-search-group-title">
+                    Recently Viewed
+                  </h3>
                   <ul className="discovery-search-group-list">
                     {recentlyViewed.map((item) => (
                       <li key={item.id}>
@@ -295,7 +348,9 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
                           onClick={() => navigateToResult(item, 0)}
                           type="button"
                         >
-                          <span className="discovery-search-result-title">{item.title}</span>
+                          <span className="discovery-search-result-title">
+                            {item.title}
+                          </span>
                         </button>
                       </li>
                     ))}
@@ -305,7 +360,9 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
 
               {suggestions.featuredProjects.length > 0 ? (
                 <section className="discovery-search-group">
-                  <h3 className="discovery-search-group-title">Featured Projects</h3>
+                  <h3 className="discovery-search-group-title">
+                    Featured Projects
+                  </h3>
                   <ul className="discovery-search-group-list">
                     {suggestions.featuredProjects.map((item) => (
                       <li key={item.id}>
@@ -314,7 +371,9 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
                           onClick={() => navigateToResult(item, 0)}
                           type="button"
                         >
-                          <span className="discovery-search-result-title">{item.title}</span>
+                          <span className="discovery-search-result-title">
+                            {item.title}
+                          </span>
                         </button>
                       </li>
                     ))}
@@ -324,7 +383,9 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
 
               {suggestions.popularTopics.length > 0 ? (
                 <section className="discovery-search-group">
-                  <h3 className="discovery-search-group-title">Popular Topics</h3>
+                  <h3 className="discovery-search-group-title">
+                    Popular Topics
+                  </h3>
                   <ul className="discovery-search-group-list">
                     {suggestions.popularTopics.map((item) => (
                       <li key={item.id}>
@@ -333,7 +394,9 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
                           onClick={() => navigateToResult(item, 0)}
                           type="button"
                         >
-                          <span className="discovery-search-result-title">{item.title}</span>
+                          <span className="discovery-search-result-title">
+                            {item.title}
+                          </span>
                         </button>
                       </li>
                     ))}
@@ -343,7 +406,9 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
 
               {suggestions.featuredConcepts.length > 0 ? (
                 <section className="discovery-search-group">
-                  <h3 className="discovery-search-group-title">Featured Concepts</h3>
+                  <h3 className="discovery-search-group-title">
+                    Featured Concepts
+                  </h3>
                   <ul className="discovery-search-group-list">
                     {suggestions.featuredConcepts.map((item) => (
                       <li key={item.id}>
@@ -352,7 +417,9 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
                           onClick={() => navigateToResult(item, 0)}
                           type="button"
                         >
-                          <span className="discovery-search-result-title">{item.title}</span>
+                          <span className="discovery-search-result-title">
+                            {item.title}
+                          </span>
                         </button>
                       </li>
                     ))}
@@ -362,7 +429,7 @@ export function CommandPalette({ enabled = true }: CommandPaletteProps) {
             </div>
           ) : null}
 
-          {!loading && !showSuggestions ? (
+          {!loading && !loadError && !showSuggestions ? (
             <DiscoverySearchResults
               activeIndex={activeIndex}
               groups={groups}

@@ -18,6 +18,10 @@ import type {
   CitationBundle,
 } from "@/lib/ai/citations/citation-types"
 import { captureEvent } from "@/lib/analytics/posthog-client"
+import {
+  type AssistantChatErrorDisplay,
+  formatAssistantChatError,
+} from "@/lib/public/assistant-chat-error"
 import { hashJobDescriptionContent } from "@/lib/public/job-description-validation"
 import {
   appendJobFitHistoryEntry,
@@ -67,7 +71,10 @@ type AssistantContextValue = {
   jobFitHistory: JobFitHistoryEntry[]
   messages: ChatMessage[]
   isLoading: boolean
+  chatError: AssistantChatErrorDisplay | null
   stop: () => void
+  clearChatError: () => void
+  retryChat: () => void
   submit: () => void
   submitQuestion: (question: string) => void
   submitJobFit: (jd: string, meta?: JobFitSubmissionMeta) => void
@@ -122,6 +129,14 @@ function readStorage(): StoredChat | null {
   }
 }
 
+function stripTrailingEmptyAssistant<
+  T extends { role: string; parts: { type: string; text?: string }[] },
+>(current: T[]): T[] {
+  const last = current[current.length - 1]
+  if (!last || last.role !== "assistant") return current
+  if (getMessageText(last).trim()) return current
+  return current.slice(0, -1)
+}
 function resetChatState(
   setMessages: ReturnType<typeof useChat>["setMessages"],
   setters: {
@@ -165,7 +180,16 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     []
   )
 
-  const { messages, sendMessage, setMessages, status, stop } = useChat({
+  const {
+    messages,
+    sendMessage,
+    setMessages,
+    status,
+    stop,
+    error,
+    clearError,
+    regenerate,
+  } = useChat({
     transport,
     onData: (part) => {
       if (part.type === "data-citations") {
@@ -176,6 +200,9 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
           setLastFollowups(data.suggestions.slice(0, 3))
         }
       }
+    },
+    onError: () => {
+      setMessages((current) => stripTrailingEmptyAssistant(current))
     },
   })
 
@@ -223,6 +250,20 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   }, [messages, messageTimestamps])
 
   const isLoading = status === "streaming" || status === "submitted"
+
+  const chatError = useMemo(
+    () => (error ? formatAssistantChatError(error) : null),
+    [error]
+  )
+
+  const clearChatError = useCallback(() => {
+    clearError()
+  }, [clearError])
+
+  const retryChat = useCallback(() => {
+    clearError()
+    void regenerate()
+  }, [clearError, regenerate])
 
   useEffect(() => {
     if (chatMode !== "job-fit" || isLoading) return
@@ -288,6 +329,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const close = useCallback(() => setOpen(false), [])
 
   const newChat = useCallback(() => {
+    clearError()
     resetChatState(setMessages, {
       setLastCitations,
       setLastFollowups,
@@ -303,9 +345,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore */
     }
-  }, [setMessages])
+  }, [clearError, setMessages])
 
   const startGeneralChat = useCallback(() => {
+    clearError()
     resetChatState(setMessages, {
       setLastCitations,
       setLastFollowups,
@@ -316,9 +359,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     clearJobFitHistoryStorage()
     excludedJobFitMessageIdsRef.current.clear()
     setChatMode("general")
-  }, [setMessages])
+  }, [clearError, setMessages])
 
   const startJobFitMode = useCallback(() => {
+    clearError()
     resetChatState(setMessages, {
       setLastCitations,
       setLastFollowups,
@@ -330,15 +374,16 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     excludedJobFitMessageIdsRef.current.clear()
     setChatMode("job-fit")
     captureEvent("assistant_job_fit_mode", { source: "header" })
-  }, [setMessages])
+  }, [clearError, setMessages])
 
   const prepareAnotherJobFit = useCallback(() => {
+    clearError()
     setMessages([])
     setLastCitations(null)
     setLastFollowups([])
     setLastJdText(null)
     setInput("")
-  }, [setMessages])
+  }, [clearError, setMessages])
 
   const removeJobFitHistoryEntry = useCallback((entryId: string) => {
     setJobFitHistory((current) => {
@@ -474,7 +519,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       calendlyUrl,
       messages: chatMessages,
       isLoading,
+      chatError,
       stop: stopGeneration,
+      clearChatError,
+      retryChat,
       submit,
       submitQuestion,
       submitJobFit,
@@ -500,7 +548,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       calendlyUrl,
       chatMessages,
       isLoading,
+      chatError,
       stopGeneration,
+      clearChatError,
+      retryChat,
       submit,
       submitQuestion,
       submitJobFit,

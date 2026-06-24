@@ -4,7 +4,13 @@ import { Check, ExternalLink, RefreshCw, Send, Sparkles, X } from "lucide-react"
 import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 
+import { ErrorAlert } from "@/components/shared/error-alert"
 import { captureEvent } from "@/lib/analytics/posthog-client"
+import {
+  formatUserFacingError,
+  readResponseErrorMessage,
+  type UserFacingErrorDisplay,
+} from "@/lib/public/user-facing-error"
 import { cn } from "@/lib/utils"
 
 type ClarificationOption = {
@@ -65,6 +71,22 @@ type StoredMessage = {
   metadata?: Record<string, unknown> | null
 }
 
+type CopilotRetryRequest =
+  | { kind: "message"; text: string }
+  | {
+      kind: "action"
+      action: "confirm" | "cancel" | "regenerate"
+      pending: PendingAction
+      applyArgs?: Record<string, unknown>
+    }
+
+function removeAssistantMessage(
+  messages: CopilotMessage[],
+  assistantId: string
+): CopilotMessage[] {
+  return messages.filter((message) => message.id !== assistantId)
+}
+
 export function CopilotClient() {
   const [messages, setMessages] = useState<CopilotMessage[]>([])
   const [sessions, setSessions] = useState<ChatSession[]>([])
@@ -72,13 +94,40 @@ export function CopilotClient() {
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
+  const [streamError, setStreamError] = useState<UserFacingErrorDisplay | null>(
+    null
+  )
+  const [sessionsLoading, setSessionsLoading] = useState(false)
+  const [sessionsError, setSessionsError] =
+    useState<UserFacingErrorDisplay | null>(null)
+  const [sessionLoadError, setSessionLoadError] =
+    useState<UserFacingErrorDisplay | null>(null)
+  const [failedSessionId, setFailedSessionId] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const retryRef = useRef<CopilotRetryRequest | null>(null)
 
   const loadSessions = useCallback(async () => {
-    const response = await fetch("/api/copilot/sessions")
-    if (response.ok) {
+    setSessionsLoading(true)
+    setSessionsError(null)
+    try {
+      const response = await fetch("/api/copilot/sessions")
+      if (!response.ok) {
+        setSessionsError(
+          formatUserFacingError(
+            await readResponseErrorMessage(
+              response,
+              "Couldn't load conversations."
+            )
+          )
+        )
+        return
+      }
       const data = (await response.json()) as { sessions: ChatSession[] }
       setSessions(data.sessions)
+    } catch (error) {
+      setSessionsError(formatUserFacingError(error))
+    } finally {
+      setSessionsLoading(false)
     }
   }, [])
 
@@ -93,27 +142,45 @@ export function CopilotClient() {
     }
   }, [messages, isLoading])
 
-  async function loadSession(id: string) {
-    const response = await fetch(`/api/copilot/sessions?sessionId=${id}`)
-    if (!response.ok) return
-    const data = (await response.json()) as { messages: StoredMessage[] }
-    setSessionId(id)
-    setMessages(
-      data.messages
-        .filter((msg) => msg.role === "user" || msg.role === "assistant")
-        .map((msg) => ({
-          id: msg.id,
-          role: msg.role as "user" | "assistant",
-          content: msg.content,
-          pendingActions:
-            (msg.metadata?.pendingActions as PendingAction[] | undefined) ??
-            undefined,
-          redirectUrl: msg.metadata?.redirectUrl as string | undefined,
-          redirectLabel: msg.metadata?.redirectLabel as string | undefined,
-          finalText: msg.metadata?.finalText as string | undefined,
-        }))
-    )
-  }
+  const loadSession = useCallback(async (id: string) => {
+    setSessionLoadError(null)
+    setFailedSessionId(null)
+    try {
+      const response = await fetch(`/api/copilot/sessions?sessionId=${id}`)
+      if (!response.ok) {
+        setFailedSessionId(id)
+        setSessionLoadError(
+          formatUserFacingError(
+            await readResponseErrorMessage(
+              response,
+              "Couldn't load this conversation."
+            )
+          )
+        )
+        return
+      }
+      const data = (await response.json()) as { messages: StoredMessage[] }
+      setSessionId(id)
+      setMessages(
+        data.messages
+          .filter((msg) => msg.role === "user" || msg.role === "assistant")
+          .map((msg) => ({
+            id: msg.id,
+            role: msg.role as "user" | "assistant",
+            content: msg.content,
+            pendingActions:
+              (msg.metadata?.pendingActions as PendingAction[] | undefined) ??
+              undefined,
+            redirectUrl: msg.metadata?.redirectUrl as string | undefined,
+            redirectLabel: msg.metadata?.redirectLabel as string | undefined,
+            finalText: msg.metadata?.finalText as string | undefined,
+          }))
+      )
+    } catch (error) {
+      setFailedSessionId(id)
+      setSessionLoadError(formatUserFacingError(error))
+    }
+  }, [])
 
   async function streamInto(response: Response, assistantId: string) {
     const newSessionId = response.headers.get("X-Copilot-Session-Id")
@@ -174,18 +241,28 @@ export function CopilotClient() {
     }
   }
 
-  async function handleSubmit(overrideText?: string) {
-    const text = (overrideText ?? input).trim()
+  async function sendCopilotMessage(
+    text: string,
+    mode: "new" | "retry" = "new"
+  ) {
     if (!text || isLoading) return
-    if (!overrideText) setInput("")
     setIsLoading(true)
+    setStreamError(null)
+    retryRef.current = { kind: "message", text }
 
     const assistantId = crypto.randomUUID()
-    setMessages((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), role: "user", content: text },
-      { id: assistantId, role: "assistant", content: "" },
-    ])
+    if (mode === "new") {
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), role: "user", content: text },
+        { id: assistantId, role: "assistant", content: "" },
+      ])
+    } else {
+      setMessages((prev) => [
+        ...prev,
+        { id: assistantId, role: "assistant", content: "" },
+      ])
+    }
 
     try {
       const response = await fetch("/api/copilot/chat", {
@@ -193,23 +270,40 @@ export function CopilotClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text, sessionId }),
       })
-      if (!response.ok) throw new Error("Copilot request failed")
-      await streamInto(response, assistantId)
-    } catch {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === assistantId
-            ? {
-                ...msg,
-                content:
-                  "Something went wrong. Check the AI provider settings.",
-              }
-            : msg
+      if (!response.ok) {
+        throw new Error(
+          await readResponseErrorMessage(response, "Copilot request failed")
         )
-      )
+      }
+      await streamInto(response, assistantId)
+    } catch (error) {
+      setStreamError(formatUserFacingError(error))
+      setMessages((prev) => removeAssistantMessage(prev, assistantId))
     } finally {
       setIsLoading(false)
     }
+  }
+
+  async function handleSubmit(overrideText?: string) {
+    const text = (overrideText ?? input).trim()
+    if (!text) return
+    if (!overrideText) setInput("")
+    await sendCopilotMessage(text, "new")
+  }
+
+  function retryCopilot() {
+    const retry = retryRef.current
+    setStreamError(null)
+    if (!retry) return
+
+    if (retry.kind === "message") {
+      void sendCopilotMessage(retry.text, "retry")
+      return
+    }
+
+    void handleAction(retry.action, retry.pending, {
+      applyArgs: retry.applyArgs,
+    })
   }
 
   function handleClarificationAnswer(pending: PendingAction, answer: string) {
@@ -241,6 +335,13 @@ export function CopilotClient() {
     }
     setActionLoadingId(pending.id)
     setIsLoading(true)
+    setStreamError(null)
+    retryRef.current = {
+      kind: "action",
+      action,
+      pending,
+      applyArgs: overrides?.applyArgs,
+    }
 
     setMessages((prev) =>
       prev.map((msg) =>
@@ -292,16 +393,15 @@ export function CopilotClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       })
-      if (!response.ok) throw new Error("Action failed")
-      await streamInto(response, assistantId)
-    } catch {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === assistantId
-            ? { ...msg, content: "Action failed. Try again." }
-            : msg
+      if (!response.ok) {
+        throw new Error(
+          await readResponseErrorMessage(response, "Action failed")
         )
-      )
+      }
+      await streamInto(response, assistantId)
+    } catch (error) {
+      setStreamError(formatUserFacingError(error))
+      setMessages((prev) => removeAssistantMessage(prev, assistantId))
     } finally {
       setActionLoadingId(null)
       setIsLoading(false)
@@ -311,6 +411,10 @@ export function CopilotClient() {
   function handleNewSession() {
     setSessionId(null)
     setMessages([])
+    setStreamError(null)
+    setSessionLoadError(null)
+    setFailedSessionId(null)
+    retryRef.current = null
   }
 
   const lastAssistantIndex = (() => {
@@ -331,19 +435,33 @@ export function CopilotClient() {
           New conversation
         </button>
         <div className="flex-1 space-y-1 overflow-y-auto">
-          {sessions.map((session) => (
-            <button
-              key={session.id}
-              className={cn(
-                "hover:bg-muted/60 w-full truncate rounded-md px-2 py-1.5 text-left text-sm transition-colors",
-                sessionId === session.id && "bg-muted font-medium"
-              )}
-              onClick={() => loadSession(session.id)}
-              type="button"
-            >
-              {session.title}
-            </button>
-          ))}
+          {sessionsLoading ? (
+            <p className="text-muted-foreground px-2 py-1.5 text-xs">
+              Loading conversations…
+            </p>
+          ) : null}
+          {sessionsError ? (
+            <ErrorAlert
+              error={sessionsError}
+              onRetry={() => void loadSessions()}
+              size="sm"
+            />
+          ) : null}
+          {!sessionsLoading && !sessionsError
+            ? sessions.map((session) => (
+                <button
+                  key={session.id}
+                  className={cn(
+                    "hover:bg-muted/60 w-full truncate rounded-md px-2 py-1.5 text-left text-sm transition-colors",
+                    sessionId === session.id && "bg-muted font-medium"
+                  )}
+                  onClick={() => void loadSession(session.id)}
+                  type="button"
+                >
+                  {session.title}
+                </button>
+              ))
+            : null}
         </div>
       </aside>
 
@@ -359,7 +477,20 @@ export function CopilotClient() {
         </header>
 
         <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
-          {messages.length === 0 && (
+          {sessionLoadError ? (
+            <ErrorAlert
+              error={sessionLoadError}
+              onDismiss={() => setSessionLoadError(null)}
+              onRetry={
+                sessionLoadError.canRetry && failedSessionId
+                  ? () => void loadSession(failedSessionId)
+                  : undefined
+              }
+              size="md"
+            />
+          ) : null}
+
+          {messages.length === 0 && !sessionLoadError && (
             <div className="text-muted-foreground space-y-2 text-sm">
               <p>Try:</p>
               <ul className="list-inside list-disc space-y-1">
@@ -470,6 +601,15 @@ export function CopilotClient() {
           {isLoading && messages[messages.length - 1]?.role === "user" && (
             <p className="text-muted-foreground text-xs">Thinking…</p>
           )}
+
+          {streamError && !isLoading ? (
+            <ErrorAlert
+              error={streamError}
+              onDismiss={() => setStreamError(null)}
+              onRetry={streamError.canRetry ? retryCopilot : undefined}
+              size="md"
+            />
+          ) : null}
         </div>
 
         <div className="border-border flex items-end gap-2 border-t p-3">

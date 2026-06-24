@@ -3,7 +3,9 @@
 import { useEffect, useId, useState } from "react"
 
 import { useSiteTheme } from "@/components/public/site-theme-provider"
+import { ErrorAlert } from "@/components/shared/error-alert"
 import type { SiteTheme } from "@/lib/public/site-theme"
+import { formatUserFacingError } from "@/lib/public/user-facing-error"
 import { cn } from "@/lib/utils"
 
 type CaseStudyDiagramProps = {
@@ -31,7 +33,8 @@ function getMermaidThemeVariables(theme: SiteTheme) {
       clusterBkg: "#faf1e7",
       titleColor: "#000000",
       edgeLabelBackground: "#faf1e7",
-      fontFamily: "var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif)",
+      fontFamily:
+        "var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif)",
       fontSize: "14px",
     }
   }
@@ -100,7 +103,9 @@ export function CaseStudyDiagram({ source, className }: CaseStudyDiagramProps) {
         if (!cancelled) {
           setSvg("")
           setError(
-            renderError instanceof Error ? renderError.message : "Failed to render diagram"
+            renderError instanceof Error
+              ? renderError.message
+              : "Failed to render diagram"
           )
         }
       }
@@ -115,12 +120,21 @@ export function CaseStudyDiagram({ source, className }: CaseStudyDiagramProps) {
 
   if (error) {
     return (
-      <pre className={cn("case-study-diagram-error", className)}>{error}</pre>
+      <ErrorAlert
+        className={className}
+        error={formatUserFacingError(error)}
+        size="md"
+      />
     )
   }
 
   if (!svg) {
-    return <div aria-hidden className={cn("case-study-diagram-loading", className)} />
+    return (
+      <div
+        aria-hidden
+        className={cn("case-study-diagram-loading", className)}
+      />
+    )
   }
 
   return (

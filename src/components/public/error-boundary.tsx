@@ -2,9 +2,13 @@
 
 import { Component, type ReactNode } from "react"
 
+import { AdminErrorState } from "@/components/admin/admin-error-state"
+import { PublicErrorState } from "@/components/public/public-error-state"
+
 type Props = {
   children: ReactNode
   fallback?: ReactNode
+  variant?: "public" | "admin"
 }
 
 type State = {
@@ -26,7 +30,6 @@ export class ErrorBoundary extends Component<Props, State> {
     info: { componentStack: string }
   ): void {
     console.error("[ErrorBoundary]", error, info.componentStack)
-    // Report to Sentry when initialized (instrumentation-client.ts handles init)
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const Sentry = require("@sentry/nextjs") as {
@@ -40,19 +43,36 @@ export class ErrorBoundary extends Component<Props, State> {
     }
   }
 
+  private handleRetry = (): void => {
+    this.setState({ hasError: false })
+  }
+
   override render(): ReactNode {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback
+      if (this.props.variant === "admin") {
+        return (
+          <AdminErrorState
+            display={{
+              title: "This section crashed",
+              message:
+                "Something broke while rendering this admin view. Try again or return to the dashboard.",
+              canRetry: true,
+            }}
+            onRetry={this.handleRetry}
+          />
+        )
+      }
       return (
-        <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-          <p className="text-sm text-muted-foreground">Something went wrong.</p>
-          <button
-            className="text-sm underline underline-offset-2 hover:text-foreground"
-            onClick={() => this.setState({ hasError: false })}
-          >
-            Try again
-          </button>
-        </div>
+        <PublicErrorState
+          display={{
+            title: "This section crashed",
+            message:
+              "Something broke while rendering this part of the page. Try again or return home.",
+            canRetry: true,
+          }}
+          onRetry={this.handleRetry}
+        />
       )
     }
     return this.props.children

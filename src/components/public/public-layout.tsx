@@ -1,6 +1,7 @@
 import { AnalyticsProvider } from "@/components/public/analytics-provider"
 import { AssistantShell } from "@/components/public/chat/assistant-shell"
 import { DiscoveryShell } from "@/components/public/discovery-shell"
+import { ErrorBoundary } from "@/components/public/error-boundary"
 import { FloatingDock } from "@/components/public/floating-dock"
 import { ScrollProgress } from "@/components/public/scroll-progress"
 import { SiteFooter } from "@/components/public/site-footer"
@@ -37,7 +38,9 @@ export async function PublicLayout({ children }: PublicLayoutProps) {
                   assistantEnabled={featureFlags.enablePortfolioAssistant}
                   settings={settings}
                 />
-                <main className="dock-main flex-1">{children}</main>
+                <main className="dock-main flex-1">
+                  <ErrorBoundary>{children}</ErrorBoundary>
+                </main>
                 <ThankYouDivider />
                 <SiteFooter
                   resumeAvailable={Boolean(resume?.file_path)}

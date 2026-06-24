@@ -18,6 +18,7 @@ import { glassPanelClass } from "@/lib/public/glass-panel"
 import { cn } from "@/lib/utils"
 import { trapNestedScrollWheel } from "@/lib/utils/trap-nested-scroll-wheel"
 
+import { AssistantChatError } from "./assistant-chat-error"
 import { useAssistant } from "./assistant-context"
 import { AssistantInput } from "./assistant-input"
 import { AssistantMessage } from "./assistant-message"
@@ -97,6 +98,9 @@ export function AssistantPanel() {
     removeJobFitHistoryEntry,
     clearJobFitHistory,
     isLoading,
+    chatError,
+    clearChatError,
+    retryChat,
     stop,
   } = useAssistant()
 
@@ -118,10 +122,10 @@ export function AssistantPanel() {
     const el = scrollRef.current
     if (!el) return
     const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120
-    if (isNearBottom || isLoading) {
+    if (isNearBottom || isLoading || chatError) {
       el.scrollTop = el.scrollHeight
     }
-  }, [messages, isLoading])
+  }, [messages, isLoading, chatError])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -311,6 +315,14 @@ export function AssistantPanel() {
           {showLoadingIndicator && (
             <LoadingIndicator question={lastUserQuestion} />
           )}
+
+          {chatError && !isLoading ? (
+            <AssistantChatError
+              error={chatError}
+              onDismiss={clearChatError}
+              onRetry={chatError.canRetry ? retryChat : undefined}
+            />
+          ) : null}
         </div>
 
         {showScrollBtn && (

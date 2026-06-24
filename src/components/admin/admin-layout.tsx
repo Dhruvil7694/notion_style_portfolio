@@ -1,6 +1,7 @@
 import { headers } from "next/headers"
 
 import { AdminHeader } from "@/components/admin/admin-header"
+import { AdminMainErrorBoundary } from "@/components/admin/admin-main-error-boundary"
 import { AdminSidebarNav } from "@/components/admin/admin-sidebar"
 import { getCurrentUser } from "@/lib/auth"
 
@@ -22,7 +23,9 @@ export async function AdminLayout({ children }: AdminLayoutProps) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminHeader userEmail={userEmail} />
-        <main className="flex-1 overflow-auto p-4 md:p-8">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-8">
+          <AdminMainErrorBoundary>{children}</AdminMainErrorBoundary>
+        </main>
       </div>
     </div>
   )
