@@ -4,17 +4,18 @@ import { z } from "zod"
 import { classifyJobDescriptionDocument } from "@/lib/ai/classify-document"
 import { isAiConfigured } from "@/lib/ai/models"
 import { recordJobFitAnalyticsEvent } from "@/lib/job-fit/analytics"
+import { JOB_DESCRIPTION_MAX_CHARS } from "@/lib/public/job-description"
 import { hashJobDescriptionContent } from "@/lib/public/job-description-validation"
 import { rateLimitRequest } from "@/lib/security/api-route"
 
 export const maxDuration = 30
 
 const bodySchema = z.object({
-  text: z.string().min(1).max(100_000),
+  text: z.string().min(1).max(JOB_DESCRIPTION_MAX_CHARS),
 })
 
 export async function POST(request: Request) {
-  const rateLimit = await rateLimitRequest(request, "chat")
+  const rateLimit = await rateLimitRequest(request, "jdValidate")
   if (!rateLimit.ok) {
     return rateLimit.response
   }

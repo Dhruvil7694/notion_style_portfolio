@@ -14,7 +14,7 @@ const bodySchema = z.object({
 })
 
 export async function POST(request: Request) {
-  const rateLimit = await rateLimitRequest(request, "chat")
+  const rateLimit = await rateLimitRequest(request, "jobFitAnalytics")
   if (!rateLimit.ok) {
     return rateLimit.response
   }

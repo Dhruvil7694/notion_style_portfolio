@@ -6,6 +6,7 @@ import {
   API_RATE_LIMITS,
   checkRateLimit,
   getClientIp,
+  isDistributedRateLimitConfigured,
   rateLimitHeaders,
 } from "@/lib/security/rate-limit"
 
@@ -25,6 +26,19 @@ export async function rateLimitRequest(
   request: Request,
   rateLimitName: RateLimitName
 ): Promise<RateLimitSuccess | RateLimitFailure> {
+  if (
+    process.env.NODE_ENV === "production" &&
+    !isDistributedRateLimitConfigured()
+  ) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: "Service temporarily unavailable. Please try again later." },
+        { status: 503 }
+      ),
+    }
+  }
+
   const ip = getClientIp(request)
   const result = await checkRateLimit(ip, rateLimitName)
   const headers = rateLimitHeaders(result)

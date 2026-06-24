@@ -1,4 +1,3 @@
-import { marked } from "marked"
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
 import { z } from "zod"
@@ -7,9 +6,7 @@ import { trackServerEvent } from "@/lib/analytics/posthog-server"
 import { getServerEnv } from "@/lib/env/server"
 import { recordJobFitAnalyticsEvent } from "@/lib/job-fit/analytics"
 import { rateLimitRequest } from "@/lib/security/api-route"
-
-// Configure marked for clean HTML output
-marked.setOptions({ gfm: true, breaks: true })
+import { renderSanitizedEmailMarkdown } from "@/lib/security/sanitize-email-html"
 
 const bodySchema = z.object({
   jobTitle: z.string().max(200).optional(),
@@ -27,56 +24,6 @@ function escapeHtml(text: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;")
-}
-
-function styledMd(md: string): string {
-  const html = marked.parse(md) as string
-  return html
-    .replace(
-      /<h2>/g,
-      '<h2 style="font-size:16px;font-weight:700;margin:20px 0 8px;color:#1a1a1a;border-bottom:1px solid #e5e5e5;padding-bottom:6px;">'
-    )
-    .replace(
-      /<h3>/g,
-      '<h3 style="font-size:14px;font-weight:600;margin:16px 0 6px;color:#1a1a1a;">'
-    )
-    .replace(
-      /<p>/g,
-      '<p style="margin:0 0 10px;font-size:13px;line-height:1.6;color:#333;">'
-    )
-    .replace(/<strong>/g, '<strong style="font-weight:700;color:#1a1a1a;">')
-    .replace(
-      /<table>/g,
-      '<table style="border-collapse:collapse;width:100%;font-size:12px;margin:12px 0;">'
-    )
-    .replace(/<thead>/g, '<thead style="background:#f0f0f0;">')
-    .replace(
-      /<th>/g,
-      '<th style="border:1px solid #ddd;padding:7px 10px;text-align:left;font-weight:600;white-space:nowrap;">'
-    )
-    .replace(
-      /<td>/g,
-      '<td style="border:1px solid #e0e0e0;padding:6px 10px;vertical-align:top;line-height:1.5;">'
-    )
-    .replace(/<tr>/g, "<tr>")
-    .replace(/<ul>/g, '<ul style="margin:6px 0 10px;padding-left:20px;">')
-    .replace(/<ol>/g, '<ol style="margin:6px 0 10px;padding-left:20px;">')
-    .replace(
-      /<li>/g,
-      '<li style="margin-bottom:4px;font-size:13px;line-height:1.5;color:#333;">'
-    )
-    .replace(
-      /<code>/g,
-      '<code style="background:#f4f4f4;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px;">'
-    )
-    .replace(
-      /<hr>/g,
-      '<hr style="border:none;border-top:1px solid #e5e5e5;margin:16px 0;">'
-    )
-    .replace(
-      /<blockquote>/g,
-      '<blockquote style="border-left:3px solid #ddd;margin:10px 0;padding:4px 14px;color:#666;">'
-    )
 }
 
 export async function POST(request: Request) {
@@ -182,7 +129,7 @@ export async function POST(request: Request) {
       <div style="margin-bottom:24px;">
         <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#888;margin:0 0 12px;">Fit Analysis</p>
         <div style="background:#fafafa;border:1px solid #e8e8e8;border-radius:8px;padding:20px 22px;">
-          ${styledMd(fitAnalysis)}
+          ${renderSanitizedEmailMarkdown(fitAnalysis)}
         </div>
       </div>`
           : ""

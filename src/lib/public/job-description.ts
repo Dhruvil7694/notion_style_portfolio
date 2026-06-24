@@ -6,6 +6,7 @@ const ALLOWED_MIME_TYPES = new Set([
 ])
 
 export const JOB_DESCRIPTION_MAX_BYTES = 2 * 1024 * 1024
+export const JOB_DESCRIPTION_MAX_CHARS = 80_000
 
 export type {
   JdClassificationFeedbackPayload,

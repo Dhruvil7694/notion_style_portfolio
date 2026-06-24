@@ -36,9 +36,11 @@ export const API_RATE_LIMITS = {
   discovery: { limit: 60, windowMs: 60_000 },
   knowledgeGraph: { limit: 30, windowMs: 60_000 },
   chat: { limit: 20, windowMs: 60_000 },
+  jdValidate: { limit: 5, windowMs: 60_000 },
   copilot: { limit: 30, windowMs: 60_000 },
   notifyEmployer: { limit: 3, windowMs: 60_000 },
   jobFitExport: { limit: 10, windowMs: 60_000 },
+  jobFitAnalytics: { limit: 10, windowMs: 60_000 },
 } as const
 
 type RateLimitName = keyof typeof API_RATE_LIMITS
@@ -50,12 +52,19 @@ type RateLimitName = keyof typeof API_RATE_LIMITS
 
 let redis: Redis | null = null
 
+export function isDistributedRateLimitConfigured(): boolean {
+  return Boolean(
+    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+  )
+}
+
 function getRedis(): Redis | null {
   if (redis) return redis
-  const url = process.env.UPSTASH_REDIS_REST_URL
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN
-  if (!url || !token) return null
-  redis = new Redis({ url, token })
+  if (!isDistributedRateLimitConfigured()) return null
+  redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL!,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  })
   return redis
 }
 

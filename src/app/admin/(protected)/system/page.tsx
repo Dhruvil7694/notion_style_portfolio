@@ -25,10 +25,7 @@ async function runHealthChecks(): Promise<HealthCheck[]> {
   let dbMessage = "Connected successfully"
   try {
     const supabase = createAdminClient()
-    const { error } = await supabase
-      .from("projects")
-      .select("id")
-      .limit(1)
+    const { error } = await supabase.from("projects").select("id").limit(1)
     if (error) {
       dbStatus = "fail"
       dbMessage = error.message
@@ -90,13 +87,16 @@ async function runHealthChecks(): Promise<HealthCheck[]> {
   const upstashUrl = process.env.UPSTASH_REDIS_REST_URL
   const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN
   const upstashOk = Boolean(upstashUrl && upstashToken)
+  const isProduction = process.env.NODE_ENV === "production"
   checks.push({
     label: "Rate limiting (Upstash Redis)",
     group: "Infrastructure",
-    status: upstashOk ? "pass" : "warn",
+    status: upstashOk ? "pass" : isProduction ? "fail" : "warn",
     message: upstashOk
       ? "UPSTASH_REDIS_REST_URL and TOKEN set"
-      : "Not configured — falls back to in-memory (broken on Vercel)",
+      : isProduction
+        ? "Required in production — public APIs return 503 until configured"
+        : "Not configured — falls back to in-memory (dev only)",
   })
 
   checks.push({
@@ -178,9 +178,7 @@ export default async function SystemPage() {
                     {groupChecks.map((check, i) => (
                       <tr
                         key={check.label}
-                        className={
-                          i < groupChecks.length - 1 ? "border-b" : ""
-                        }
+                        className={i < groupChecks.length - 1 ? "border-b" : ""}
                       >
                         <td className="px-4 py-2 font-mono text-xs">
                           {check.label}

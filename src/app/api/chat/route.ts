@@ -1,4 +1,3 @@
-import type { UIMessage } from "ai"
 import { NextResponse } from "next/server"
 
 import {
@@ -16,6 +15,7 @@ import {
   getPublishedProjects,
 } from "@/lib/public/queries"
 import { rateLimitRequest } from "@/lib/security/api-route"
+import { parseChatPostBody } from "@/lib/security/chat-request"
 import { resolveSiteUrl } from "@/lib/seo/canonical"
 
 export const maxDuration = 60
@@ -36,32 +36,25 @@ export async function POST(request: Request) {
     )
   }
 
-  const body = (await request.json()) as {
-    messages?: UIMessage[]
-    query?: string
-  }
-
-  const messages = body.messages ?? []
-  const lastUserMessage = [...messages]
-    .reverse()
-    .find((message) => message.role === "user")
-
-  const queryText =
-    body.query ??
-    lastUserMessage?.parts
-      ?.filter(
-        (part): part is { type: "text"; text: string } => part.type === "text"
-      )
-      .map((part) => part.text)
-      .join("\n") ??
-    ""
-
-  if (!queryText.trim()) {
+  let rawBody: unknown
+  try {
+    rawBody = await request.json()
+  } catch {
     return NextResponse.json(
-      { error: "Message is required." },
+      { error: "Invalid request." },
       { status: 400, headers: rateLimit.headers }
     )
   }
+
+  const parsedBody = parseChatPostBody(rawBody)
+  if (!parsedBody.ok) {
+    return NextResponse.json(
+      { error: parsedBody.error },
+      { status: 400, headers: rateLimit.headers }
+    )
+  }
+
+  const { messages, queryText } = parsedBody.data
 
   const settings = await getPublicSettings()
   const siteUrl = resolveSiteUrl(settings.site.site_url)

@@ -10,7 +10,10 @@ const SRC_DIR = path.join(ROOT, "src")
 const FORBIDDEN_CLIENT_PATTERNS = [
   { label: "SUPABASE_SECRET_KEY", pattern: /SUPABASE_SECRET_KEY/ },
   { label: "service_role", pattern: /service_role/i },
-  { label: "createAdminClient import", pattern: /from ["']@\/lib\/supabase\/admin["']/ },
+  {
+    label: "createAdminClient import",
+    pattern: /from ["']@\/lib\/supabase\/admin["']/,
+  },
   { label: "admin.ts import", pattern: /from ["'][^"']*supabase\/admin["']/ },
 ]
 
@@ -23,6 +26,7 @@ const REQUIRED_RLS_TABLES = [
   "settings",
   "resumes",
   "contact_submissions",
+  "job_fit_analytics_events",
   "technology_registry",
   "concept_registry",
   "expertise_areas",
@@ -121,7 +125,7 @@ async function auditRlsCoverage() {
   const combined = sql.join("\n")
   const missing = REQUIRED_RLS_TABLES.filter((table) => {
     const pattern = new RegExp(
-      `alter\\s+table\\s+public\\.${table}\\s+enable\\s+row\\s+level\\s+security`,
+      `alter\\s+table\\s+(?:public\\.)?${table}\\s+enable\\s+row\\s+level\\s+security`,
       "i"
     )
     return !pattern.test(combined)
@@ -159,7 +163,9 @@ async function main() {
 
   if (missingRls.length > 0) {
     failed = true
-    console.error("RLS coverage audit failed. Missing ENABLE ROW LEVEL SECURITY for:")
+    console.error(
+      "RLS coverage audit failed. Missing ENABLE ROW LEVEL SECURITY for:"
+    )
     for (const table of missingRls) {
       console.error(`  - ${table}`)
     }
