@@ -3,13 +3,14 @@ import { notFound } from "next/navigation"
 import {
   ContentKnowledgeAfter,
   ContentKnowledgeBefore,
-} from "@/components/public/content-knowledge-blocks"
-import { ContentArticle } from "@/components/public/content-shell"
-import { PublicContent } from "@/components/public/public-content"
-import { ViewTracker } from "@/components/public/view-tracker"
-import { JsonLd } from "@/components/seo/json-ld"
-import { resolveContentKnowledge } from "@/lib/public/content-knowledge"
-import { getContentBySlug, getPublicSettings } from "@/lib/public/queries"
+} from "@/features/knowledge-base/components/content-knowledge-blocks"
+import { ContentArticle } from "@/features/knowledge-base/components/content-shell"
+import { resolveContentKnowledge } from "@/features/portfolio/lib/content-knowledge"
+import {
+  getContentBySlug,
+  getPublicSettings,
+} from "@/features/portfolio/lib/queries"
+import { JsonLd } from "@/features/seo/components/json-ld"
 import {
   buildArticleJsonLd,
   buildAutomationMetadata,
@@ -18,9 +19,11 @@ import {
   buildNotFoundMetadata,
   mergeJsonLdGraph,
   resolveSiteUrl,
-} from "@/lib/seo"
-import { generateCanonicalUrl } from "@/lib/seo/canonical"
-import { formatDate } from "@/lib/utils/date"
+} from "@/features/seo/lib"
+import { generateCanonicalUrl } from "@/features/seo/lib/canonical"
+import { PublicContent } from "@/features/site-shell/components/public-content"
+import { ViewTracker } from "@/features/site-shell/components/view-tracker"
+import { formatDate } from "@/shared/lib/utils/date"
 
 type AutomationDetailPageProps = {
   params: Promise<{ slug: string }>

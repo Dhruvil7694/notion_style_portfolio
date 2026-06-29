@@ -1,7 +1,7 @@
-import { PageHeader } from "@/components/admin"
-import { ProfileForm } from "@/features/admin/forms/profile-form"
-import { getAdminSettings } from "@/lib/admin/queries"
-import { parsePublicSettings } from "@/lib/public/settings"
+import { AdminCallout, PageHeader } from "@/features/admin/components"
+import { ProfileForm } from "@/features/admin/components/forms/profile-form"
+import { getAdminSettings } from "@/features/admin/lib/queries"
+import { parsePublicSettings } from "@/features/portfolio/lib/settings"
 
 export const metadata = {
   title: "Profile",
@@ -18,9 +18,9 @@ export default async function AdminProfilePage() {
           description="Homepage photo, name, title, and short bio."
           title="Profile"
         />
-        <p className="text-destructive text-sm" role="alert">
-          Unable to load profile: {error.message}
-        </p>
+        <AdminCallout title="Unable to load profile" variant="error">
+          <p>{error.message}</p>
+        </AdminCallout>
       </div>
     )
   }

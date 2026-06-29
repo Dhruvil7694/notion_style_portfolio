@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 
-import { PublicLayout } from "@/components/public/public-layout"
-import { getPublicSettings } from "@/lib/public/queries"
-import { buildMetadataBase, resolveSiteUrl } from "@/lib/seo"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { buildMetadataBase, resolveSiteUrl } from "@/features/seo/lib"
+import { PublicLayout } from "@/features/site-shell/components/public-layout"
 
 export const revalidate = 3600
 

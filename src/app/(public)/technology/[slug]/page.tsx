@@ -1,18 +1,27 @@
 import { notFound } from "next/navigation"
 
-import { PageShell } from "@/components/public/content-shell"
-import { EntityNavigationSections } from "@/components/public/discovery-ui"
-import { KnowledgeRelatedSection } from "@/components/public/knowledge-related-section"
-import { TechnologyHubMeta } from "@/components/public/technology-hub-meta"
-import { ViewTracker } from "@/components/public/view-tracker"
-import { JsonLd } from "@/components/seo/json-ld"
-import { resolveEntityNavigation } from "@/lib/discovery/explorer"
-import { buildKnowledgeGraph, getTechnologyBundle } from "@/lib/knowledge/graph"
-import { resolveTechnologyLabel } from "@/lib/knowledge/taxonomy"
-import { getPublicSettings, getTechnologyBySlug } from "@/lib/public/queries"
-import { resolveSiteUrl } from "@/lib/seo/canonical"
-import { buildCollectionPageJsonLd, mergeJsonLdGraph } from "@/lib/seo/jsonld"
-import { buildBaseMetadata } from "@/lib/seo/metadata"
+import { EntityNavigationSections } from "@/features/discovery/components/discovery-ui"
+import { resolveEntityNavigation } from "@/features/discovery/lib/explorer"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import { KnowledgeRelatedSection } from "@/features/knowledge-base/components/knowledge-related-section"
+import { TechnologyHubMeta } from "@/features/knowledge-base/components/technology-hub-meta"
+import {
+  buildKnowledgeGraph,
+  getTechnologyBundle,
+} from "@/features/knowledge-base/lib/graph"
+import { resolveTechnologyLabel } from "@/features/knowledge-base/lib/taxonomy"
+import {
+  getPublicSettings,
+  getTechnologyBySlug,
+} from "@/features/portfolio/lib/queries"
+import { JsonLd } from "@/features/seo/components/json-ld"
+import { resolveSiteUrl } from "@/features/seo/lib/canonical"
+import {
+  buildCollectionPageJsonLd,
+  mergeJsonLdGraph,
+} from "@/features/seo/lib/jsonld"
+import { buildBaseMetadata } from "@/features/seo/lib/metadata"
+import { ViewTracker } from "@/features/site-shell/components/view-tracker"
 
 type TechnologyDetailPageProps = {
   params: Promise<{ slug: string }>

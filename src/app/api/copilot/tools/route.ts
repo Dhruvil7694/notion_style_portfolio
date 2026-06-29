@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
 
-import { requireAdmin } from "@/lib/auth"
-import type { CopilotToolName } from "@/lib/copilot/tools"
-import { COPILOT_TOOLS,executeCopilotTool } from "@/lib/copilot/tools"
-import { rateLimitRequest } from "@/lib/security/api-route"
+import type { CopilotToolName } from "@/features/copilot/lib/tools"
+import { COPILOT_TOOLS, executeCopilotTool } from "@/features/copilot/lib/tools"
+import { requireAdmin } from "@/shared/lib/auth"
+import { rateLimitRequest } from "@/shared/lib/security/api-route"
 
 export async function GET(request: Request) {
   await requireAdmin()
@@ -13,7 +13,10 @@ export async function GET(request: Request) {
     return rateLimit.response
   }
 
-  return NextResponse.json({ tools: COPILOT_TOOLS }, { headers: rateLimit.headers })
+  return NextResponse.json(
+    { tools: COPILOT_TOOLS },
+    { headers: rateLimit.headers }
+  )
 }
 
 export async function POST(request: Request) {

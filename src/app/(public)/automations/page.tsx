@@ -1,7 +1,10 @@
-import { AutomationList } from "@/components/public/automation-list"
-import { PageShell } from "@/components/public/content-shell"
-import { getPublicSettings, getPublishedContent } from "@/lib/public/queries"
-import { buildAutomationsIndexMetadata } from "@/lib/seo"
+import { AutomationList } from "@/features/automations/components/automation-list"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import {
+  getPublicSettings,
+  getPublishedContent,
+} from "@/features/portfolio/lib/queries"
+import { buildAutomationsIndexMetadata } from "@/features/seo/lib"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()
@@ -13,11 +16,16 @@ export default async function AutomationsPage() {
   const { data: items } = await getPublishedContent({ type: "automation" })
 
   return (
-    <PageShell description="Automation systems, workflows, and applied AI tooling." title="Automations">
+    <PageShell
+      description="Automation systems, workflows, and applied AI tooling."
+      title="Automations"
+    >
       {items.length > 0 ? (
         <AutomationList items={items} />
       ) : (
-        <p className="kb-empty-message">Automations will appear here once published.</p>
+        <p className="kb-empty-message">
+          Automations will appear here once published.
+        </p>
       )}
     </PageShell>
   )

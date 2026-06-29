@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 
-import { ContentForm } from "@/features/admin/forms/content-form"
-import { getContentById } from "@/lib/admin/queries"
+import { ContentForm } from "@/features/admin/components/forms/content-form"
+import { getContentById } from "@/features/admin/lib/queries"
 
 type AdminEditContentPageProps = {
   params: Promise<{ id: string }>

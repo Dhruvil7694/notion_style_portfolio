@@ -1,7 +1,10 @@
-import { PageShell } from "@/components/public/content-shell"
-import { ExpertiseAreaCard } from "@/components/public/expertise-area-card"
-import { getPublicSettings, getPublishedExpertiseAreas } from "@/lib/public/queries"
-import { buildBaseMetadata } from "@/lib/seo/metadata"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import { ExpertiseAreaCard } from "@/features/knowledge-base/components/expertise-area-card"
+import {
+  getPublicSettings,
+  getPublishedExpertiseAreas,
+} from "@/features/portfolio/lib/queries"
+import { buildBaseMetadata } from "@/features/seo/lib/metadata"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()
@@ -10,7 +13,8 @@ export async function generateMetadata() {
     { settings },
     {
       title: "Expertise",
-      description: "Applied AI engineering domains — RAG systems, multi-agent workflows, document intelligence, and enterprise automation.",
+      description:
+        "Applied AI engineering domains — RAG systems, multi-agent workflows, document intelligence, and enterprise automation.",
       path: "/expertise",
     }
   )
@@ -33,7 +37,9 @@ export default async function ExpertiseIndexPage() {
           ))}
         </ul>
       ) : (
-        <p className="kb-empty-message">Expertise areas will appear here once published.</p>
+        <p className="kb-empty-message">
+          Expertise areas will appear here once published.
+        </p>
       )}
     </PageShell>
   )

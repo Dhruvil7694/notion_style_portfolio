@@ -3,16 +3,19 @@ import "./globals.css"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 
-import { SiteThemeScript } from "@/components/public/site-theme-script"
-import { DEFAULT_PUBLIC_SETTINGS } from "@/lib/public/settings"
-import { SITE_THEME_DEFAULT } from "@/lib/public/site-theme"
+import { DEFAULT_PUBLIC_SETTINGS } from "@/features/portfolio/lib/settings"
+import { SITE_THEME_DEFAULT } from "@/features/portfolio/lib/site-theme"
 import {
   SEO_DEFAULT_DESCRIPTION,
   SEO_KEYWORDS,
   SEO_SITE_TITLE,
-} from "@/lib/seo/constants"
-import { FAVICON_METADATA } from "@/lib/seo/favicons"
-import { buildBaseMetadata, buildSiteTitleConfig } from "@/lib/seo/metadata"
+} from "@/features/seo/lib/constants"
+import { FAVICON_METADATA } from "@/features/seo/lib/favicons"
+import {
+  buildBaseMetadata,
+  buildSiteTitleConfig,
+} from "@/features/seo/lib/metadata"
+import { SiteThemeScript } from "@/features/site-shell/components/site-theme-script"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

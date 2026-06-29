@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 
-import { SkillForm } from "@/features/admin/forms/skill-form"
-import { getSkillById } from "@/lib/admin/queries"
+import { SkillForm } from "@/features/admin/components/forms/skill-form"
+import { getSkillById } from "@/features/admin/lib/queries"
 
 type AdminEditSkillPageProps = {
   params: Promise<{ id: string }>

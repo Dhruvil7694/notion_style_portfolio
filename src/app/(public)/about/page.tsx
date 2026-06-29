@@ -1,7 +1,7 @@
-import { AboutPageContent } from "@/components/public/about-page-content"
-import { PageBreadcrumbs } from "@/components/public/page-breadcrumbs"
-import { getPublicSettings } from "@/lib/public/queries"
-import { createPageMetadata } from "@/lib/utils/metadata"
+import { AboutPageContent } from "@/features/about/components/about-page-content"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { PageBreadcrumbs } from "@/features/site-shell/components/page-breadcrumbs"
+import { createPageMetadata } from "@/shared/lib/utils/metadata"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()

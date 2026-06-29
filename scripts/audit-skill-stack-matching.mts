@@ -1,6 +1,6 @@
-import { skillMatchesTech } from "../src/lib/public/skill-usage"
-import { buildSkillDetailRows, buildStackShowcaseGroups } from "../src/lib/public/stack-registry"
-import type { Project, Skill } from "../src/types/database.helpers"
+import { skillMatchesTech } from "../src/features/portfolio/lib/skill-usage"
+import { buildSkillDetailRows, buildStackShowcaseGroups } from "../src/features/portfolio/lib/stack-registry"
+import type { Project, Skill } from "../src/shared/types/database.helpers"
 
 const projects: Pick<Project, "id" | "slug" | "title" | "tech_stack">[] = [
   {

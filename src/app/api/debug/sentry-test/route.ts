@@ -3,7 +3,7 @@ import "server-only"
 import * as Sentry from "@sentry/nextjs"
 import { type NextRequest, NextResponse } from "next/server"
 
-import { authorizeAdminApi } from "@/lib/auth"
+import { authorizeAdminApi } from "@/shared/lib/auth"
 
 export const dynamic = "force-dynamic"
 

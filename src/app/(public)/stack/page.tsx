@@ -1,13 +1,13 @@
-import { PageShell } from "@/components/public/content-shell"
-import { StackTableLazy } from "@/components/public/stack-table-lazy"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import { StackTableLazy } from "@/features/knowledge-base/components/stack-table-lazy"
 import {
   getExperienceList,
   getPublicSettings,
   getPublishedProjects,
   getSkillsList,
-} from "@/lib/public/queries"
-import { buildSkillDetailRows } from "@/lib/public/stack-registry"
-import { createPageMetadata } from "@/lib/utils/metadata"
+} from "@/features/portfolio/lib/queries"
+import { buildSkillDetailRows } from "@/features/portfolio/lib/stack-registry"
+import { createPageMetadata } from "@/shared/lib/utils/metadata"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()

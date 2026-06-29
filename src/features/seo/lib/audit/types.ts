@@ -24,6 +24,7 @@ export type SeoAuditScore = {
   checks: SeoRuleResult[]
   issueCount: number
   publicPath: string
+  cmsPath: string
   table: "projects" | "content"
 }
 

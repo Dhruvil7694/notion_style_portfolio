@@ -1,4 +1,4 @@
-import { ProjectForm } from "@/features/admin/forms/project-form"
+import { ProjectForm } from "@/features/admin/components/forms/project-form"
 
 export const metadata = {
   title: "New Project",

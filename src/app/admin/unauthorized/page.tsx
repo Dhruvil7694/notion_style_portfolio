@@ -1,8 +1,8 @@
 import Link from "next/link"
 
-import { buttonVariants } from "@/components/ui/button"
-import { getCurrentUser } from "@/lib/auth"
-import { cn } from "@/lib/utils"
+import { getCurrentUser } from "@/shared/lib/auth"
+import { cn } from "@/shared/lib/utils"
+import { buttonVariants } from "@/shared/ui/button"
 
 export const metadata = {
   title: "Unauthorized",
@@ -18,9 +18,12 @@ export default async function AdminUnauthorizedPage() {
         <p className="text-muted-foreground text-sm font-medium uppercase tracking-wide">
           Admin
         </p>
-        <h1 className="text-2xl font-semibold tracking-tight">403 — Unauthorized</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          403 — Unauthorized
+        </h1>
         <p className="text-muted-foreground text-sm">
-          Your account is signed in but is not authorized to access the admin area.
+          Your account is signed in but is not authorized to access the admin
+          area.
         </p>
         {user?.email ? (
           <p className="text-muted-foreground text-sm">

@@ -1,7 +1,7 @@
-import { PageHeader } from "@/components/admin"
-import { AboutForm } from "@/features/admin/forms/about-form"
-import { getAdminSettings } from "@/lib/admin/queries"
-import { parsePublicSettings } from "@/lib/public/settings"
+import { AdminCallout, PageHeader } from "@/features/admin/components"
+import { AboutForm } from "@/features/admin/components/forms/about-form"
+import { getAdminSettings } from "@/features/admin/lib/queries"
+import { parsePublicSettings } from "@/features/portfolio/lib/settings"
 
 export const metadata = {
   title: "About Me",
@@ -18,9 +18,9 @@ export default async function AdminAboutPage() {
           description="About page photo and long-form copy."
           title="About Me"
         />
-        <p className="text-destructive text-sm" role="alert">
-          Unable to load About Me content: {error.message}
-        </p>
+        <AdminCallout title="Unable to load About Me content" variant="error">
+          <p>{error.message}</p>
+        </AdminCallout>
       </div>
     )
   }

@@ -1,6 +1,9 @@
-import { AiSettingsForm } from "@/features/admin/forms/ai-settings-form"
-import { getAiSettingsUncached } from "@/lib/ai/get-ai-settings"
-import { getAiProvidersCatalog } from "@/lib/ai/providers/catalog"
+import { PageHeader } from "@/features/admin/components"
+import { AiSettingsForm } from "@/features/admin/components/forms/ai-settings-form"
+import { getAiSettingsUncached } from "@/features/ai/lib/get-ai-settings"
+import { getAiProvidersCatalog } from "@/features/ai/lib/providers/catalog"
+
+export const dynamic = "force-dynamic"
 
 export default async function AiSettingsPage() {
   const [settings, providersCatalog] = await Promise.all([
@@ -9,13 +12,11 @@ export default async function AiSettingsPage() {
   ])
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">AI Settings</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Configure providers, models, failover, and context budget without redeploying.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        description="Configure providers, models, failover, and context budget without redeploying."
+        title="AI Settings"
+      />
       <AiSettingsForm providersCatalog={providersCatalog} settings={settings} />
     </div>
   )

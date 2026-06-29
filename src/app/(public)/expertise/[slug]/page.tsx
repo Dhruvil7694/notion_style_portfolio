@@ -1,21 +1,27 @@
 import { notFound } from "next/navigation"
 
-import { PageShell } from "@/components/public/content-shell"
-import { EntityNavigationSections } from "@/components/public/discovery-ui"
-import { KeyTakeawaysList } from "@/components/public/key-takeaways-list"
-import { KnowledgeRelatedSection } from "@/components/public/knowledge-related-section"
-import { ViewTracker } from "@/components/public/view-tracker"
-import { JsonLd } from "@/components/seo/json-ld"
-import { resolveEntityNavigation } from "@/lib/discovery/explorer"
-import { buildKnowledgeGraph, getExpertiseBundle } from "@/lib/knowledge/graph"
-import { getExpertiseAreaBySlug, getPublicSettings } from "@/lib/public/queries"
-import { resolveSiteUrl } from "@/lib/seo/canonical"
+import { EntityNavigationSections } from "@/features/discovery/components/discovery-ui"
+import { resolveEntityNavigation } from "@/features/discovery/lib/explorer"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import { KnowledgeRelatedSection } from "@/features/knowledge-base/components/knowledge-related-section"
+import {
+  buildKnowledgeGraph,
+  getExpertiseBundle,
+} from "@/features/knowledge-base/lib/graph"
+import {
+  getExpertiseAreaBySlug,
+  getPublicSettings,
+} from "@/features/portfolio/lib/queries"
+import { KeyTakeawaysList } from "@/features/projects/components/key-takeaways-list"
+import { JsonLd } from "@/features/seo/components/json-ld"
+import { resolveSiteUrl } from "@/features/seo/lib/canonical"
 import {
   buildCollectionPageJsonLd,
   buildDefinedTermJsonLd,
   mergeJsonLdGraph,
-} from "@/lib/seo/jsonld"
-import { buildBaseMetadata } from "@/lib/seo/metadata"
+} from "@/features/seo/lib/jsonld"
+import { buildBaseMetadata } from "@/features/seo/lib/metadata"
+import { ViewTracker } from "@/features/site-shell/components/view-tracker"
 
 type ExpertiseDetailPageProps = {
   params: Promise<{ slug: string }>

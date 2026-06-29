@@ -1,7 +1,10 @@
-import { PageShell } from "@/components/public/content-shell"
-import { ResearchList } from "@/components/public/research-list"
-import { getPublicSettings, getPublishedContent } from "@/lib/public/queries"
-import { buildResearchIndexMetadata } from "@/lib/seo"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import {
+  getPublicSettings,
+  getPublishedContent,
+} from "@/features/portfolio/lib/queries"
+import { ResearchList } from "@/features/research/components/research-list"
+import { buildResearchIndexMetadata } from "@/features/seo/lib"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()
@@ -13,11 +16,16 @@ export default async function ResearchPage() {
   const { data: items } = await getPublishedContent({ type: "research" })
 
   return (
-    <PageShell description="Applied AI research, papers, and technical notes." title="Research">
+    <PageShell
+      description="Applied AI research, papers, and technical notes."
+      title="Research"
+    >
       {items.length > 0 ? (
         <ResearchList items={items} />
       ) : (
-        <p className="kb-empty-message">Research will appear here once published.</p>
+        <p className="kb-empty-message">
+          Research will appear here once published.
+        </p>
       )}
     </PageShell>
   )

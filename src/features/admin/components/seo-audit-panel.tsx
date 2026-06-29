@@ -1,7 +1,7 @@
 "use client"
 
 import { Download } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { AdminDataTable } from "@/features/admin/components/admin-panel"
 import type {
@@ -82,15 +82,40 @@ function exportCsv(items: SeoAuditScore[]) {
 const SELECT_CLASS =
   "rounded-lg border border-border/60 bg-card/40 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
 
-type Props = { result: SeoAuditResult }
+type Props = { result: SeoAuditResult; highlightId?: string }
 
-export function SeoAuditPanel({ result }: Props) {
+export function SeoAuditPanel({ result, highlightId }: Props) {
   const [typeFilter, setTypeFilter] = useState<SeoItemType | "all">("all")
   const [bandFilter, setBandFilter] = useState<SeoHealthBand | "all">("all")
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
-  const [selected, setSelected] = useState<SeoAuditScore | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [recentlyFixed, setRecentlyFixed] = useState<Set<string>>(new Set())
+
+  function handleApplied(id: string) {
+    setRecentlyFixed((prev) => new Set(prev).add(id))
+    setTimeout(() => {
+      setRecentlyFixed((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
+    }, 5000)
+  }
+
+  useEffect(() => {
+    if (!highlightId) return
+    const match = result.items.find((i) => i.id === highlightId)
+    if (match) {
+      setSelectedId(match.id)
+      setDrawerOpen(true)
+    }
+  }, [highlightId, result.items])
+
+  const selected = selectedId
+    ? (result.items.find((i) => i.id === selectedId) ?? null)
+    : null
 
   const filtered = useMemo(() => {
     return result.items.filter((i) => {
@@ -106,7 +131,7 @@ export function SeoAuditPanel({ result }: Props) {
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   function openItem(item: SeoAuditScore) {
-    setSelected(item)
+    setSelectedId(item.id)
     setDrawerOpen(true)
   }
 
@@ -195,7 +220,16 @@ export function SeoAuditPanel({ result }: Props) {
                   key={item.id}
                   onClick={() => openItem(item)}
                 >
-                  <td className="px-4 py-3 font-medium">{item.title}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <span className="flex items-center gap-2">
+                      {item.title}
+                      {recentlyFixed.has(item.id) ? (
+                        <span className="rounded-full bg-green-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-600 dark:text-green-400">
+                          NEW
+                        </span>
+                      ) : null}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 capitalize text-muted-foreground">
                     {item.type}
                   </td>
@@ -250,6 +284,7 @@ export function SeoAuditPanel({ result }: Props) {
       <SeoAuditDrawer
         allItems={result.items}
         item={selected}
+        onApplied={handleApplied}
         onOpenChange={setDrawerOpen}
         onSelectItem={openItem}
         open={drawerOpen}

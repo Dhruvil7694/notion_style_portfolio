@@ -5,18 +5,18 @@ import {
   generateSuggestedQuestions,
   isAiConfigured,
   retrievePortfolioContext,
-} from "@/lib/ai"
-import { getAiSettings } from "@/lib/ai/get-ai-settings"
-import { trackServerEvent } from "@/lib/analytics/posthog-server"
+} from "@/features/ai/lib"
+import { getAiSettings } from "@/features/ai/lib/get-ai-settings"
 import {
   getPublicSettings,
   getPublishedContent,
   getPublishedExpertiseAreas,
   getPublishedProjects,
-} from "@/lib/public/queries"
-import { rateLimitRequest } from "@/lib/security/api-route"
-import { parseChatPostBody } from "@/lib/security/chat-request"
-import { resolveSiteUrl } from "@/lib/seo/canonical"
+} from "@/features/portfolio/lib/queries"
+import { resolveSiteUrl } from "@/features/seo/lib/canonical"
+import { trackServerEvent } from "@/shared/lib/analytics/posthog-server"
+import { rateLimitRequest } from "@/shared/lib/security/api-route"
+import { parseChatPostBody } from "@/shared/lib/security/chat-request"
 
 export const maxDuration = 60
 

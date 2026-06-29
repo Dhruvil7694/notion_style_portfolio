@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { recordJobFitAnalyticsEvent } from "@/lib/job-fit/analytics"
+import { recordJobFitAnalyticsEvent } from "@/features/job-fit/lib/analytics"
 import {
   isJobFitAnalysisMessage,
   parseJobFitAnalysis,
-} from "@/lib/public/parse-job-fit-result"
-import { rateLimitRequest } from "@/lib/security/api-route"
+} from "@/features/job-fit/lib/parse-job-fit-result"
+import { rateLimitRequest } from "@/shared/lib/security/api-route"
 
 const bodySchema = z.object({
   analysisMarkdown: z.string().min(1).max(12_000),

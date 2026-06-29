@@ -1,4 +1,4 @@
-import { SkillForm } from "@/features/admin/forms/skill-form"
+import { redirect } from "next/navigation"
 
 export const metadata = {
   title: "New Skill",
@@ -6,5 +6,5 @@ export const metadata = {
 }
 
 export default function AdminNewSkillPage() {
-  return <SkillForm mode="create" />
+  redirect("/admin/skills?create=1")
 }

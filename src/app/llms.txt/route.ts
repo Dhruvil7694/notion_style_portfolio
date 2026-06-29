@@ -1,6 +1,6 @@
-import { getPublicSettings } from "@/lib/public/queries"
-import { resolveSiteUrl } from "@/lib/seo/canonical"
-import { buildLlmsTxt } from "@/lib/seo/llms"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { resolveSiteUrl } from "@/features/seo/lib/canonical"
+import { buildLlmsTxt } from "@/features/seo/lib/llms"
 
 export const revalidate = 3600
 

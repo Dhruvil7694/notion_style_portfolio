@@ -1,7 +1,4 @@
-import { HomePageContent } from "@/components/public/home-page-content"
-import { AgentDiscoveryLinks } from "@/components/seo/agent-discovery-links"
-import { HomeLcpPreloadLink } from "@/components/seo/home-lcp-preload-link"
-import { JsonLd } from "@/components/seo/json-ld"
+import { HomePageContent } from "@/features/home/components/home-page-content"
 import {
   getActiveResume,
   getExperienceList,
@@ -9,8 +6,11 @@ import {
   getPublishedContent,
   getPublishedProjects,
   getSkillsList,
-} from "@/lib/public/queries"
-import { resolveProfileAvatarSrc } from "@/lib/public/settings"
+} from "@/features/portfolio/lib/queries"
+import { resolveProfileAvatarSrc } from "@/features/portfolio/lib/settings"
+import { AgentDiscoveryLinks } from "@/features/seo/components/agent-discovery-links"
+import { HomeLcpPreloadLink } from "@/features/seo/components/home-lcp-preload-link"
+import { JsonLd } from "@/features/seo/components/json-ld"
 import {
   buildHomeMetadata,
   buildOrganizationJsonLd,
@@ -18,7 +18,7 @@ import {
   buildWebsiteJsonLd,
   mergeJsonLdGraph,
   resolveSiteUrl,
-} from "@/lib/seo"
+} from "@/features/seo/lib"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()

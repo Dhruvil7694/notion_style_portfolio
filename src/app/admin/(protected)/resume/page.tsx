@@ -1,7 +1,7 @@
-import { DataTable, PageHeader, StatusBadge } from "@/components/admin"
-import { ResumeUploader } from "@/components/admin/resume-uploader"
-import { getResumesList } from "@/lib/admin/queries"
-import { formatDateTime } from "@/lib/utils"
+import { DataTable, PageHeader, StatusBadge } from "@/features/admin/components"
+import { ResumeUploader } from "@/features/admin/components/resume-uploader"
+import { getResumesList } from "@/features/admin/lib/queries"
+import { formatDateTime } from "@/shared/lib/utils"
 
 export const metadata = {
   title: "Resume",
@@ -58,7 +58,9 @@ export default async function AdminResumePage() {
       </div>
 
       <div>
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">Version history</h2>
+        <h2 className="mb-3 text-sm font-medium text-muted-foreground">
+          Version history
+        </h2>
         {error ? (
           <p className="text-destructive text-sm" role="alert">
             Unable to load resumes: {error.message}
@@ -69,7 +71,9 @@ export default async function AdminResumePage() {
               {
                 key: "version",
                 header: "Version",
-                cell: (row) => <span className="font-medium">v{row.version}</span>,
+                cell: (row) => (
+                  <span className="font-medium">v{row.version}</span>
+                ),
               },
               {
                 key: "status",

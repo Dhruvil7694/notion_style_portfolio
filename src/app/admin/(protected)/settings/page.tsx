@@ -1,7 +1,8 @@
-import { PageHeader } from "@/components/admin"
-import { SettingsForm } from "@/features/admin/forms/settings-form"
-import { getAdminSettings } from "@/lib/admin/queries"
-import { parsePublicSettings } from "@/lib/public/settings"
+import { PageHeader } from "@/features/admin/components"
+import { AdminAppearanceSettings } from "@/features/admin/components/admin-appearance-settings"
+import { SettingsForm } from "@/features/admin/components/forms/settings-form"
+import { getAdminSettings } from "@/features/admin/lib/queries"
+import { parsePublicSettings } from "@/features/portfolio/lib/settings"
 
 export const metadata = {
   title: "Settings",
@@ -30,9 +31,10 @@ export default async function AdminSettingsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        description="Social links, contact details, and site URL."
+        description="Social links, contact details, appearance, and site URL."
         title="Settings"
       />
+      <AdminAppearanceSettings />
       <SettingsForm settings={settings} />
     </div>
   )

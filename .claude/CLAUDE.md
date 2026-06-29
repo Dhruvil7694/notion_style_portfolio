@@ -32,15 +32,14 @@ Production-grade AI Engineer portfolio + CMS + knowledge base. Inspired by Notio
 
 ```
 src/
-  app/             # App Router — (public), admin, api, auth route groups + sitemap.ts + robots.ts
-  components/      # ui (shadcn), layout, shared, admin, content, editor, diagrams, public, seo
-  features/        # Domain modules (admin, auth-test)
-  lib/             # supabase, ai, knowledge, copilot, content, discovery, search, seo, env, security, ...
-  hooks/  types/  styles/  config/
+  app/             # Next.js App Router — thin routes only
+  features/        # Domain modules (admin, job-fit, site-shell, portfolio, …)
+  shared/          # ui, hooks, types, config, lib (supabase, auth, env, utils)
   middleware.ts    # Admin route auth gate
-supabase/migrations/   # Versioned SQL — immutable once deployed
-scripts/               # seed-remote, audit-public-security, project-architecture-graphs, etc.
-docs/                  # Planning + architecture docs
+archive/           # Deprecated demos and example routes
+supabase/migrations/
+scripts/
+docs/
 ```
 
 ## Commands

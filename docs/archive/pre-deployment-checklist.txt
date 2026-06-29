@@ -1,0 +1,72 @@
+Here’s a practical **pre-deployment checklist** based on your repo docs (`docs/launch-hardening.md`, `docs/mobile-audit.md`, `docs/database-workflow.md`) and what you’ve already fixed in this session.
+
+---
+
+## Must-do before production
+
+### 1. Build & quality gates
+Run locally (or in CI):
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+npm run security:audit
+```
+
+`build` is the real gate — it catches env/schema issues that `typecheck` alone won’t.
+
+### 2. Vercel environment variables
+Set these in **Production** (mirror from `.env.example`):
+
+| Required | Purpose |
+|----------|---------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase client |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase client |
+| `SUPABASE_SECRET_KEY` | Admin/server (never expose to client) |
+| `SITE_URL` | Canonical URL — **must be your real domain**, not `localhost` |
+| `ADMIN_EMAIL` | Single admin gate |
+
+**Strongly recommended for production:**
+
+| Variable | Why |
+|----------|-----|
+| At least one AI key (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, etc.) | Assistant + copilot |
+| `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` | Rate limiting on Vercel (in-memory fallback doesn’t work across instances) |
+| `RESEND_API_KEY` + `EMAIL_FROM_ADDRESS` | Contact form (if you use it) |
+| `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` | Error tracking |
+| `NEXT_PUBLIC_POSTHOG_KEY` | Analytics |
+
+### 3. Database
+- [ ] All migrations applied: `supabase db push` on the **production** project  
+- [ ] **Do not** run seed scripts in production (`docs/database-workflow.md`)  
+- [ ] Admin user exists in Supabase Auth with the same email as `ADMIN_EMAIL`
+
+### 4. In-app readiness dashboards
+After first Vercel deploy, log into admin and check:
+
+- **`/admin/system`** — critical checks should pass  
+- **`/admin/launch`** — target **≥ 80%** (`docs/launch-hardening.md`)  
+- **`/admin/content-health`** — no unacknowledged critical gaps  
+
+Note: `src/lib/deployment/checks.ts` references some older env names (`SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`). Your app actually uses `SUPABASE_SECRET_KEY` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — trust the env schema + `/admin/system` over stale labels in that file.
+
+### 5. Content & CMS
+- [ ] Homepage profile photo uploaded in **Admin → Profile** (you have a bundled fallback now, but CMS photo is better for production)  
+- [ ] Featured projects, experience, about copy, resume PDF published  
+- [ ] Social links + contact email filled in settings  
+
+### 6. SEO basics
+From `docs/seo-architecture.md`:
+
+- [ ] `SITE_URL` matches live domain (sitemap/canonicals depend on this)  
+- [ ] `/sitemap.xml` and `/robots.txt` load on production  
+- [ ] Spot-check OG previews (homepage, one project, one article)  
+- [ ] `public/llms.txt` present if you care about LLM discovery  
+
+---
+
+## Should-do (high value, not always blocking)
+
+### 7. Mobile QA — pages you haven’t fully hardened yet
+You’ve done **homepage, about, stack, assistant**. `docs/mobile-audit

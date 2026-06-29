@@ -31,6 +31,10 @@ function publicPath(slug: string, type: SeoItemType): string {
   }
 }
 
+function cmsPath(id: string, table: "projects" | "content"): string {
+  return table === "projects" ? `/admin/projects/${id}` : `/admin/content/${id}`
+}
+
 export function runSeoScorer(
   item: Record<string, unknown>,
   itemType: SeoItemType,
@@ -62,8 +66,10 @@ export function runSeoScorer(
 
   const slug = String(item["slug"] ?? "")
 
+  const id = String(item["id"] ?? "")
+
   return {
-    id: String(item["id"] ?? ""),
+    id,
     title: String(item["title"] ?? ""),
     slug,
     type: itemType,
@@ -74,6 +80,7 @@ export function runSeoScorer(
     checks,
     issueCount: checks.filter((c) => !c.passed).length,
     publicPath: publicPath(slug, itemType),
+    cmsPath: cmsPath(id, table),
     table,
   }
 }

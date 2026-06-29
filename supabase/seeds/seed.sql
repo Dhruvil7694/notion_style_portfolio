@@ -115,13 +115,13 @@ INSERT INTO public.experience (
     'Pune, India',
     'Building production AI systems including NL-to-SQL platforms, document intelligence workflows, and enterprise automation pipelines.',
     ARRAY[
-      'Built NL→SQL platform with schema-aware guardrails enabling non-technical teams to query PostgreSQL, MySQL, and MSSQL via natural language.',
-      'Designed hybrid AI document intelligence system extracting 80+ structured fields from enterprise bidding documents using rule-based parsing + selective RAG.',
-      'Automated large-scale document workflows via parallel PDF splitting + Google Drive pipeline, processing 1,000+ page files in under 2 minutes.',
-      'Delivered computer vision POC for automobile defect classification achieving 85%+ accuracy across 20 job categories.',
-      'Designed high-performance concurrent processing pipelines for enterprise automation across large unstructured datasets.'
+      'Built NL→SQL platform with schema-aware guardrails enabling non-technical sales and ops teams to query PostgreSQL, MySQL, and MSSQL via natural language — eliminating analyst dependency for enterprise reporting and accelerating forecasting workflows.',
+      'Designed hybrid AI document intelligence system extracting 80+ structured fields from enterprise bidding documents using rule-based parsing + selective RAG; reduced contract review cycle time and improved deal visibility.',
+      'Automated large-scale document workflows via parallel PDF splitting + Google Drive pipeline, processing 1,000+ page files in under 2 minutes vs. 1–2 hours manually — freeing sales teams from administrative overhead.',
+      'Delivered computer vision POC for automobile defect classification achieving 85%+ accuracy across 20 job categories under varied real-world conditions.',
+      'Designed high-performance concurrent processing pipelines for enterprise automation, optimizing latency and throughput across large unstructured datasets.'
     ],
-    ARRAY['Python', 'FastAPI', 'PostgreSQL', 'Azure OpenAI', 'RAG', 'LangChain'],
+    ARRAY['Python', 'FastAPI', 'PostgreSQL', 'MySQL', 'MSSQL', 'Azure OpenAI', 'Azure AI Search', 'LangChain', 'LangGraph', 'RAG', 'Docker'],
     1
   ),
   (
@@ -132,13 +132,13 @@ INSERT INTO public.experience (
     'Remote',
     'Deployed GenAI and compliance systems for cybersecurity operations, including RAG assistants and fine-tuned LLM workflows.',
     ARRAY[
-      'Deployed GenAI real-time assistant handling 82,000+ cybersecurity scenarios using RAG + LangChain + Gemini API — 40% faster incident triage.',
-      'Built multi-model compliance system using LoRA/QLoRA fine-tuned LLMs achieving ~95% operational accuracy in regulatory mapping.',
-      'Designed SOC analytics pipeline aggregating data from 6+ security tools with real-time ingestion and anomaly detection.',
-      'Led cross-functional team of 5 engineers using agile ML workflows, accelerating delivery by 25%.',
+      'Deployed GenAI real-time assistant handling 82,000+ cybersecurity scenarios using RAG + LangChain + Gemini API — 40% faster incident triage vs. manual lookup, on lightweight infrastructure with no external API dependency for core inference.',
+      'Built multi-model compliance system using LoRA/QLoRA fine-tuned LLMs achieving ~95% operational accuracy in regulatory mapping and gap reasoning — directly comparable to AI-driven sales qualification and competitive intelligence workflows.',
+      'Designed SOC analytics pipeline aggregating data from 6+ security tools with real-time ingestion, anomaly detection, and automated threat monitoring; demonstrates full-stack AI forecasting architecture applicable to sales performance monitoring.',
+      'Led cross-functional team of 5 engineers using agile ML workflows and automated testing, accelerating delivery by 25%; regularly communicated complex AI capabilities to non-technical executive stakeholders.',
       'Deployed scalable solution on AWS SageMaker with auto-scaling FastAPI endpoints handling 1,000+ concurrent requests.'
     ],
-    ARRAY['Python', 'FastAPI', 'LangChain', 'AWS SageMaker', 'LoRA/QLoRA', 'RAG'],
+    ARRAY['Python', 'FastAPI', 'LangChain', 'RAG', 'Gemini API', 'LoRA/QLoRA', 'Hugging Face Transformers', 'AWS SageMaker', 'Docker', 'PostgreSQL'],
     2
   ),
   (
@@ -150,9 +150,9 @@ INSERT INTO public.experience (
     'Research on EEG-based depression detection using deep learning architectures.',
     ARRAY[
       'Designed CNN-LSTM hybrid architecture for EEG-based depression detection achieving 90% accuracy — 15% improvement over state-of-the-art baselines.',
-      'Engineered distributed TensorFlow training pipeline on AWS EC2, reducing training time from 12 hours to 7 hours.'
+      'Engineered distributed TensorFlow training pipeline on AWS EC2 cluster, reducing training time from 12 hours to 7 hours through parallel processing and memory optimization.'
     ],
-    ARRAY['Python', 'TensorFlow', 'AWS EC2', 'CNN-LSTM'],
+    ARRAY['Python', 'TensorFlow', 'AWS EC2', 'CNN-LSTM', 'EEG signal processing'],
     3
   ),
   (
@@ -163,10 +163,10 @@ INSERT INTO public.experience (
     'Surat, India',
     'Unpaid research internship focused on NLP-based depression detection from social media data.',
     ARRAY[
-      'Built end-to-end NLP depression detection system analyzing 20,000+ social media posts with 88.10% accuracy using ensemble methods.',
-      'Published peer-reviewed research in ICICC 2024 (Springer LNNS); presented at international conference.'
+      'Built end-to-end NLP depression detection system analyzing 20,000+ social media posts with 88.10% accuracy using ensemble methods and advanced feature engineering.',
+      'Published peer-reviewed research in ICICC 2024 (Springer LNNS); presented novel classification methodology at international conference.'
     ],
-    ARRAY['Python', 'NLP', 'Ensemble Methods', 'Feature Engineering'],
+    ARRAY['Python', 'NLP', 'Ensemble Methods', 'Feature Engineering', 'scikit-learn'],
     4
   );
 
@@ -296,7 +296,7 @@ INSERT INTO public.projects (
       ]
     }'::jsonb,
     ARRAY['Next.js', 'Supabase', 'TypeScript', 'Tailwind CSS', 'Tiptap'],
-    NULL,
+    'https://github.com/Dhruvil7694/notion_style_portfolio',
     NULL,
     false,
     'published',

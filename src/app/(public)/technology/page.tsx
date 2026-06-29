@@ -1,10 +1,10 @@
 import Link from "next/link"
 
-import { PageShell } from "@/components/public/content-shell"
-import { buildKnowledgeGraph } from "@/lib/knowledge/graph"
-import { getPublicSettings } from "@/lib/public/queries"
-import { resolveSiteUrl } from "@/lib/seo/canonical"
-import { buildBaseMetadata } from "@/lib/seo/metadata"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import { buildKnowledgeGraph } from "@/features/knowledge-base/lib/graph"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { resolveSiteUrl } from "@/features/seo/lib/canonical"
+import { buildBaseMetadata } from "@/features/seo/lib/metadata"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()
@@ -13,7 +13,8 @@ export async function generateMetadata() {
     { settings },
     {
       title: "Technologies",
-      description: "Technologies used across projects, research, writing, and automations.",
+      description:
+        "Technologies used across projects, research, writing, and automations.",
       path: "/technology",
     }
   )
@@ -33,14 +34,19 @@ export default async function TechnologyIndexPage() {
         <ul className="technology-index-list">
           {graph.technologies.map((tech) => (
             <li key={tech.slug}>
-              <Link className="technology-index-link" href={`/technology/${tech.slug}`}>
+              <Link
+                className="technology-index-link"
+                href={`/technology/${tech.slug}`}
+              >
                 {tech.name}
               </Link>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="kb-empty-message">Technologies will appear as projects publish tech stacks.</p>
+        <p className="kb-empty-message">
+          Technologies will appear as projects publish tech stacks.
+        </p>
       )}
     </PageShell>
   )

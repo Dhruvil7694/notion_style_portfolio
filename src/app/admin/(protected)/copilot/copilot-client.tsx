@@ -1,17 +1,52 @@
 "use client"
 
-import { Check, ExternalLink, RefreshCw, Send, Sparkles, X } from "lucide-react"
+import {
+  ArrowUp,
+  Check,
+  ExternalLink,
+  History,
+  Plus,
+  RefreshCw,
+  Send,
+  Square,
+  X,
+} from "lucide-react"
 import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 
-import { ErrorAlert } from "@/components/shared/error-alert"
-import { captureEvent } from "@/lib/analytics/posthog-client"
+import { CopilotHistorySidebar } from "@/features/copilot/components/copilot-history-sidebar"
+import {
+  CopilotAssistantMessage,
+  CopilotUserMessage,
+} from "@/features/copilot/components/copilot-message"
+import {
+  type GroupByOption,
+  removeSessionPreferences,
+  sortSessionsByUpdated,
+  updateSessionPreferences,
+} from "@/features/copilot/lib/session-preferences"
 import {
   formatUserFacingError,
   readResponseErrorMessage,
   type UserFacingErrorDisplay,
-} from "@/lib/public/user-facing-error"
-import { cn } from "@/lib/utils"
+} from "@/features/portfolio/lib/user-facing-error"
+import { ErrorAlert } from "@/shared/components/error-alert"
+import { captureEvent } from "@/shared/lib/analytics/posthog-client"
+import { cn } from "@/shared/lib/utils"
+import { Button } from "@/shared/ui/button"
+import {
+  ChatContainerContent,
+  ChatContainerRoot,
+  ChatContainerScrollAnchor,
+} from "@/shared/ui/chat-container"
+import {
+  PromptInput,
+  PromptInputAction,
+  PromptInputActions,
+  PromptInputTextarea,
+} from "@/shared/ui/prompt-input"
+import { PromptSuggestion } from "@/shared/ui/prompt-suggestion"
+import { TextShimmer } from "@/shared/ui/text-shimmer"
 
 type ClarificationOption = {
   label: string
@@ -51,6 +86,7 @@ type CopilotMessage = {
   id: string
   role: "user" | "assistant"
   content: string
+  createdAt?: string
   pendingActions?: PendingAction[]
   redirectUrl?: string
   redirectLabel?: string
@@ -68,6 +104,7 @@ type StoredMessage = {
   id: string
   role: string
   content: string
+  created_at?: string
   metadata?: Record<string, unknown> | null
 }
 
@@ -87,6 +124,14 @@ function removeAssistantMessage(
   return messages.filter((message) => message.id !== assistantId)
 }
 
+const COPILOT_PROMPT_SUGGESTIONS = [
+  "Audit my portfolio",
+  "In the about page, make the intro warmer but keep the SEO keywords",
+  "Add LangGraph as an ai_ml skill",
+  "Rewrite the summary of the BohrAI project to be more concise",
+  "List all my draft projects",
+] as const
+
 export function CopilotClient() {
   const [messages, setMessages] = useState<CopilotMessage[]>([])
   const [sessions, setSessions] = useState<ChatSession[]>([])
@@ -103,8 +148,17 @@ export function CopilotClient() {
   const [sessionLoadError, setSessionLoadError] =
     useState<UserFacingErrorDisplay | null>(null)
   const [failedSessionId, setFailedSessionId] = useState<string | null>(null)
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [groupBy, setGroupBy] = useState<GroupByOption>("none")
+  const [preferencesVersion, setPreferencesVersion] = useState(0)
   const retryRef = useRef<CopilotRetryRequest | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      setHistoryOpen(true)
+    }
+  }, [])
 
   const loadSessions = useCallback(async () => {
     setSessionsLoading(true)
@@ -123,7 +177,7 @@ export function CopilotClient() {
         return
       }
       const data = (await response.json()) as { sessions: ChatSession[] }
-      setSessions(data.sessions)
+      setSessions(sortSessionsByUpdated(data.sessions))
     } catch (error) {
       setSessionsError(formatUserFacingError(error))
     } finally {
@@ -135,12 +189,6 @@ export function CopilotClient() {
     void loadSessions()
     captureEvent("copilot_opened", {})
   }, [loadSessions])
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-  }, [messages, isLoading])
 
   const loadSession = useCallback(async (id: string) => {
     setSessionLoadError(null)
@@ -161,6 +209,8 @@ export function CopilotClient() {
       }
       const data = (await response.json()) as { messages: StoredMessage[] }
       setSessionId(id)
+      updateSessionPreferences(id, { unread: false })
+      setPreferencesVersion((value) => value + 1)
       setMessages(
         data.messages
           .filter((msg) => msg.role === "user" || msg.role === "assistant")
@@ -168,6 +218,7 @@ export function CopilotClient() {
             id: msg.id,
             role: msg.role as "user" | "assistant",
             content: msg.content,
+            createdAt: msg.created_at,
             pendingActions:
               (msg.metadata?.pendingActions as PendingAction[] | undefined) ??
               undefined,
@@ -186,6 +237,8 @@ export function CopilotClient() {
     const newSessionId = response.headers.get("X-Copilot-Session-Id")
     if (newSessionId && !sessionId) {
       setSessionId(newSessionId)
+      updateSessionPreferences(newSessionId, { unread: false })
+      setPreferencesVersion((value) => value + 1)
       void loadSessions()
     }
 
@@ -249,18 +302,25 @@ export function CopilotClient() {
     setIsLoading(true)
     setStreamError(null)
     retryRef.current = { kind: "message", text }
+    abortRef.current = new AbortController()
 
+    const now = new Date().toISOString()
     const assistantId = crypto.randomUUID()
     if (mode === "new") {
       setMessages((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), role: "user", content: text },
-        { id: assistantId, role: "assistant", content: "" },
+        {
+          id: crypto.randomUUID(),
+          role: "user",
+          content: text,
+          createdAt: now,
+        },
+        { id: assistantId, role: "assistant", content: "", createdAt: now },
       ])
     } else {
       setMessages((prev) => [
         ...prev,
-        { id: assistantId, role: "assistant", content: "" },
+        { id: assistantId, role: "assistant", content: "", createdAt: now },
       ])
     }
 
@@ -269,6 +329,7 @@ export function CopilotClient() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text, sessionId }),
+        signal: abortRef.current?.signal,
       })
       if (!response.ok) {
         throw new Error(
@@ -277,10 +338,14 @@ export function CopilotClient() {
       }
       await streamInto(response, assistantId)
     } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return
+      }
       setStreamError(formatUserFacingError(error))
       setMessages((prev) => removeAssistantMessage(prev, assistantId))
     } finally {
       setIsLoading(false)
+      abortRef.current = null
     }
   }
 
@@ -336,6 +401,7 @@ export function CopilotClient() {
     setActionLoadingId(pending.id)
     setIsLoading(true)
     setStreamError(null)
+    abortRef.current = new AbortController()
     retryRef.current = {
       kind: "action",
       action,
@@ -365,7 +431,12 @@ export function CopilotClient() {
           : ""
     setMessages((prev) => [
       ...prev,
-      { id: assistantId, role: "assistant", content: placeholder },
+      {
+        id: assistantId,
+        role: "assistant",
+        content: placeholder,
+        createdAt: new Date().toISOString(),
+      },
     ])
 
     const body =
@@ -392,6 +463,7 @@ export function CopilotClient() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
+        signal: abortRef.current?.signal,
       })
       if (!response.ok) {
         throw new Error(
@@ -400,21 +472,105 @@ export function CopilotClient() {
       }
       await streamInto(response, assistantId)
     } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return
+      }
       setStreamError(formatUserFacingError(error))
       setMessages((prev) => removeAssistantMessage(prev, assistantId))
     } finally {
       setActionLoadingId(null)
       setIsLoading(false)
+      abortRef.current = null
     }
   }
 
   function handleNewSession() {
+    if (sessionId) {
+      updateSessionPreferences(sessionId, { unread: true })
+      bumpPreferences()
+    }
     setSessionId(null)
     setMessages([])
     setStreamError(null)
     setSessionLoadError(null)
     setFailedSessionId(null)
     retryRef.current = null
+    abortRef.current?.abort()
+    abortRef.current = null
+    setIsLoading(false)
+  }
+
+  function handleStop() {
+    abortRef.current?.abort()
+    abortRef.current = null
+    setIsLoading(false)
+    setActionLoadingId(null)
+  }
+
+  function bumpPreferences() {
+    setPreferencesVersion((value) => value + 1)
+  }
+
+  async function handleRenameSession(sessionIdToRename: string, title: string) {
+    try {
+      const response = await fetch("/api/copilot/sessions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: sessionIdToRename, title }),
+      })
+      if (!response.ok) {
+        throw new Error(
+          await readResponseErrorMessage(
+            response,
+            "Couldn't rename conversation."
+          )
+        )
+      }
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === sessionIdToRename ? { ...session, title } : session
+        )
+      )
+    } catch (error) {
+      setStreamError(formatUserFacingError(error))
+    }
+  }
+
+  async function handleDeleteSession(sessionIdToDelete: string) {
+    try {
+      const response = await fetch(
+        `/api/copilot/sessions?sessionId=${sessionIdToDelete}`,
+        { method: "DELETE" }
+      )
+      if (!response.ok) {
+        throw new Error(
+          await readResponseErrorMessage(
+            response,
+            "Couldn't delete conversation."
+          )
+        )
+      }
+      removeSessionPreferences(sessionIdToDelete)
+      bumpPreferences()
+      setSessions((prev) =>
+        prev.filter((session) => session.id !== sessionIdToDelete)
+      )
+      if (sessionId === sessionIdToDelete) {
+        setSessionId(null)
+        setMessages([])
+        setStreamError(null)
+        setSessionLoadError(null)
+        setFailedSessionId(null)
+        retryRef.current = null
+      }
+    } catch (error) {
+      setStreamError(formatUserFacingError(error))
+    }
+  }
+
+  function handleSelectSession(id: string) {
+    void loadSession(id)
+    setHistoryOpen(false)
   }
 
   const lastAssistantIndex = (() => {
@@ -425,151 +581,195 @@ export function CopilotClient() {
   })()
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] gap-4">
-      <aside className="border-border hidden w-56 shrink-0 flex-col border-r pr-4 md:flex">
+    <div className="relative flex h-full min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-background">
+      {historyOpen ? (
         <button
-          className="border-border bg-muted/40 hover:bg-muted/60 mb-3 rounded-lg border px-3 py-2 text-sm transition-colors"
-          onClick={handleNewSession}
+          aria-label="Close history"
+          className="absolute inset-0 z-10 bg-black/20 md:hidden"
+          onClick={() => setHistoryOpen(false)}
           type="button"
-        >
-          New conversation
-        </button>
-        <div className="flex-1 space-y-1 overflow-y-auto">
-          {sessionsLoading ? (
-            <p className="text-muted-foreground px-2 py-1.5 text-xs">
-              Loading conversations…
-            </p>
-          ) : null}
-          {sessionsError ? (
-            <ErrorAlert
-              error={sessionsError}
-              onRetry={() => void loadSessions()}
-              size="sm"
-            />
-          ) : null}
-          {!sessionsLoading && !sessionsError
-            ? sessions.map((session) => (
-                <button
-                  key={session.id}
-                  className={cn(
-                    "hover:bg-muted/60 w-full truncate rounded-md px-2 py-1.5 text-left text-sm transition-colors",
-                    sessionId === session.id && "bg-muted font-medium"
-                  )}
-                  onClick={() => void loadSession(session.id)}
-                  type="button"
-                >
-                  {session.title}
-                </button>
-              ))
-            : null}
-        </div>
-      </aside>
+        />
+      ) : null}
 
-      <div className="border-border flex min-w-0 flex-1 flex-col rounded-xl border">
-        <header className="border-border flex items-center gap-2 border-b px-4 py-3">
-          <Sparkles className="text-muted-foreground size-4" />
-          <div>
-            <p className="text-sm font-medium">CMS Copilot</p>
-            <p className="text-muted-foreground text-xs">
-              Portfolio architect — audit, generate, and improve
-            </p>
+      <CopilotHistorySidebar
+        activeSessionId={sessionId}
+        groupBy={groupBy}
+        onDeleteSession={handleDeleteSession}
+        onGroupByChange={setGroupBy}
+        onPreferencesChange={bumpPreferences}
+        onRenameSession={handleRenameSession}
+        onSelectSession={handleSelectSession}
+        open={historyOpen}
+        preferencesVersion={preferencesVersion}
+        sessions={sessions}
+      />
+
+      <div className="relative flex min-w-0 flex-1 flex-col bg-background">
+        <header className="border-border flex items-center gap-2 border-b px-3 py-2.5">
+          <div className="flex min-w-0 flex-1 items-center gap-2.5">
+            <span
+              aria-hidden
+              className="admin-brand-mark-icon size-5 shrink-0"
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">Hello, I am Ojas!</p>
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button
+              aria-label={
+                historyOpen ? "Hide chat history" : "Show chat history"
+              }
+              className="size-8 shrink-0"
+              onClick={() => setHistoryOpen((value) => !value)}
+              size="icon"
+              type="button"
+              variant={historyOpen ? "secondary" : "ghost"}
+            >
+              <History className="size-4" />
+            </Button>
+            <Button
+              aria-label="New conversation"
+              className="size-8 shrink-0"
+              onClick={handleNewSession}
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <Plus className="size-4" />
+            </Button>
           </div>
         </header>
 
-        <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
-          {sessionLoadError ? (
-            <ErrorAlert
-              error={sessionLoadError}
-              onDismiss={() => setSessionLoadError(null)}
-              onRetry={
-                sessionLoadError.canRetry && failedSessionId
-                  ? () => void loadSession(failedSessionId)
-                  : undefined
-              }
-              size="md"
-            />
-          ) : null}
+        <ChatContainerRoot className="min-h-0 flex-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <ChatContainerContent className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-3 py-4 pb-28 sm:gap-8 sm:px-4">
+            {sessionLoadError ? (
+              <ErrorAlert
+                error={sessionLoadError}
+                onDismiss={() => setSessionLoadError(null)}
+                onRetry={
+                  sessionLoadError.canRetry && failedSessionId
+                    ? () => void loadSession(failedSessionId)
+                    : undefined
+                }
+                size="md"
+              />
+            ) : null}
 
-          {messages.length === 0 && !sessionLoadError && (
-            <div className="text-muted-foreground space-y-2 text-sm">
-              <p>Try:</p>
-              <ul className="list-inside list-disc space-y-1">
-                <li>Audit my portfolio</li>
-                <li>
-                  In the about page, make the intro warmer but keep the SEO
-                  keywords
-                </li>
-                <li>Add LangGraph as an ai_ml skill</li>
-                <li>
-                  Rewrite the summary of the BohrAI project to be more concise
-                </li>
-                <li>List all my draft projects</li>
-              </ul>
-            </div>
-          )}
+            {sessionsLoading ? (
+              <TextShimmer className="text-xs" duration={2}>
+                Loading conversations…
+              </TextShimmer>
+            ) : null}
+            {sessionsError ? (
+              <ErrorAlert
+                error={sessionsError}
+                onRetry={() => void loadSessions()}
+                size="sm"
+              />
+            ) : null}
 
-          {messages.map((message, index) => {
-            const showActions =
-              message.role === "assistant" &&
-              index === lastAssistantIndex &&
-              (message.pendingActions?.length ?? 0) > 0
-
-            return (
-              <div key={message.id} className="space-y-2">
-                <div
-                  className={cn(
-                    "max-w-[85%] rounded-lg px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap",
-                    message.role === "user"
-                      ? "bg-foreground text-background ml-auto"
-                      : "border-border bg-muted/40 border"
-                  )}
-                >
-                  {message.content ||
-                    (message.role === "assistant" && isLoading ? "…" : "")}
+            {messages.length === 0 && !sessionLoadError && (
+              <div className="mx-auto w-full max-w-2xl space-y-3">
+                <p className="text-muted-foreground text-sm">Try:</p>
+                <div className="flex flex-col gap-1">
+                  {COPILOT_PROMPT_SUGGESTIONS.map((suggestion) => (
+                    <PromptSuggestion
+                      key={suggestion}
+                      disabled={isLoading}
+                      highlight="___"
+                      onClick={() => void handleSubmit(suggestion)}
+                    >
+                      {suggestion}
+                    </PromptSuggestion>
+                  ))}
                 </div>
+              </div>
+            )}
 
-                {showActions &&
-                  message.pendingActions!.map((pending) =>
-                    pending.clarificationQuestion ? (
-                      <ClarificationCard
-                        key={pending.id}
-                        pending={pending}
-                        disabled={isLoading}
-                        onAnswer={(answer) =>
-                          handleClarificationAnswer(pending, answer)
-                        }
-                      />
-                    ) : (
-                      <PendingActionCard
-                        key={pending.id}
-                        pending={pending}
-                        busy={actionLoadingId === pending.id}
-                        disabled={
-                          actionLoadingId !== null &&
-                          actionLoadingId !== pending.id
-                        }
-                        onConfirm={(applyArgs) =>
-                          void handleAction("confirm", pending, { applyArgs })
-                        }
-                        onCancel={() => void handleAction("cancel", pending)}
-                        onRegenerate={() =>
-                          void handleAction("regenerate", pending)
-                        }
-                      />
-                    )
+            {messages.map((message, index) => {
+              const showActions =
+                message.role === "assistant" &&
+                index === lastAssistantIndex &&
+                (message.pendingActions?.length ?? 0) > 0
+              const isStreamingAssistant =
+                isLoading &&
+                message.role === "assistant" &&
+                index === lastAssistantIndex
+
+              return (
+                <div key={message.id} className="space-y-2">
+                  {message.role === "user" ? (
+                    <CopilotUserMessage
+                      content={message.content}
+                      createdAt={message.createdAt}
+                    />
+                  ) : (
+                    <CopilotAssistantMessage
+                      content={message.content}
+                      createdAt={message.createdAt}
+                      isStreaming={isStreamingAssistant}
+                    />
                   )}
 
-                {message.role === "assistant" && message.finalText && (
-                  <div className="border-border bg-background max-w-[85%] space-y-2 rounded-lg border p-3 shadow-sm">
-                    <p className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
-                      Now live
-                    </p>
-                    <p className="text-sm leading-relaxed">
-                      {message.finalText}
-                    </p>
-                    {message.redirectUrl && (
+                  {showActions &&
+                    message.pendingActions!.map((pending) =>
+                      pending.clarificationQuestion ? (
+                        <ClarificationCard
+                          key={pending.id}
+                          pending={pending}
+                          disabled={isLoading}
+                          onAnswer={(answer) =>
+                            handleClarificationAnswer(pending, answer)
+                          }
+                        />
+                      ) : (
+                        <PendingActionCard
+                          key={pending.id}
+                          pending={pending}
+                          busy={actionLoadingId === pending.id}
+                          disabled={
+                            actionLoadingId !== null &&
+                            actionLoadingId !== pending.id
+                          }
+                          onConfirm={(applyArgs) =>
+                            void handleAction("confirm", pending, { applyArgs })
+                          }
+                          onCancel={() => void handleAction("cancel", pending)}
+                          onRegenerate={() =>
+                            void handleAction("regenerate", pending)
+                          }
+                        />
+                      )
+                    )}
+
+                  {message.role === "assistant" && message.finalText && (
+                    <div className="border-border bg-background max-w-[85%] space-y-2 rounded-lg border p-3 shadow-sm">
+                      <p className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
+                        Now live
+                      </p>
+                      <p className="text-sm leading-relaxed">
+                        {message.finalText}
+                      </p>
+                      {message.redirectUrl && (
+                        <Link
+                          className="border-border bg-background hover:bg-muted/60 mt-1 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors"
+                          href={message.redirectUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLink className="size-3.5" />
+                          {message.redirectLabel ?? "Open"}
+                        </Link>
+                      )}
+                    </div>
+                  )}
+
+                  {message.role === "assistant" &&
+                    message.redirectUrl &&
+                    !message.finalText && (
                       <Link
-                        className="border-border bg-background hover:bg-muted/60 mt-1 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors"
+                        className="border-border bg-background hover:bg-muted/60 inline-flex max-w-[85%] items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors"
                         href={message.redirectUrl}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -578,64 +778,58 @@ export function CopilotClient() {
                         {message.redirectLabel ?? "Open"}
                       </Link>
                     )}
-                  </div>
-                )}
+                </div>
+              )
+            })}
 
-                {message.role === "assistant" &&
-                  message.redirectUrl &&
-                  !message.finalText && (
-                    <Link
-                      className="border-border bg-background hover:bg-muted/60 inline-flex max-w-[85%] items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors"
-                      href={message.redirectUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <ExternalLink className="size-3.5" />
-                      {message.redirectLabel ?? "Open"}
-                    </Link>
-                  )}
-              </div>
-            )
-          })}
+            {streamError && !isLoading ? (
+              <ErrorAlert
+                error={streamError}
+                onDismiss={() => setStreamError(null)}
+                onRetry={streamError.canRetry ? retryCopilot : undefined}
+                size="md"
+              />
+            ) : null}
+            <ChatContainerScrollAnchor />
+          </ChatContainerContent>
+        </ChatContainerRoot>
 
-          {isLoading && messages[messages.length - 1]?.role === "user" && (
-            <p className="text-muted-foreground text-xs">Thinking…</p>
-          )}
-
-          {streamError && !isLoading ? (
-            <ErrorAlert
-              error={streamError}
-              onDismiss={() => setStreamError(null)}
-              onRetry={streamError.canRetry ? retryCopilot : undefined}
-              size="md"
-            />
-          ) : null}
-        </div>
-
-        <div className="border-border flex items-end gap-2 border-t p-3">
-          <textarea
-            className="border-border bg-background focus:ring-ring/30 focus:border-ring max-h-24 min-h-[40px] flex-1 resize-none rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1"
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-3 sm:px-4 sm:pb-4">
+          <PromptInput
+            className="pointer-events-auto mx-auto w-full max-w-3xl border border-border/50 bg-background/70 shadow-lg backdrop-blur-xl supports-[backdrop-filter]:bg-background/55"
             disabled={isLoading}
-            onChange={(event) => setInput(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault()
-                void handleSubmit(undefined)
-              }
-            }}
-            placeholder="Ask the portfolio architect…"
-            rows={1}
+            isLoading={isLoading}
+            onSubmit={() => void handleSubmit(undefined)}
+            onValueChange={setInput}
             value={input}
-          />
-          <button
-            aria-label="Send"
-            className="border-border hover:bg-muted/60 flex size-9 shrink-0 items-center justify-center rounded-md border transition-colors disabled:opacity-40"
-            disabled={isLoading || !input.trim()}
-            onClick={() => void handleSubmit(undefined)}
-            type="button"
           >
-            <Send className="size-4" />
-          </button>
+            <PromptInputTextarea placeholder="Ask the portfolio architect…" />
+            <PromptInputActions className="justify-end pt-2">
+              <PromptInputAction
+                tooltip={isLoading ? "Stop generation" : "Send message"}
+              >
+                <Button
+                  className="size-8 rounded-full"
+                  disabled={!isLoading && !input.trim()}
+                  onClick={() => {
+                    if (isLoading) {
+                      handleStop()
+                      return
+                    }
+                    void handleSubmit(undefined)
+                  }}
+                  size="icon"
+                  type="button"
+                >
+                  {isLoading ? (
+                    <Square className="size-5 fill-current" />
+                  ) : (
+                    <ArrowUp className="size-5" />
+                  )}
+                </Button>
+              </PromptInputAction>
+            </PromptInputActions>
+          </PromptInput>
         </div>
       </div>
     </div>
@@ -775,35 +969,37 @@ function PendingActionCard({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <button
-          className="bg-foreground text-background hover:bg-foreground/90 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
+        <Button
           disabled={busy || disabled}
           onClick={() => onConfirm(buildConfirmArgs())}
+          size="sm"
           type="button"
         >
-          <Check className="size-3.5" />
+          <Check aria-hidden className="size-3.5" />
           {busy ? "Applying…" : "Confirm"}
-        </button>
-        {pending.proposeTool && (
-          <button
-            className="border-border hover:bg-muted/60 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
+        </Button>
+        {pending.proposeTool ? (
+          <Button
             disabled={busy || disabled}
             onClick={onRegenerate}
+            size="sm"
             type="button"
+            variant="outline"
           >
-            <RefreshCw className="size-3.5" />
+            <RefreshCw aria-hidden className="size-3.5" />
             Regenerate
-          </button>
-        )}
-        <button
-          className="border-border hover:bg-muted/60 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
+          </Button>
+        ) : null}
+        <Button
           disabled={busy || disabled}
           onClick={onCancel}
+          size="sm"
           type="button"
+          variant="outline"
         >
-          <X className="size-3.5" />
+          <X aria-hidden className="size-3.5" />
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -883,7 +1079,7 @@ function ClarificationCard({
             type="button"
             className="bg-foreground text-background inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-40"
           >
-            <Check className="size-3.5" />
+            <Send aria-hidden className="size-3.5" />
             Send
           </button>
           <button

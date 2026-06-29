@@ -1,7 +1,7 @@
-import { AiFirstPageContent } from "@/components/public/ai-first-page-content"
-import { PageShell } from "@/components/public/content-shell"
-import { getPublicSettings } from "@/lib/public/queries"
-import { createPageMetadata } from "@/lib/utils/metadata"
+import { AiFirstPageContent } from "@/features/ai-first/components/ai-first-page-content"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { createPageMetadata } from "@/shared/lib/utils/metadata"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()

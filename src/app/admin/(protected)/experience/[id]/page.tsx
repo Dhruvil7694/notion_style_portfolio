@@ -1,13 +1,15 @@
 import { notFound } from "next/navigation"
 
-import { ExperienceForm } from "@/features/admin/forms/experience-form"
-import { getExperienceById } from "@/lib/admin/queries"
+import { ExperienceForm } from "@/features/admin/components/forms/experience-form"
+import { getExperienceById } from "@/features/admin/lib/queries"
 
 type AdminEditExperiencePageProps = {
   params: Promise<{ id: string }>
 }
 
-export async function generateMetadata({ params }: AdminEditExperiencePageProps) {
+export async function generateMetadata({
+  params,
+}: AdminEditExperiencePageProps) {
   const { id } = await params
   const { data: experience } = await getExperienceById(id)
 

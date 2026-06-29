@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"require\\('motion/react'\\)\")",
+      "Bash(node -e \"require\\('react-use-measure'\\)\")",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3000,3001 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue; Write-Output \"Killed PID $\\($_.OwningProcess\\) on port $\\($_.LocalPort\\)\" })",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/admin/ai)",
+      "PowerShell(if \\(-not $?\\) { \"dir not found\" })",
+      "PowerShell(cd d:\\\\notion-style-portfolio; $env:NODE_ENV = \"development\"; Start-Process -NoNewWindow -FilePath \"npm\" -ArgumentList \"run\",\"dev\" -RedirectStandardOutput \"$env:TEMP\\\\dev-out.txt\" -RedirectStandardError \"$env:TEMP\\\\dev-err.txt\"; Start-Sleep -Seconds 12; Get-Content \"$env:TEMP\\\\dev-out.txt\" -ErrorAction SilentlyContinue | Select-Object -Last 20; Get-Content \"$env:TEMP\\\\dev-err.txt\" -ErrorAction SilentlyContinue | Select-String \"error|Error|ready|Ready\" | Select-Object -Last 10)",
+      "Bash(curl -s http://localhost:3000/api/admin/seo/save -X POST -H \"Content-Type: application/json\" -d '{\"bad\": \"data\"}')",
+      "Bash(curl -sv http://localhost:3000/api/admin/seo/save -X POST -H \"Content-Type: application/json\" -d '{\"bad\": \"data\"}')",
+      "PowerShell(cd d:\\\\notion-style-portfolio; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"seo|SEO\" } | Select-Object -First 20)",
+      "PowerShell(cd d:\\\\notion-style-portfolio; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"aeo|geo|AEO|GEO\" } | Select-Object -First 20)",
+      "PowerShell(cd d:\\\\notion-style-portfolio; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"visibility|aeo-audit|geo-audit|seo-audit\" } | Select-Object -First 20)",
+      "PowerShell(cd d:\\\\notion-style-portfolio; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"visibility|aeo-audit|geo-audit|seo-audit|generate\\\\.ts|settings\\\\.ts|router\\\\.ts|ai-settings\" } | Select-Object -First 30)",
+      "PowerShell(cd d:\\\\notion-style-portfolio; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"visibility|aeo-audit|geo-audit|seo-audit|generate\\\\.ts|settings\\\\.ts|router\\\\.ts|ai-settings|base\\\\.ts\" } | Select-Object -First 30)",
+      "PowerShell(cd d:\\\\notion-style-portfolio; $env = Get-Content .env | Where-Object { $_ -match \"^OPENAI_API_KEY|^OPENROUTER|^ANTHROPIC\" }; $env | ForEach-Object { $k,$v = $_ -split \"=\",2; \"$k=$\\(if\\($v.Length -gt 8\\){\"$\\($v.Substring\\(0,4\\)\\)...$\\($v.Substring\\($v.Length-4\\)\\)\"}else{\"\\(short\\)\"}\\)\" })",
+      "PowerShell(cd d:\\\\notion-style-portfolio; $r = Invoke-WebRequest -Uri \"http://localhost:3000/admin/seo\" -UseBasicParsing -TimeoutSec 5 2>&1; $r.StatusCode)",
+      "PowerShell(Start-Sleep -Seconds 12; $r = Invoke-WebRequest -Uri \"http://localhost:3000\" -UseBasicParsing -TimeoutSec 8 2>&1; $r.StatusCode)",
+      "Bash(node -e ' *)",
+      "Bash(node --experimental-vm-modules --no-warnings -e ' *)",
+      "Bash(curl -s \"http://localhost:3000/projects/genai-cybersecurity-assistant\")",
+      "Bash(curl -s --max-time 10 \"http://localhost:3000/projects/genai-cybersecurity-assistant\")",
+      "Bash(find d:\\\\\\\\notion-style-portfolio -name \"*provider-keys*\" -type f)",
+      "Bash(grep -E \"\\\\.tsx?$\")",
+      "Bash(awk '{print $NF}')",
+      "Bash(grep -E \"insights|health|derive|portfolio-analysis|admin.*page\\\\.tsx$\")"
+    ]
+  }
+}

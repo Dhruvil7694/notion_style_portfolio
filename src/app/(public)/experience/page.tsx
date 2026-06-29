@@ -1,8 +1,11 @@
-import { PageShell } from "@/components/public/content-shell"
-import { PublicEmptyState } from "@/components/public/empty-state"
-import { ExperienceList } from "@/components/public/experience-list"
-import { getExperienceList, getPublicSettings } from "@/lib/public/queries"
-import { buildExperienceIndexMetadata } from "@/lib/seo"
+import { ExperienceList } from "@/features/experience/components/experience-list"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import {
+  getExperienceList,
+  getPublicSettings,
+} from "@/features/portfolio/lib/queries"
+import { buildExperienceIndexMetadata } from "@/features/seo/lib"
+import { PublicEmptyState } from "@/features/site-shell/components/empty-state"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()

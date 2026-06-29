@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server"
 
-import { requireAdmin } from "@/lib/auth"
 import {
   createChatSession,
   deleteChatSession,
   getChatMessages,
   listChatSessions,
-} from "@/lib/copilot/sessions"
-import { rateLimitRequest } from "@/lib/security/api-route"
+  updateSessionTitle,
+} from "@/features/copilot/lib/sessions"
+import { requireAdmin } from "@/shared/lib/auth"
+import { rateLimitRequest } from "@/shared/lib/security/api-route"
 
 export async function GET(request: Request) {
   await requireAdmin()
@@ -40,6 +41,27 @@ export async function POST(request: Request) {
   const body = (await request.json()) as { title?: string }
   const session = await createChatSession(body.title)
   return NextResponse.json({ session }, { headers: rateLimit.headers })
+}
+
+export async function PATCH(request: Request) {
+  await requireAdmin()
+
+  const rateLimit = await rateLimitRequest(request, "copilot")
+  if (!rateLimit.ok) {
+    return rateLimit.response
+  }
+
+  const body = (await request.json()) as { sessionId?: string; title?: string }
+
+  if (!body.sessionId || !body.title?.trim()) {
+    return NextResponse.json(
+      { error: "sessionId and title are required." },
+      { status: 400, headers: rateLimit.headers }
+    )
+  }
+
+  await updateSessionTitle(body.sessionId, body.title.trim())
+  return NextResponse.json({ success: true }, { headers: rateLimit.headers })
 }
 
 export async function DELETE(request: Request) {

@@ -1,6 +1,9 @@
-import { getPublicSettings } from "@/lib/public/queries"
-import { SEO_SITE_TITLE } from "@/lib/seo/constants"
-import { createOgImageResponse, ogImageRouteConfig } from "@/lib/seo/og-image"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { SEO_SITE_TITLE } from "@/features/seo/lib/constants"
+import {
+  createOgImageResponse,
+  ogImageRouteConfig,
+} from "@/features/seo/lib/og-image"
 
 export const alt = ogImageRouteConfig.alt
 export const size = ogImageRouteConfig.size

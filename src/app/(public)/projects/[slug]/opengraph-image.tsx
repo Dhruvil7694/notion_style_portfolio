@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation"
 
-import { getProjectBySlug } from "@/lib/public/queries"
-import { createOgImageResponse, ogImageRouteConfig } from "@/lib/seo/og-image"
+import { getProjectBySlug } from "@/features/portfolio/lib/queries"
+import {
+  createOgImageResponse,
+  ogImageRouteConfig,
+} from "@/features/seo/lib/og-image"
 
 export const alt = "Project preview"
 export const size = ogImageRouteConfig.size

@@ -1,12 +1,15 @@
 import { Download } from "lucide-react"
 import Link from "next/link"
 
-import { PageShell } from "@/components/public/content-shell"
-import { PublicEmptyState } from "@/components/public/empty-state"
-import { ResumePreviewLazy } from "@/components/public/resume-preview-lazy"
-import { getActiveResume, getPublicSettings } from "@/lib/public/queries"
-import { formatDate } from "@/lib/utils/date"
-import { createPageMetadata } from "@/lib/utils/metadata"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import {
+  getActiveResume,
+  getPublicSettings,
+} from "@/features/portfolio/lib/queries"
+import { ResumePreviewLazy } from "@/features/resume/components/resume-preview-lazy"
+import { PublicEmptyState } from "@/features/site-shell/components/empty-state"
+import { formatDate } from "@/shared/lib/utils/date"
+import { createPageMetadata } from "@/shared/lib/utils/metadata"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()

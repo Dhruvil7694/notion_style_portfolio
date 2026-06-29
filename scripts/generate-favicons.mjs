@@ -7,8 +7,10 @@ import process from "node:process"
 import sharp from "sharp"
 
 const ROOT = process.cwd()
-const SOURCE_DIR = path.join(ROOT, "src/assets/logo")
+const SOURCE_DIR = path.join(ROOT, "src/shared/assets/logo")
 const OUTPUT_DIR = path.join(ROOT, "public/icons")
+const APP_ICON_PATH = path.join(ROOT, "src/app/icon.png")
+const APP_APPLE_ICON_PATH = path.join(ROOT, "src/app/apple-icon.png")
 
 const VARIANTS = [
   {
@@ -125,6 +127,22 @@ async function main() {
     await writeFile(applePath, appleBuffer)
     console.log(`wrote ${path.relative(ROOT, applePath)}`)
   }
+
+  const appIconBuffer = await renderSquareIcon(
+    path.join(SOURCE_DIR, "logo_dark.png"),
+    48,
+    "#ffffff"
+  )
+  await writeFile(APP_ICON_PATH, appIconBuffer)
+  console.log(`wrote ${path.relative(ROOT, APP_ICON_PATH)}`)
+
+  const appAppleBuffer = await renderSquareIcon(
+    path.join(SOURCE_DIR, "logo_dark.png"),
+    180,
+    "#ffffff"
+  )
+  await writeFile(APP_APPLE_ICON_PATH, appAppleBuffer)
+  console.log(`wrote ${path.relative(ROOT, APP_APPLE_ICON_PATH)}`)
 }
 
 main().catch((error) => {

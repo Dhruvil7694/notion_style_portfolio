@@ -1,4 +1,4 @@
-import { ContentForm } from "@/features/admin/forms/content-form"
+import { ContentForm } from "@/features/admin/components/forms/content-form"
 
 export const metadata = {
   title: "New Content",

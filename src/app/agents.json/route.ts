@@ -1,6 +1,6 @@
-import { getPublicSettings } from "@/lib/public/queries"
-import { buildAgentsJson } from "@/lib/seo/agents-json"
-import { resolveSiteUrl } from "@/lib/seo/canonical"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { buildAgentsJson } from "@/features/seo/lib/agents-json"
+import { resolveSiteUrl } from "@/features/seo/lib/canonical"
 
 export const revalidate = 3600
 

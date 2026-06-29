@@ -1,7 +1,10 @@
-import { PageShell } from "@/components/public/content-shell"
-import { ProjectsListWithFiltersLazy } from "@/components/public/projects-list-with-filters-lazy"
-import { getPublicSettings, getPublishedProjects } from "@/lib/public/queries"
-import { buildProjectsIndexMetadata } from "@/lib/seo"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import {
+  getPublicSettings,
+  getPublishedProjects,
+} from "@/features/portfolio/lib/queries"
+import { ProjectsListWithFiltersLazy } from "@/features/projects/components/projects-list-with-filters-lazy"
+import { buildProjectsIndexMetadata } from "@/features/seo/lib"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()
@@ -20,7 +23,9 @@ export default async function ProjectsPage() {
       {projects.length > 0 ? (
         <ProjectsListWithFiltersLazy projects={projects} />
       ) : (
-        <p className="kb-empty-message">Projects will appear here as they are published.</p>
+        <p className="kb-empty-message">
+          Projects will appear here as they are published.
+        </p>
       )}
     </PageShell>
   )

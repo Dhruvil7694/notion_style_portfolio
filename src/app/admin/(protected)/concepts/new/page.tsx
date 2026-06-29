@@ -1,4 +1,4 @@
-import { ConceptForm } from "@/features/admin/forms/concept-form"
+import { redirect } from "next/navigation"
 
 export const metadata = {
   title: "New Concept",
@@ -6,5 +6,5 @@ export const metadata = {
 }
 
 export default function AdminNewConceptPage() {
-  return <ConceptForm mode="create" />
+  redirect("/admin/concepts?create=1")
 }

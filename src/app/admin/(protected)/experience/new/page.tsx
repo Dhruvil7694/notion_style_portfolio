@@ -1,4 +1,4 @@
-import { ExperienceForm } from "@/features/admin/forms/experience-form"
+import { ExperienceForm } from "@/features/admin/components/forms/experience-form"
 
 export const metadata = {
   title: "New Experience",

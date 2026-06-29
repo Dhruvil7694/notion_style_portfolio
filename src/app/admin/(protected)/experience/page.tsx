@@ -3,13 +3,15 @@ import { Suspense } from "react"
 
 import {
   DataTable,
+  ListRowDeleteButton,
   PageHeader,
-} from "@/components/admin"
-import { ListToolbar } from "@/components/admin/forms"
-import { buttonVariants } from "@/components/ui/button"
-import { adminResourceRoutes } from "@/config/admin-resource-routes"
-import { getExperienceList } from "@/lib/admin/queries"
-import { cn, formatDate } from "@/lib/utils"
+} from "@/features/admin/components"
+import { ListToolbar } from "@/features/admin/components/forms"
+import { deleteExperience } from "@/features/admin/lib/actions/experience"
+import { getExperienceList } from "@/features/admin/lib/queries"
+import { adminResourceRoutes } from "@/shared/config/admin-resource-routes"
+import { cn, formatDate } from "@/shared/lib/utils"
+import { buttonVariants } from "@/shared/ui/button"
 
 export const metadata = {
   title: "Experience",
@@ -77,6 +79,20 @@ export default async function AdminExperiencePage({
               key: "dates",
               header: "Dates",
               cell: (row) => formatRange(row.start_date, row.end_date),
+            },
+            {
+              key: "actions",
+              header: "",
+              className: "w-12 text-right",
+              cell: (row) => (
+                <div className="flex justify-end">
+                  <ListRowDeleteButton
+                    entityLabel="experience"
+                    itemLabel={`${row.role} at ${row.company}`}
+                    onDelete={deleteExperience.bind(null, row.id)}
+                  />
+                </div>
+              ),
             },
           ]}
           emptyDescription="Experience entries will appear here once created."

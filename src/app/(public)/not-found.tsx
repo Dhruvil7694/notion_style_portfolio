@@ -1,4 +1,4 @@
-import { PublicNotFoundPage } from "@/components/public/public-not-found-page"
+import { PublicNotFoundPage } from "@/features/site-shell/components/public-not-found-page"
 
 export default function PublicNotFound() {
   return <PublicNotFoundPage overlay />

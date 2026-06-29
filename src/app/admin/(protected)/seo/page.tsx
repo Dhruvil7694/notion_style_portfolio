@@ -9,7 +9,14 @@ export const metadata = {
   robots: { index: false, follow: false },
 }
 
-export default async function SeoAuditPage() {
+export default async function SeoAuditPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const params = await searchParams
+  const highlightId =
+    typeof params["highlight"] === "string" ? params["highlight"] : undefined
   const result = await runSeoAudit()
 
   return (
@@ -39,7 +46,7 @@ export default async function SeoAuditPage() {
           description={`${result.totalCount} published items · audited ${new Date(result.auditedAt).toLocaleTimeString()}`}
           title="Content items"
         >
-          <SeoAuditPanel result={result} />
+          <SeoAuditPanel highlightId={highlightId} result={result} />
         </AdminPanel>
       )}
     </div>

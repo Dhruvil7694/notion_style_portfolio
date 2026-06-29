@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { trackServerEvent } from "@/lib/analytics/posthog-server"
-import { recordJobFitAnalyticsEvent } from "@/lib/job-fit/analytics"
-import { logger } from "@/lib/monitoring/logger"
-import { SENIORITY_LEVELS } from "@/lib/public/job-seniority"
-import { rateLimitRequest } from "@/lib/security/api-route"
+import { recordJobFitAnalyticsEvent } from "@/features/job-fit/lib/analytics"
+import { SENIORITY_LEVELS } from "@/features/portfolio/lib/job-seniority"
+import { trackServerEvent } from "@/shared/lib/analytics/posthog-server"
+import { logger } from "@/shared/lib/monitoring/logger"
+import { rateLimitRequest } from "@/shared/lib/security/api-route"
 
 const bodySchema = z.object({
   contentHash: z.string().min(1).max(64),

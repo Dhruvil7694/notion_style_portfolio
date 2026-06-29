@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
 
-import { buildDiscoveryIndex } from "@/lib/discovery/indexer"
-import { searchDocumentsGrouped } from "@/lib/discovery/search"
-import { getPublicSettings } from "@/lib/public/queries"
-import { rateLimitRequest } from "@/lib/security/api-route"
-import { resolveSiteUrl } from "@/lib/seo/canonical"
+import { buildDiscoveryIndex } from "@/features/discovery/lib/indexer"
+import { searchDocumentsGrouped } from "@/features/discovery/lib/search"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { resolveSiteUrl } from "@/features/seo/lib/canonical"
+import { rateLimitRequest } from "@/shared/lib/security/api-route"
 
 export const revalidate = 3600
 
@@ -38,7 +38,9 @@ export async function GET(request: Request) {
   const query = searchParams.get("q")?.trim() ?? ""
 
   if (query) {
-    const results = searchDocumentsGrouped(index.documents, query, { limit: 40 })
+    const results = searchDocumentsGrouped(index.documents, query, {
+      limit: 40,
+    })
     return NextResponse.json(
       {
         documents: index.documents,

@@ -1,9 +1,9 @@
 import Link from "next/link"
 
-import { PageShell } from "@/components/public/content-shell"
-import { buildPrivacySections } from "@/lib/public/privacy-content"
-import { getPublicSettings } from "@/lib/public/queries"
-import { buildPrivacyMetadata } from "@/lib/seo"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import { buildPrivacySections } from "@/features/portfolio/lib/privacy-content"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { buildPrivacyMetadata } from "@/features/seo/lib"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()

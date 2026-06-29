@@ -1,13 +1,15 @@
 import { notFound } from "next/navigation"
 
-import { EducationForm } from "@/features/admin/forms/education-form"
-import { getEducationById } from "@/lib/admin/queries"
+import { EducationForm } from "@/features/admin/components/forms/education-form"
+import { getEducationById } from "@/features/admin/lib/queries"
 
 type AdminEditEducationPageProps = {
   params: Promise<{ id: string }>
 }
 
-export async function generateMetadata({ params }: AdminEditEducationPageProps) {
+export async function generateMetadata({
+  params,
+}: AdminEditEducationPageProps) {
   const { id } = await params
   const { data: education } = await getEducationById(id)
 

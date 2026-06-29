@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation"
 
-import { ExperienceArticle } from "@/components/public/experience-article"
-import { getExperienceById, getPublicSettings } from "@/lib/public/queries"
-import { createPageMetadata } from "@/lib/utils/metadata"
+import { ExperienceArticle } from "@/features/experience/components/experience-article"
+import {
+  getExperienceById,
+  getPublicSettings,
+} from "@/features/portfolio/lib/queries"
+import { createPageMetadata } from "@/shared/lib/utils/metadata"
 
 type ExperienceDetailPageProps = {
   params: Promise<{ id: string }>
@@ -26,7 +29,9 @@ export async function generateMetadata({ params }: ExperienceDetailPageProps) {
   })
 }
 
-export default async function ExperienceDetailPage({ params }: ExperienceDetailPageProps) {
+export default async function ExperienceDetailPage({
+  params,
+}: ExperienceDetailPageProps) {
   const { id } = await params
   const { data: experience } = await getExperienceById(id)
 

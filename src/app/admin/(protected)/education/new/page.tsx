@@ -1,4 +1,4 @@
-import { EducationForm } from "@/features/admin/forms/education-form"
+import { redirect } from "next/navigation"
 
 export const metadata = {
   title: "New Education",
@@ -6,5 +6,5 @@ export const metadata = {
 }
 
 export default function AdminNewEducationPage() {
-  return <EducationForm mode="create" />
+  redirect("/admin/education?create=1")
 }

@@ -1,12 +1,17 @@
 import Link from "next/link"
 import { Suspense } from "react"
 
-import { DataTable, PageHeader } from "@/components/admin"
-import { ListToolbar } from "@/components/admin/forms"
-import { buttonVariants } from "@/components/ui/button"
-import { adminResourceRoutes } from "@/config/admin-resource-routes"
-import { getTechnologiesList } from "@/lib/admin/queries"
-import { cn } from "@/lib/utils"
+import {
+  DataTable,
+  ListRowDeleteButton,
+  PageHeader,
+} from "@/features/admin/components"
+import { ListToolbar } from "@/features/admin/components/forms"
+import { deleteTechnologyEntry } from "@/features/admin/lib/actions/technologies"
+import { getTechnologiesList } from "@/features/admin/lib/queries"
+import { adminResourceRoutes } from "@/shared/config/admin-resource-routes"
+import { cn } from "@/shared/lib/utils"
+import { buttonVariants } from "@/shared/ui/button"
 
 export const metadata = {
   title: "Technologies",
@@ -17,7 +22,9 @@ type AdminTechnologiesPageProps = {
   searchParams: Promise<{ q?: string }>
 }
 
-export default async function AdminTechnologiesPage({ searchParams }: AdminTechnologiesPageProps) {
+export default async function AdminTechnologiesPage({
+  searchParams,
+}: AdminTechnologiesPageProps) {
   const params = await searchParams
   const routes = adminResourceRoutes.technologies
   const { data: items, error } = await getTechnologiesList({ q: params.q })
@@ -49,17 +56,38 @@ export default async function AdminTechnologiesPage({ searchParams }: AdminTechn
               key: "title",
               header: "Title",
               cell: (row) => (
-                <Link className="font-medium hover:underline" href={routes.edit(row.id)}>
+                <Link
+                  className="font-medium hover:underline"
+                  href={routes.edit(row.id)}
+                >
                   {row.title}
                 </Link>
               ),
             },
             { key: "slug", header: "Slug", cell: (row) => row.slug },
-            { key: "category", header: "Category", cell: (row) => row.category ?? "—" },
+            {
+              key: "category",
+              header: "Category",
+              cell: (row) => row.category ?? "—",
+            },
             {
               key: "status",
               header: "Status",
               cell: (row) => <span className="capitalize">{row.status}</span>,
+            },
+            {
+              key: "actions",
+              header: "",
+              className: "w-12 text-right",
+              cell: (row) => (
+                <div className="flex justify-end">
+                  <ListRowDeleteButton
+                    entityLabel="technology"
+                    itemLabel={row.title}
+                    onDelete={deleteTechnologyEntry.bind(null, row.id)}
+                  />
+                </div>
+              ),
             },
           ]}
           emptyDescription="Technology hubs will appear here once created."

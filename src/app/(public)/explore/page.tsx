@@ -1,11 +1,14 @@
-import { PageShell } from "@/components/public/content-shell"
-import { ExplorePageClient } from "@/components/public/explore-page-client"
-import { buildTopicClusters, getExplorerSections } from "@/lib/discovery/explorer"
-import { buildDiscoveryIndexFromGraph } from "@/lib/discovery/indexer"
-import { buildKnowledgeGraph } from "@/lib/knowledge/graph"
-import { getPublicSettings } from "@/lib/public/queries"
-import { resolveSiteUrl } from "@/lib/seo/canonical"
-import { buildBaseMetadata } from "@/lib/seo/metadata"
+import { ExplorePageClient } from "@/features/discovery/components/explore-page-client"
+import {
+  buildTopicClusters,
+  getExplorerSections,
+} from "@/features/discovery/lib/explorer"
+import { buildDiscoveryIndexFromGraph } from "@/features/discovery/lib/indexer"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import { buildKnowledgeGraph } from "@/features/knowledge-base/lib/graph"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { resolveSiteUrl } from "@/features/seo/lib/canonical"
+import { buildBaseMetadata } from "@/features/seo/lib/metadata"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()

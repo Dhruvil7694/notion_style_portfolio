@@ -1,7 +1,7 @@
 import { withSentryConfig } from "@sentry/nextjs"
 import type { NextConfig } from "next"
 
-import { buildSecurityHeaders } from "./src/lib/security/headers"
+import { buildSecurityHeaders } from "./src/shared/lib/security/headers"
 
 const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
@@ -14,7 +14,8 @@ const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
 const securityHeaders = buildSecurityHeaders({
   supabaseOrigin,
   isProduction: process.env.NODE_ENV === "production",
-  allowVercelLive: process.env.VERCEL_ENV === "preview",
+  // Vercel Toolbar / Comments inject feedback.js on preview and production domains.
+  allowVercelLive: Boolean(process.env.VERCEL),
 })
 
 const nextConfig: NextConfig = {

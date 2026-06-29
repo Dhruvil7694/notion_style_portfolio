@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
 
-import { buildKnowledgeGraph } from "@/lib/knowledge/graph"
-import { getPublicSettings } from "@/lib/public/queries"
-import { rateLimitRequest } from "@/lib/security/api-route"
-import { resolveSiteUrl } from "@/lib/seo/canonical"
+import { buildKnowledgeGraph } from "@/features/knowledge-base/lib/graph"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { resolveSiteUrl } from "@/features/seo/lib/canonical"
+import { rateLimitRequest } from "@/shared/lib/security/api-route"
 
 export const revalidate = 3600
 
@@ -22,7 +22,13 @@ export async function GET(request: Request) {
 
   if (!graph) {
     return NextResponse.json(
-      { entities: [], relationships: [], expertise: [], technologies: [], concepts: [] },
+      {
+        entities: [],
+        relationships: [],
+        expertise: [],
+        technologies: [],
+        concepts: [],
+      },
       {
         status: 200,
         headers: {

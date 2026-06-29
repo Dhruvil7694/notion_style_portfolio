@@ -5,18 +5,19 @@ import {
   Brain,
   Briefcase,
   Bug,
-  ChartNoAxesCombined,
   Cpu,
+  Eye,
   FileText,
   FolderKanban,
   Gauge,
+  Globe,
   GraduationCap,
   HeartPulse,
   IdCard,
   LayoutDashboard,
   Lightbulb,
   LineChart,
-  MonitorCheck,
+  MessageSquareQuote,
   Rocket,
   ScrollText,
   SearchCheck,
@@ -31,18 +32,27 @@ import {
   UserCircle,
   Wrench,
 } from "lucide-react"
+import type { SVGProps } from "react"
+
+import { PostHogIcon, SentryIcon } from "@/shared/ui/brand-icons"
+
+export type NavIcon =
+  | LucideIcon
+  | ((
+      props: SVGProps<SVGSVGElement> & { className?: string }
+    ) => React.JSX.Element)
 
 export type AdminNavItem = {
   title: string
   href: string
-  icon: LucideIcon
+  icon: NavIcon
   description?: string
 }
 
 export type AdminNavGroup = {
   id: string
   title: string
-  icon: LucideIcon
+  icon: NavIcon
   items: AdminNavItem[]
 }
 
@@ -183,11 +193,32 @@ export const adminNavGroups: AdminNavGroup[] = [
         icon: HeartPulse,
         description: "Audit content completeness and SEO readiness",
       },
+    ],
+  },
+  {
+    id: "visibility",
+    title: "Visibility",
+    icon: Eye,
+    items: [
       {
         title: "SEO Audit",
         href: "/admin/seo",
         icon: SearchCheck,
         description: "SEO quality scores and fix suggestions",
+      },
+      {
+        title: "AEO",
+        href: "/admin/aeo",
+        icon: MessageSquareQuote,
+        description:
+          "Answer Engine Optimization — appear in AI and voice answers",
+      },
+      {
+        title: "GEO",
+        href: "/admin/geo",
+        icon: Globe,
+        description:
+          "Generative Engine Optimization — feed LLM knowledge graphs",
       },
     ],
   },
@@ -222,16 +253,16 @@ export const adminNavGroups: AdminNavGroup[] = [
     icon: Bug,
     items: [
       {
-        title: "Sentry Debug",
+        title: "Sentry",
         href: "/admin/debug/sentry",
-        icon: MonitorCheck,
+        icon: SentryIcon,
         description: "Fire test Sentry events to verify monitoring",
       },
       {
-        title: "Analytics Debug",
+        title: "PostHog",
         href: "/admin/debug/analytics",
-        icon: ChartNoAxesCombined,
-        description: "Verify PostHog events are being received",
+        icon: PostHogIcon,
+        description: "Verify PostHog events and view live analytics",
       },
     ],
   },

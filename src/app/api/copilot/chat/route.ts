@@ -1,27 +1,27 @@
 import { NextResponse } from "next/server"
 
-import { isAiConfigured } from "@/lib/ai"
+import { isAiConfigured } from "@/features/ai/lib"
 import {
   getCachedKnowledgeSummary,
   getCachedPortfolioSnapshot,
   getCachedToolSummary,
-} from "@/lib/ai/cache/summaries"
-import { requireAdmin } from "@/lib/auth"
+} from "@/features/ai/lib/cache/summaries"
 import {
   type CopilotAgentMessage,
   runCopilotAgent,
-} from "@/lib/copilot/agent"
-import { getApplyTool, getProposeTool } from "@/lib/copilot/registry"
-import type { PendingActionPayload } from "@/lib/copilot/registry/types"
+} from "@/features/copilot/lib/agent"
+import { getApplyTool, getProposeTool } from "@/features/copilot/lib/registry"
+import type { PendingActionPayload } from "@/features/copilot/lib/registry/types"
 import {
   createChatSession,
   getChatMessages,
   getChatSession,
   saveChatMessage,
-} from "@/lib/copilot/sessions"
-import { getPublicSettings } from "@/lib/public/queries"
-import { rateLimitRequest } from "@/lib/security/api-route"
-import { resolveSiteUrl } from "@/lib/seo/canonical"
+} from "@/features/copilot/lib/sessions"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { resolveSiteUrl } from "@/features/seo/lib/canonical"
+import { requireAdmin } from "@/shared/lib/auth"
+import { rateLimitRequest } from "@/shared/lib/security/api-route"
 
 export const maxDuration = 120
 
@@ -65,7 +65,11 @@ type StreamMeta = {
   error?: string
 }
 
-function streamResponse(text: string, meta: StreamMeta, headers: HeadersInit): Response {
+function streamResponse(
+  text: string,
+  meta: StreamMeta,
+  headers: HeadersInit
+): Response {
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     start(controller) {
@@ -75,13 +79,17 @@ function streamResponse(text: string, meta: StreamMeta, headers: HeadersInit): R
       function pushNext() {
         if (index >= chunks.length) {
           controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ type: "done", ...meta })}\n\n`)
+            encoder.encode(
+              `data: ${JSON.stringify({ type: "done", ...meta })}\n\n`
+            )
           )
           controller.close()
           return
         }
         controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({ type: "text", text: chunks[index] })}\n\n`)
+          encoder.encode(
+            `data: ${JSON.stringify({ type: "text", text: chunks[index] })}\n\n`
+          )
         )
         index += 1
         setTimeout(pushNext, 8)
@@ -121,13 +129,16 @@ async function clearPendingOnPriorMessage(
   const history = await getChatMessages(sessionId)
   const target = [...history].reverse().find((msg) => {
     if (msg.role !== "assistant") return false
-    const pending = (msg.metadata?.pendingActions ?? []) as Array<{ id: string }>
+    const pending = (msg.metadata?.pendingActions ?? []) as Array<{
+      id: string
+    }>
     return pending.some((p) => p.id === pendingActionId)
   })
   if (!target) return
 
-  const { getAdminMutationClient } = await import("@/lib/admin/actions/client")
-  const { asCopilotClient } = await import("@/lib/copilot/db-client")
+  const { getAdminMutationClient } =
+    await import("@/features/admin/lib/actions/client")
+  const { asCopilotClient } = await import("@/features/copilot/lib/db-client")
   const supabase = asCopilotClient(await getAdminMutationClient())
   const remaining = (
     (target.metadata?.pendingActions ?? []) as Array<{ id: string }>
@@ -178,7 +189,8 @@ export async function POST(request: Request) {
         { status: 404, headers: rateLimit.headers }
       )
     }
-    const text = "No worries — skipped that one. Nothing changed on the live site."
+    const text =
+      "No worries — skipped that one. Nothing changed on the live site."
     await saveChatMessage(sessionId, "assistant", text, {
       action: "cancel",
       pendingActionId,
@@ -217,12 +229,11 @@ export async function POST(request: Request) {
       return streamResponse(text, { sessionId, error: text }, rateLimit.headers)
     }
 
-    await saveChatMessage(
-      sessionId,
-      "user",
-      `[confirmed: ${applyTool}]`,
-      { action: "confirm", pendingActionId, applyTool }
-    )
+    await saveChatMessage(sessionId, "user", `[confirmed: ${applyTool}]`, {
+      action: "confirm",
+      pendingActionId,
+      applyTool,
+    })
 
     const result = await apply.execute(applyArgs ?? {})
 
@@ -294,7 +305,11 @@ export async function POST(request: Request) {
         pendingActionId,
         proposeTool,
       })
-      return streamResponse(text, { sessionId, error: result.error }, rateLimit.headers)
+      return streamResponse(
+        text,
+        { sessionId, error: result.error },
+        rateLimit.headers
+      )
     }
 
     const enriched = { ...result.pending, id: crypto.randomUUID() }

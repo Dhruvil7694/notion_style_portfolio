@@ -1,4 +1,4 @@
-import { ExpertiseForm } from "@/features/admin/forms/expertise-form"
+import { ExpertiseForm } from "@/features/admin/components/forms/expertise-form"
 
 export const metadata = {
   title: "New Expertise",

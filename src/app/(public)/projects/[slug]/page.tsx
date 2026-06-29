@@ -1,27 +1,33 @@
 import { notFound } from "next/navigation"
 
-import { ProjectCaseStudy } from "@/components/public/project-case-study"
-import { JsonLd } from "@/components/seo/json-ld"
-import { extractEntitiesFromProject } from "@/lib/knowledge/entity-extractor"
-import { resolveProjectFaqFromRecord } from "@/lib/knowledge/faq-templates"
+import { extractEntitiesFromProject } from "@/features/knowledge-base/lib/entity-extractor"
+import { resolveProjectFaqFromRecord } from "@/features/knowledge-base/lib/faq-templates"
 import {
   buildKnowledgeGraph,
   findRelatedKnowledge,
-} from "@/lib/knowledge/graph"
+} from "@/features/knowledge-base/lib/graph"
 import {
   getProjectBySlug,
   getPublicSettings,
   getPublishedExpertiseAreas,
   getRelatedProjects,
-} from "@/lib/public/queries"
-import { generateCanonicalUrl, resolveSiteUrl } from "@/lib/seo/canonical"
+} from "@/features/portfolio/lib/queries"
+import { ProjectCaseStudy } from "@/features/projects/components/project-case-study"
+import { JsonLd } from "@/features/seo/components/json-ld"
+import {
+  generateCanonicalUrl,
+  resolveSiteUrl,
+} from "@/features/seo/lib/canonical"
 import {
   buildFaqPageJsonLd,
   buildProjectBreadcrumbJsonLd,
   buildProjectJsonLd,
   mergeJsonLdGraph,
-} from "@/lib/seo/jsonld"
-import { buildNotFoundMetadata, buildProjectMetadata } from "@/lib/seo/metadata"
+} from "@/features/seo/lib/jsonld"
+import {
+  buildNotFoundMetadata,
+  buildProjectMetadata,
+} from "@/features/seo/lib/metadata"
 
 export const revalidate = 3600
 

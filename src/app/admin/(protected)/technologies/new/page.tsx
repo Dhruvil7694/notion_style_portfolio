@@ -1,4 +1,4 @@
-import { TechnologyForm } from "@/features/admin/forms/technology-form"
+import { TechnologyForm } from "@/features/admin/components/forms/technology-form"
 
 export const metadata = {
   title: "New Technology",

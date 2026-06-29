@@ -1,11 +1,11 @@
 import "server-only"
 
-import { PageHeader } from "@/components/admin"
+import { PageHeader } from "@/features/admin/components"
 import {
   type CheckResult,
   mapCheckStatusToHealth,
   runDeploymentChecks,
-} from "@/lib/deployment/checks"
+} from "@/features/deployment/lib/checks"
 
 export const dynamic = "force-dynamic"
 

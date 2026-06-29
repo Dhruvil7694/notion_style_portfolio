@@ -1,5 +1,6 @@
-import { AdminLayout } from "@/components/admin/admin-layout"
-import { requireAdmin } from "@/lib/auth"
+import { AdminLayout } from "@/features/admin/components/admin-layout"
+import { AdminProviders } from "@/features/admin/components/admin-providers"
+import { requireAdmin } from "@/shared/lib/auth"
 
 export default async function AdminProtectedLayout({
   children,
@@ -8,5 +9,9 @@ export default async function AdminProtectedLayout({
 }) {
   await requireAdmin()
 
-  return <AdminLayout>{children}</AdminLayout>
+  return (
+    <AdminProviders>
+      <AdminLayout>{children}</AdminLayout>
+    </AdminProviders>
+  )
 }

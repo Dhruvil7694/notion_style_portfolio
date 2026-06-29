@@ -1,16 +1,22 @@
 import { notFound } from "next/navigation"
 
-import { TechnologyForm } from "@/features/admin/forms/technology-form"
-import { getAdminMutationClient } from "@/lib/admin/actions/client"
+import { TechnologyForm } from "@/features/admin/components/forms/technology-form"
+import { getAdminMutationClient } from "@/features/admin/lib/actions/client"
 
 type AdminEditTechnologyPageProps = {
   params: Promise<{ id: string }>
 }
 
-export async function generateMetadata({ params }: AdminEditTechnologyPageProps) {
+export async function generateMetadata({
+  params,
+}: AdminEditTechnologyPageProps) {
   const { id } = await params
   const supabase = await getAdminMutationClient()
-  const { data } = await supabase.from("technology_registry").select("title").eq("id", id).maybeSingle()
+  const { data } = await supabase
+    .from("technology_registry")
+    .select("title")
+    .eq("id", id)
+    .maybeSingle()
 
   return {
     title: data?.title ? `Edit ${data.title}` : "Edit Technology",
@@ -18,7 +24,9 @@ export async function generateMetadata({ params }: AdminEditTechnologyPageProps)
   }
 }
 
-export default async function AdminEditTechnologyPage({ params }: AdminEditTechnologyPageProps) {
+export default async function AdminEditTechnologyPage({
+  params,
+}: AdminEditTechnologyPageProps) {
   const { id } = await params
   const supabase = await getAdminMutationClient()
   const { data: entry } = await supabase

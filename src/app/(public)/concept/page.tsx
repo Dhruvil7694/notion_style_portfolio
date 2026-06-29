@@ -1,10 +1,10 @@
 import Link from "next/link"
 
-import { PageShell } from "@/components/public/content-shell"
-import { buildKnowledgeGraph } from "@/lib/knowledge/graph"
-import { getPublicSettings } from "@/lib/public/queries"
-import { resolveSiteUrl } from "@/lib/seo/canonical"
-import { buildBaseMetadata } from "@/lib/seo/metadata"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import { buildKnowledgeGraph } from "@/features/knowledge-base/lib/graph"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { resolveSiteUrl } from "@/features/seo/lib/canonical"
+import { buildBaseMetadata } from "@/features/seo/lib/metadata"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()
@@ -13,7 +13,8 @@ export async function generateMetadata() {
     { settings },
     {
       title: "Concepts",
-      description: "Engineering concepts across projects, research, writing, and automations.",
+      description:
+        "Engineering concepts across projects, research, writing, and automations.",
       path: "/concept",
     }
   )
@@ -33,7 +34,10 @@ export default async function ConceptIndexPage() {
         <ul className="concept-index-list">
           {graph.concepts.map((concept) => (
             <li key={concept.slug}>
-              <Link className="concept-index-link" href={`/concept/${concept.slug}`}>
+              <Link
+                className="concept-index-link"
+                href={`/concept/${concept.slug}`}
+              >
                 <span className="concept-index-title">{concept.title}</span>
                 {concept.registered ? (
                   <span className="concept-index-badge">Authority page</span>
@@ -43,7 +47,9 @@ export default async function ConceptIndexPage() {
           ))}
         </ul>
       ) : (
-        <p className="kb-empty-message">Concepts will appear as content publishes concept tags.</p>
+        <p className="kb-empty-message">
+          Concepts will appear as content publishes concept tags.
+        </p>
       )}
     </PageShell>
   )

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { trackServerEvent } from "@/lib/analytics/posthog-server"
-import { recordJobFitAnalyticsEvent } from "@/lib/job-fit/analytics"
-import { renderJobFitPdfBuffer } from "@/lib/public/job-fit-pdf/render"
-import { buildJobFitPdfFilename } from "@/lib/public/job-fit-pdf/report-data"
-import { isJobFitAnalysisMessage } from "@/lib/public/parse-job-fit-result"
-import { getPublicSettings } from "@/lib/public/queries"
-import { rateLimitRequest } from "@/lib/security/api-route"
+import { recordJobFitAnalyticsEvent } from "@/features/job-fit/lib/analytics"
+import { isJobFitAnalysisMessage } from "@/features/job-fit/lib/parse-job-fit-result"
+import { renderJobFitPdfBuffer } from "@/features/job-fit/lib/pdf/render"
+import { buildJobFitPdfFilename } from "@/features/job-fit/lib/pdf/report-data"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { trackServerEvent } from "@/shared/lib/analytics/posthog-server"
+import { rateLimitRequest } from "@/shared/lib/security/api-route"
 
 export const maxDuration = 30
 

@@ -1,9 +1,9 @@
 import Link from "next/link"
 
-import { ContactLink } from "@/components/public/contact-link"
-import { PageShell } from "@/components/public/content-shell"
-import { getPublicSettings } from "@/lib/public/queries"
-import { buildContactMetadata } from "@/lib/seo"
+import { ContactLink } from "@/features/contact/components/contact-link"
+import { PageShell } from "@/features/knowledge-base/components/content-shell"
+import { getPublicSettings } from "@/features/portfolio/lib/queries"
+import { buildContactMetadata } from "@/features/seo/lib"
 
 export async function generateMetadata() {
   const settings = await getPublicSettings()

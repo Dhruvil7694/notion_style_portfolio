@@ -10,6 +10,8 @@ import { resolve } from "node:path"
 
 import { createClient } from "@supabase/supabase-js"
 
+import { EXPERIENCE_CASE_STUDY_BY_COMPANY } from "./experience-case-study-data.mjs"
+
 function parseEnvLine(line) {
   const trimmed = line.trim()
   if (!trimmed || trimmed.startsWith("#")) return null
@@ -44,7 +46,9 @@ const url = env.NEXT_PUBLIC_SUPABASE_URL
 const secretKey = env.SUPABASE_SECRET_KEY
 
 if (!url || !secretKey) {
-  console.error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY in .env.local")
+  console.error(
+    "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY in .env.local"
+  )
   process.exit(1)
 }
 
@@ -149,13 +153,26 @@ const experience = [
     description:
       "Building production AI systems including NL-to-SQL platforms, document intelligence workflows, and enterprise automation pipelines.",
     achievements: [
-      "Built NL→SQL platform with schema-aware guardrails enabling non-technical teams to query PostgreSQL, MySQL, and MSSQL via natural language.",
-      "Designed hybrid AI document intelligence system extracting 80+ structured fields from enterprise bidding documents using rule-based parsing + selective RAG.",
-      "Automated large-scale document workflows via parallel PDF splitting + Google Drive pipeline, processing 1,000+ page files in under 2 minutes.",
-      "Delivered computer vision POC for automobile defect classification achieving 85%+ accuracy across 20 job categories.",
-      "Designed high-performance concurrent processing pipelines for enterprise automation across large unstructured datasets.",
+      "Built NL→SQL platform with schema-aware guardrails enabling non-technical sales and ops teams to query PostgreSQL, MySQL, and MSSQL via natural language — eliminating analyst dependency for enterprise reporting and accelerating forecasting workflows.",
+      "Designed hybrid AI document intelligence system extracting 80+ structured fields from enterprise bidding documents using rule-based parsing + selective RAG; reduced contract review cycle time and improved deal visibility.",
+      "Automated large-scale document workflows via parallel PDF splitting + Google Drive pipeline, processing 1,000+ page files in under 2 minutes vs. 1–2 hours manually — freeing sales teams from administrative overhead.",
+      "Delivered computer vision POC for automobile defect classification achieving 85%+ accuracy across 20 job categories under varied real-world conditions.",
+      "Designed high-performance concurrent processing pipelines for enterprise automation, optimizing latency and throughput across large unstructured datasets.",
     ],
-    tech_stack: ["Python", "FastAPI", "PostgreSQL", "Azure OpenAI", "RAG", "LangChain"],
+    tech_stack: [
+      "Python",
+      "FastAPI",
+      "PostgreSQL",
+      "MySQL",
+      "MSSQL",
+      "Azure OpenAI",
+      "Azure AI Search",
+      "LangChain",
+      "LangGraph",
+      "RAG",
+      "Docker",
+    ],
+    case_study: EXPERIENCE_CASE_STUDY_BY_COMPANY["1POINT1"],
     display_order: 1,
   },
   {
@@ -167,13 +184,25 @@ const experience = [
     description:
       "Deployed GenAI and compliance systems for cybersecurity operations, including RAG assistants and fine-tuned LLM workflows.",
     achievements: [
-      "Deployed GenAI real-time assistant handling 82,000+ cybersecurity scenarios using RAG + LangChain + Gemini API — 40% faster incident triage.",
-      "Built multi-model compliance system using LoRA/QLoRA fine-tuned LLMs achieving ~95% operational accuracy in regulatory mapping.",
-      "Designed SOC analytics pipeline aggregating data from 6+ security tools with real-time ingestion and anomaly detection.",
-      "Led cross-functional team of 5 engineers using agile ML workflows, accelerating delivery by 25%.",
+      "Deployed GenAI real-time assistant handling 82,000+ cybersecurity scenarios using RAG + LangChain + Gemini API — 40% faster incident triage vs. manual lookup, on lightweight infrastructure with no external API dependency for core inference.",
+      "Built multi-model compliance system using LoRA/QLoRA fine-tuned LLMs achieving ~95% operational accuracy in regulatory mapping and gap reasoning — directly comparable to AI-driven sales qualification and competitive intelligence workflows.",
+      "Designed SOC analytics pipeline aggregating data from 6+ security tools with real-time ingestion, anomaly detection, and automated threat monitoring; demonstrates full-stack AI forecasting architecture applicable to sales performance monitoring.",
+      "Led cross-functional team of 5 engineers using agile ML workflows and automated testing, accelerating delivery by 25%; regularly communicated complex AI capabilities to non-technical executive stakeholders.",
       "Deployed scalable solution on AWS SageMaker with auto-scaling FastAPI endpoints handling 1,000+ concurrent requests.",
     ],
-    tech_stack: ["Python", "FastAPI", "LangChain", "AWS SageMaker", "LoRA/QLoRA", "RAG"],
+    tech_stack: [
+      "Python",
+      "FastAPI",
+      "LangChain",
+      "RAG",
+      "Gemini API",
+      "LoRA/QLoRA",
+      "Hugging Face Transformers",
+      "AWS SageMaker",
+      "Docker",
+      "PostgreSQL",
+    ],
+    case_study: EXPERIENCE_CASE_STUDY_BY_COMPANY["Cyber Security Umbrella"],
     display_order: 2,
   },
   {
@@ -182,12 +211,20 @@ const experience = [
     start_date: "2024-05-01",
     end_date: "2024-08-01",
     location: "Surat, India",
-    description: "Research on EEG-based depression detection using deep learning architectures.",
+    description:
+      "Research on EEG-based depression detection using deep learning architectures.",
     achievements: [
       "Designed CNN-LSTM hybrid architecture for EEG-based depression detection achieving 90% accuracy — 15% improvement over state-of-the-art baselines.",
-      "Engineered distributed TensorFlow training pipeline on AWS EC2, reducing training time from 12 hours to 7 hours.",
+      "Engineered distributed TensorFlow training pipeline on AWS EC2 cluster, reducing training time from 12 hours to 7 hours through parallel processing and memory optimization.",
     ],
-    tech_stack: ["Python", "TensorFlow", "AWS EC2", "CNN-LSTM"],
+    tech_stack: [
+      "Python",
+      "TensorFlow",
+      "AWS EC2",
+      "CNN-LSTM",
+      "EEG signal processing",
+    ],
+    case_study: EXPERIENCE_CASE_STUDY_BY_COMPANY["SVNIT (NIT Surat)"],
     display_order: 3,
   },
   {
@@ -199,10 +236,17 @@ const experience = [
     description:
       "Unpaid research internship focused on NLP-based depression detection from social media data.",
     achievements: [
-      "Built end-to-end NLP depression detection system analyzing 20,000+ social media posts with 88.10% accuracy using ensemble methods.",
-      "Published peer-reviewed research in ICICC 2024 (Springer LNNS); presented at international conference.",
+      "Built end-to-end NLP depression detection system analyzing 20,000+ social media posts with 88.10% accuracy using ensemble methods and advanced feature engineering.",
+      "Published peer-reviewed research in ICICC 2024 (Springer LNNS); presented novel classification methodology at international conference.",
     ],
-    tech_stack: ["Python", "NLP", "Ensemble Methods", "Feature Engineering"],
+    tech_stack: [
+      "Python",
+      "NLP",
+      "Ensemble Methods",
+      "Feature Engineering",
+      "scikit-learn",
+    ],
+    case_study: EXPERIENCE_CASE_STUDY_BY_COMPANY["P P Savani University"],
     display_order: 4,
   },
 ]
@@ -250,7 +294,14 @@ const projects = [
         },
       ],
     },
-    tech_stack: ["Python", "FastAPI", "LangGraph", "LangChain", "SSE", "Multi-Agent Systems"],
+    tech_stack: [
+      "Python",
+      "FastAPI",
+      "LangGraph",
+      "LangChain",
+      "SSE",
+      "Multi-Agent Systems",
+    ],
     challenge:
       "Research teams spend hours manually searching papers, validating evidence, and assembling structured reports.",
     solution:
@@ -287,7 +338,14 @@ const projects = [
         },
       ],
     },
-    tech_stack: ["FastAPI", "PostgreSQL", "Redis", "LLM Tool-Calling", "SSE", "RBAC"],
+    tech_stack: [
+      "FastAPI",
+      "PostgreSQL",
+      "Redis",
+      "LLM Tool-Calling",
+      "SSE",
+      "RBAC",
+    ],
     challenge:
       "Sensitive file operations across Windows endpoints lacked centralized monitoring, policy enforcement, and operator tooling.",
     solution:
@@ -321,7 +379,14 @@ const projects = [
         },
       ],
     },
-    tech_stack: ["Python", "LLM", "PostgreSQL", "MySQL", "MSSQL", "Azure OpenAI"],
+    tech_stack: [
+      "Python",
+      "LLM",
+      "PostgreSQL",
+      "MySQL",
+      "MSSQL",
+      "Azure OpenAI",
+    ],
     challenge:
       "Sales and ops teams depended on analysts for every database report, slowing forecasting and decision-making.",
     solution:
@@ -354,15 +419,9 @@ const projects = [
       "Engineering portfolios often require code deploys for every content change, with no structured CMS for case studies.",
     solution:
       "Notion-inspired CMS with rich content blocks, Tiptap editor, and Supabase-backed publishing workflow.",
-    impact: "Content updates ship instantly without redeploys — this site runs on it.",
-    github_url: null,
-    live_url: null,
-    featured: false,
-    status: "published",
-    published_at: daysAgo(7),
-  },
-  {
-    slug: "genai-cybersecurity-assistant",
+    impact:
+      "Content updates ship instantly without redeploys — this site runs on it.",
+    github_url: "https://github.com/Dhruvil7694/notion_style_portfolio",
     title: "GenAI Cybersecurity Assistant",
     summary:
       "Real-time GenAI assistant handling 82,000+ cybersecurity scenarios with RAG and LangChain for faster incident triage.",
@@ -552,7 +611,13 @@ const content = [
 
 async function seed() {
   console.log("Clearing existing sample data…")
-  for (const table of ["content", "experience", "education", "projects", "resumes"]) {
+  for (const table of [
+    "content",
+    "experience",
+    "education",
+    "projects",
+    "resumes",
+  ]) {
     await clearTable(table)
   }
 
@@ -569,15 +634,21 @@ async function seed() {
   if (skillsError) throw new Error(skillsError.message)
 
   console.log("Inserting experience…")
-  const { error: experienceError } = await supabase.from("experience").insert(experience)
+  const { error: experienceError } = await supabase
+    .from("experience")
+    .insert(experience)
   if (experienceError) throw new Error(experienceError.message)
 
   console.log("Inserting education…")
-  const { error: educationError } = await supabase.from("education").insert(education)
+  const { error: educationError } = await supabase
+    .from("education")
+    .insert(education)
   if (educationError) throw new Error(educationError.message)
 
   console.log("Inserting projects…")
-  const { error: projectsError } = await supabase.from("projects").insert(projects)
+  const { error: projectsError } = await supabase
+    .from("projects")
+    .insert(projects)
   if (projectsError) throw new Error(projectsError.message)
 
   console.log("Inserting content…")
@@ -585,7 +656,10 @@ async function seed() {
   if (contentError) throw new Error(contentError.message)
 
   console.log("Inserting resume…")
-  await supabase.from("resumes").update({ is_active: false }).eq("is_active", true)
+  await supabase
+    .from("resumes")
+    .update({ is_active: false })
+    .eq("is_active", true)
   const { error: resumeError } = await supabase.from("resumes").insert({
     file_path: "/resume/dhruvil-patel.pdf",
     version: 1,

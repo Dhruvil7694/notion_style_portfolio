@@ -3,14 +3,16 @@ import { Suspense } from "react"
 
 import {
   DataTable,
+  ListRowDeleteButton,
   PageHeader,
   StatusBadge,
-} from "@/components/admin"
-import { ListToolbar } from "@/components/admin/forms"
-import { buttonVariants } from "@/components/ui/button"
-import { adminResourceRoutes } from "@/config/admin-resource-routes"
-import { getContentList } from "@/lib/admin/queries"
-import { cn, formatDateTime } from "@/lib/utils"
+} from "@/features/admin/components"
+import { ListToolbar } from "@/features/admin/components/forms"
+import { deleteContent } from "@/features/admin/lib/actions/content"
+import { getContentList } from "@/features/admin/lib/queries"
+import { adminResourceRoutes } from "@/shared/config/admin-resource-routes"
+import { cn, formatDateTime } from "@/shared/lib/utils"
+import { buttonVariants } from "@/shared/ui/button"
 
 export const metadata = {
   title: "Content",
@@ -70,7 +72,9 @@ export default async function AdminContentPage({
               key: "type",
               header: "Type",
               cell: (row) => (
-                <span className="capitalize">{row.type.replaceAll("_", " ")}</span>
+                <span className="capitalize">
+                  {row.type.replaceAll("_", " ")}
+                </span>
               ),
             },
             {
@@ -83,6 +87,20 @@ export default async function AdminContentPage({
               header: "Published At",
               cell: (row) =>
                 row.published_at ? formatDateTime(row.published_at) : "—",
+            },
+            {
+              key: "actions",
+              header: "",
+              className: "w-12 text-right",
+              cell: (row) => (
+                <div className="flex justify-end">
+                  <ListRowDeleteButton
+                    entityLabel="content"
+                    itemLabel={row.title}
+                    onDelete={deleteContent.bind(null, row.id)}
+                  />
+                </div>
+              ),
             },
           ]}
           emptyDescription="Content items will appear here once created."

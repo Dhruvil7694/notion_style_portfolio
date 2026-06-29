@@ -3,7 +3,7 @@
 import * as Sentry from "@sentry/nextjs"
 import { useEffect } from "react"
 
-import { PublicErrorState } from "@/components/public/public-error-state"
+import { PublicErrorState } from "@/features/site-shell/components/public-error-state"
 
 export default function PublicError({
   error,

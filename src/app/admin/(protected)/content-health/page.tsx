@@ -1,5 +1,11 @@
-import { PageHeader, StatCard } from "@/components/admin"
-import { runContentHealthAudit } from "@/lib/content-health/engine"
+import {
+  AdminCallout,
+  AdminDataTable,
+  AdminPanel,
+  PageHeader,
+  StatCard,
+} from "@/features/admin/components"
+import { runContentHealthAudit } from "@/features/admin/lib/content-health/engine"
 
 export const metadata = {
   title: "Content Health",
@@ -22,34 +28,30 @@ export default async function ContentHealthPage() {
   const audit = await runContentHealthAudit()
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
         description="Audit content completeness and SEO readiness across projects and content."
         title="Content Health"
       />
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium">Overview</h2>
+      <AdminPanel
+        description="Aggregate completeness scores across published items."
+        title="Overview"
+      >
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            label="Overall Score"
-            value={`${audit.overallScore}%`}
-          />
+          <StatCard label="Overall Score" value={`${audit.overallScore}%`} />
           <StatCard label="Healthy (≥80%)" value={audit.healthyCount} />
           <StatCard label="Warning (50–79%)" value={audit.warningCount} />
           <StatCard label="Critical (<50%)" value={audit.criticalCount} />
         </div>
-      </section>
+      </AdminPanel>
 
-      {audit.projects.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-sm font-medium">
-            Projects ({audit.projects.length})
-          </h2>
-          <div className="rounded-lg border">
+      {audit.projects.length > 0 ? (
+        <AdminPanel title={`Projects (${audit.projects.length})`}>
+          <AdminDataTable>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-muted/50 text-left">
+                <tr className="border-border border-b bg-muted/50 text-left">
                   <th className="px-4 py-2 font-medium">Title</th>
                   <th className="px-4 py-2 font-medium">Score</th>
                   <th className="px-4 py-2 font-medium">Status</th>
@@ -58,7 +60,10 @@ export default async function ContentHealthPage() {
               </thead>
               <tbody>
                 {audit.projects.map((item) => (
-                  <tr key={item.id} className="border-b last:border-0">
+                  <tr
+                    className="border-border border-b last:border-0"
+                    key={item.id}
+                  >
                     <td className="px-4 py-3 font-medium">{item.title}</td>
                     <td
                       className={`px-4 py-3 font-mono font-semibold ${scoreColor(item.score)}`}
@@ -72,28 +77,23 @@ export default async function ContentHealthPage() {
                         {scoreBadge(item.score)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {item.missing.length > 0
-                        ? item.missing.join(", ")
-                        : "—"}
+                    <td className="text-muted-foreground px-4 py-3">
+                      {item.missing.length > 0 ? item.missing.join(", ") : "—"}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        </section>
-      )}
+          </AdminDataTable>
+        </AdminPanel>
+      ) : null}
 
-      {audit.content.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-sm font-medium">
-            Content ({audit.content.length})
-          </h2>
-          <div className="rounded-lg border">
+      {audit.content.length > 0 ? (
+        <AdminPanel title={`Content (${audit.content.length})`}>
+          <AdminDataTable>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-muted/50 text-left">
+                <tr className="border-border border-b bg-muted/50 text-left">
                   <th className="px-4 py-2 font-medium">Title</th>
                   <th className="px-4 py-2 font-medium">Type</th>
                   <th className="px-4 py-2 font-medium">Score</th>
@@ -103,9 +103,12 @@ export default async function ContentHealthPage() {
               </thead>
               <tbody>
                 {audit.content.map((item) => (
-                  <tr key={item.id} className="border-b last:border-0">
+                  <tr
+                    className="border-border border-b last:border-0"
+                    key={item.id}
+                  >
                     <td className="px-4 py-3 font-medium">{item.title}</td>
-                    <td className="px-4 py-3 capitalize text-muted-foreground">
+                    <td className="text-muted-foreground px-4 py-3 capitalize">
                       {item.type}
                     </td>
                     <td
@@ -120,24 +123,22 @@ export default async function ContentHealthPage() {
                         {scoreBadge(item.score)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {item.missing.length > 0
-                        ? item.missing.join(", ")
-                        : "—"}
+                    <td className="text-muted-foreground px-4 py-3">
+                      {item.missing.length > 0 ? item.missing.join(", ") : "—"}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        </section>
-      )}
+          </AdminDataTable>
+        </AdminPanel>
+      ) : null}
 
-      {audit.totalItems === 0 && (
-        <p className="text-sm text-muted-foreground">
-          No published content found to audit.
-        </p>
-      )}
+      {audit.totalItems === 0 ? (
+        <AdminCallout>
+          <p>No published content found to audit.</p>
+        </AdminCallout>
+      ) : null}
     </div>
   )
 }

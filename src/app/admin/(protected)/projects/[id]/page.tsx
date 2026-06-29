@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 
-import { ProjectForm } from "@/features/admin/forms/project-form"
-import { getProjectById } from "@/lib/admin/queries"
+import { ProjectForm } from "@/features/admin/components/forms/project-form"
+import { getProjectById } from "@/features/admin/lib/queries"
 
 type AdminEditProjectPageProps = {
   params: Promise<{ id: string }>

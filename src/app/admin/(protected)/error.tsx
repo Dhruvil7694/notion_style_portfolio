@@ -3,8 +3,8 @@
 import * as Sentry from "@sentry/nextjs"
 import { useEffect } from "react"
 
-import { AdminErrorState } from "@/components/admin/admin-error-state"
-import { logClientError } from "@/lib/logging/client"
+import { AdminErrorState } from "@/features/admin/components/admin-error-state"
+import { logClientError } from "@/shared/lib/logging/client"
 
 export default function AdminProtectedError({
   error,

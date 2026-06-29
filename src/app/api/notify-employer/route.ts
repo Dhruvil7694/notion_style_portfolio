@@ -2,11 +2,11 @@ import { NextResponse } from "next/server"
 import { Resend } from "resend"
 import { z } from "zod"
 
-import { trackServerEvent } from "@/lib/analytics/posthog-server"
-import { getServerEnv } from "@/lib/env/server"
-import { recordJobFitAnalyticsEvent } from "@/lib/job-fit/analytics"
-import { rateLimitRequest } from "@/lib/security/api-route"
-import { renderSanitizedEmailMarkdown } from "@/lib/security/sanitize-email-html"
+import { recordJobFitAnalyticsEvent } from "@/features/job-fit/lib/analytics"
+import { trackServerEvent } from "@/shared/lib/analytics/posthog-server"
+import { getServerEnv } from "@/shared/lib/env/server"
+import { rateLimitRequest } from "@/shared/lib/security/api-route"
+import { renderSanitizedEmailMarkdown } from "@/shared/lib/security/sanitize-email-html"
 
 const bodySchema = z.object({
   jobTitle: z.string().max(200).optional(),

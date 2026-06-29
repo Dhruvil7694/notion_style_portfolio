@@ -1,12 +1,17 @@
 import Link from "next/link"
 import { Suspense } from "react"
 
-import { DataTable, PageHeader } from "@/components/admin"
-import { ListToolbar } from "@/components/admin/forms"
-import { buttonVariants } from "@/components/ui/button"
-import { adminResourceRoutes } from "@/config/admin-resource-routes"
-import { getExpertiseAreasList } from "@/lib/admin/queries"
-import { cn } from "@/lib/utils"
+import {
+  DataTable,
+  ListRowDeleteButton,
+  PageHeader,
+} from "@/features/admin/components"
+import { ListToolbar } from "@/features/admin/components/forms"
+import { deleteExpertiseArea } from "@/features/admin/lib/actions/expertise"
+import { getExpertiseAreasList } from "@/features/admin/lib/queries"
+import { adminResourceRoutes } from "@/shared/config/admin-resource-routes"
+import { cn } from "@/shared/lib/utils"
+import { buttonVariants } from "@/shared/ui/button"
 
 export const metadata = {
   title: "Expertise",
@@ -17,7 +22,9 @@ type AdminExpertisePageProps = {
   searchParams: Promise<{ q?: string }>
 }
 
-export default async function AdminExpertisePage({ searchParams }: AdminExpertisePageProps) {
+export default async function AdminExpertisePage({
+  searchParams,
+}: AdminExpertisePageProps) {
   const params = await searchParams
   const routes = adminResourceRoutes.expertise
   const { data: areas, error } = await getExpertiseAreasList({ q: params.q })
@@ -49,7 +56,10 @@ export default async function AdminExpertisePage({ searchParams }: AdminExpertis
               key: "title",
               header: "Title",
               cell: (row) => (
-                <Link className="font-medium hover:underline" href={routes.edit(row.id)}>
+                <Link
+                  className="font-medium hover:underline"
+                  href={routes.edit(row.id)}
+                >
                   {row.title}
                 </Link>
               ),
@@ -59,6 +69,20 @@ export default async function AdminExpertisePage({ searchParams }: AdminExpertis
               key: "status",
               header: "Status",
               cell: (row) => <span className="capitalize">{row.status}</span>,
+            },
+            {
+              key: "actions",
+              header: "",
+              className: "w-12 text-right",
+              cell: (row) => (
+                <div className="flex justify-end">
+                  <ListRowDeleteButton
+                    entityLabel="expertise area"
+                    itemLabel={row.title}
+                    onDelete={deleteExpertiseArea.bind(null, row.id)}
+                  />
+                </div>
+              ),
             },
           ]}
           emptyDescription="Expertise areas will appear here once created."

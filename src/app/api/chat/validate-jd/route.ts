@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { classifyJobDescriptionDocument } from "@/lib/ai/classify-document"
-import { isAiConfigured } from "@/lib/ai/models"
-import { recordJobFitAnalyticsEvent } from "@/lib/job-fit/analytics"
-import { JOB_DESCRIPTION_MAX_CHARS } from "@/lib/public/job-description"
-import { hashJobDescriptionContent } from "@/lib/public/job-description-validation"
-import { rateLimitRequest } from "@/lib/security/api-route"
+import { classifyJobDescriptionDocument } from "@/features/ai/lib/classify-document"
+import { isAiConfigured } from "@/features/ai/lib/models"
+import { recordJobFitAnalyticsEvent } from "@/features/job-fit/lib/analytics"
+import { JOB_DESCRIPTION_MAX_CHARS } from "@/features/job-fit/lib/job-description"
+import { hashJobDescriptionContent } from "@/features/job-fit/lib/job-description-validation"
+import { rateLimitRequest } from "@/shared/lib/security/api-route"
 
 export const maxDuration = 30
 
