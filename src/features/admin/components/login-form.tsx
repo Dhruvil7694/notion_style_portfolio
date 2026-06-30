@@ -133,7 +133,7 @@ function SignInView({ onForgot }: { onForgot: () => void }) {
     setIsSubmitting(true)
     setError(null)
 
-    const supabase = createClient({ persistSession: rememberMe })
+    const supabase = createClient()
     const { data: signInData, error: signInError } =
       await supabase.auth.signInWithPassword({ email, password })
 
