@@ -10,7 +10,7 @@ function isPublicAdminPath(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request })
+  const response = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,8 +23,8 @@ export async function middleware(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value)
+            response.cookies.set(name, value)
           })
-          response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options)
           })
@@ -40,11 +40,23 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (pathname.startsWith("/admin") && !isPublicAdminPath(pathname) && !user) {
-    return NextResponse.redirect(new URL("/admin/login", request.url))
+    const redirectResponse = NextResponse.redirect(
+      new URL("/admin/login", request.url)
+    )
+    response.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie)
+    })
+    return redirectResponse
   }
 
   if (pathname === "/admin/login" && user) {
-    return NextResponse.redirect(new URL("/admin", request.url))
+    const redirectResponse = NextResponse.redirect(
+      new URL("/admin", request.url)
+    )
+    response.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie)
+    })
+    return redirectResponse
   }
 
   response.headers.set("x-pathname", pathname)
