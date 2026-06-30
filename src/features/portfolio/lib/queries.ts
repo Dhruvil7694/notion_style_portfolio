@@ -59,6 +59,7 @@ type PublishedProjectRow = Pick<
   | "cover_image"
   | "thumbnail"
   | "gallery"
+  | "hover_preview_enabled"
 >
 
 type PublishedContentRow = Pick<
@@ -116,7 +117,7 @@ async function fetchAllPublishedProjects() {
   const query = supabase
     .from("projects")
     .select(
-      "id, slug, title, summary, tagline, category, role, challenge, solution, approach, impact, content, tech_stack, technologies, concepts, expertise_slugs, ai_summary, featured, status, published_at, updated_at, github_url, live_url, icon_name, cover_image, thumbnail, gallery"
+      "id, slug, title, summary, tagline, category, role, challenge, solution, approach, impact, content, tech_stack, technologies, concepts, expertise_slugs, ai_summary, featured, status, published_at, updated_at, github_url, live_url, icon_name, cover_image, thumbnail, gallery, hover_preview_enabled"
     )
     .eq("status", "published")
     .order("featured", { ascending: false })
@@ -143,6 +144,7 @@ async function fetchAllPublishedProjects() {
         solution: null,
         approach: null,
         icon_name: null,
+        hover_preview_enabled: true,
       })) as PublishedProjectRow[],
       error: fallback.error,
     }

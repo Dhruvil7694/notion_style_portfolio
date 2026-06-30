@@ -34,19 +34,15 @@ export function DiscoveryEntitySection({
   return (
     <section className={cn("knowledge-related", className)}>
       <h2 className="knowledge-section-title">{title}</h2>
-      <ul className="knowledge-related-list">
+      <ul className="knowledge-related-pills">
         {items.map((item) => (
-          <li className="knowledge-related-item" key={item.id}>
+          <li className="knowledge-related-pill-item" key={item.id}>
             <Link
-              className="knowledge-related-link"
+              className="knowledge-related-pill"
               href={toRelativePath(item.url)}
+              title={item.description ?? undefined}
             >
-              <span className="knowledge-related-title">{item.title}</span>
-              {item.description ? (
-                <span className="knowledge-related-description">
-                  {item.description}
-                </span>
-              ) : null}
+              {item.title}
             </Link>
           </li>
         ))}

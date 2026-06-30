@@ -12,6 +12,7 @@ export const BREADCRUMB_SEGMENT_LABELS: Record<string, string> = {
   technology: "Technologies",
   concept: "Concepts",
   explore: "Explore",
+  faq: "FAQ",
   search: "Search",
 }
 

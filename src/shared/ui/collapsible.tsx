@@ -1,9 +1,18 @@
 "use client"
 
 import { Collapsible as CollapsiblePrimitive } from "@base-ui/react/collapsible"
+import { createContext, useContext, useId } from "react"
+
+const CollapsiblePanelIdContext = createContext<string | undefined>(undefined)
 
 function Collapsible({ ...props }: CollapsiblePrimitive.Root.Props) {
-  return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />
+  const panelId = useId()
+
+  return (
+    <CollapsiblePanelIdContext.Provider value={panelId}>
+      <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />
+    </CollapsiblePanelIdContext.Provider>
+  )
 }
 
 function CollapsibleTrigger({ ...props }: CollapsiblePrimitive.Trigger.Props) {
@@ -12,9 +21,18 @@ function CollapsibleTrigger({ ...props }: CollapsiblePrimitive.Trigger.Props) {
   )
 }
 
-function CollapsibleContent({ ...props }: CollapsiblePrimitive.Panel.Props) {
+function CollapsibleContent({
+  id,
+  ...props
+}: CollapsiblePrimitive.Panel.Props) {
+  const contextPanelId = useContext(CollapsiblePanelIdContext)
+
   return (
-    <CollapsiblePrimitive.Panel data-slot="collapsible-content" {...props} />
+    <CollapsiblePrimitive.Panel
+      data-slot="collapsible-content"
+      id={id ?? contextPanelId}
+      {...props}
+    />
   )
 }
 

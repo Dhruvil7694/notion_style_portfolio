@@ -1,14 +1,7 @@
 "use client"
 
 import { AnimatePresence, motion } from "framer-motion"
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 
 import { THANK_YOU_PHRASES } from "@/features/portfolio/lib/thank-you-phrases"
 
@@ -17,7 +10,6 @@ const CYCLE_MS = 2000
 
 export function ThankYouDivider() {
   const [index, setIndex] = useState(0)
-  const [isAnimating, setIsAnimating] = useState(false)
   const [wordWidth, setWordWidth] = useState<number>()
   const measureRef = useRef<HTMLSpanElement>(null)
 
@@ -41,19 +33,16 @@ export function ThankYouDivider() {
     setWordWidth(Math.ceil(element.getBoundingClientRect().width) + 4)
   }, [longestPhrase])
 
-  const advance = useCallback(() => {
-    setIndex((current) => (current + 1) % PHRASES.length)
-    setIsAnimating(true)
-  }, [])
-
   useEffect(() => {
-    if (isAnimating || PHRASES.length <= 1) {
+    if (PHRASES.length <= 1) {
       return
     }
 
-    const timeoutId = window.setTimeout(advance, CYCLE_MS)
-    return () => window.clearTimeout(timeoutId)
-  }, [advance, isAnimating])
+    const intervalId = window.setInterval(() => {
+      setIndex((current) => (current + 1) % PHRASES.length)
+    }, CYCLE_MS)
+    return () => window.clearInterval(intervalId)
+  }, [])
 
   return (
     <section aria-label="Thank you" className="thank-you-divider">
@@ -70,13 +59,7 @@ export function ThankYouDivider() {
             wordWidth !== undefined ? { width: `${wordWidth}px` } : undefined
           }
         >
-          <AnimatePresence
-            initial={false}
-            mode="wait"
-            onExitComplete={() => {
-              setIsAnimating(false)
-            }}
-          >
+          <AnimatePresence initial={false} mode="wait">
             <motion.span
               animate={{ filter: "blur(0px)", opacity: 1, y: 0 }}
               className="thank-you-divider-text"

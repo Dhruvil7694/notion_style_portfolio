@@ -15,7 +15,7 @@ export function KeyTakeawaysList({
 
   return (
     <section className="knowledge-takeaways">
-      <h2 className="knowledge-section-title">{title}</h2>
+      {title ? <h2 className="knowledge-section-title">{title}</h2> : null}
       <ul className="knowledge-takeaways-list">
         {takeaways.map((item) => (
           <li className="knowledge-takeaways-item" key={item}>

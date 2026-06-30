@@ -1,3 +1,13 @@
+"use client"
+
+import { ChevronDown } from "lucide-react"
+
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/shared/ui/collapsible"
+
 type AiSummaryBlockProps = {
   summary: string
 }
@@ -10,9 +20,19 @@ export function AiSummaryBlock({ summary }: AiSummaryBlockProps) {
   }
 
   return (
-    <aside aria-label="AI summary" className="knowledge-ai-summary">
-      <p className="knowledge-ai-summary-label">Summary</p>
-      <p className="knowledge-ai-summary-text">{text}</p>
+    <aside aria-label="AI summary">
+      <Collapsible className="group knowledge-ai-summary" defaultOpen>
+        <CollapsibleTrigger className="knowledge-ai-summary-trigger">
+          <span className="knowledge-ai-summary-label">Summary</span>
+          <ChevronDown
+            aria-hidden
+            className="knowledge-ai-summary-chevron size-4 shrink-0"
+          />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="knowledge-ai-summary-content overflow-hidden">
+          <p className="knowledge-ai-summary-text">{text}</p>
+        </CollapsibleContent>
+      </Collapsible>
     </aside>
   )
 }

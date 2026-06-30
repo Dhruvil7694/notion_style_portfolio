@@ -2,7 +2,6 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { AiSummaryBlock } from "@/features/ai-first/components/ai-summary-block"
-import { RichContentRenderer } from "@/features/content/components/rich-content-renderer"
 import { deserializeContent } from "@/features/content/lib/serializer"
 import { ArchitectureDiagramLazy } from "@/features/diagrams/components/architecture-diagram-lazy"
 import {
@@ -12,7 +11,7 @@ import {
 import { FaqSection } from "@/features/home/components/faq-section"
 import { ExpertiseBadges } from "@/features/knowledge-base/components/expertise-badges"
 import { KnowledgeRelatedSection } from "@/features/knowledge-base/components/knowledge-related-section"
-import { TechStackCategories } from "@/features/knowledge-base/components/tech-stack-categories"
+import { PROJECT_FAQ_DETAIL_LIMIT } from "@/features/knowledge-base/lib/faq-pagination"
 import { resolveProjectFaqFromRecord } from "@/features/knowledge-base/lib/faq-templates"
 import { parseProjectFacts } from "@/features/knowledge-base/lib/schemas"
 import type { RelatedKnowledgeBundle } from "@/features/knowledge-base/lib/types"
@@ -34,14 +33,18 @@ import {
   walkthroughGalleryItems,
 } from "@/features/portfolio/lib/project-gallery"
 import { CaseStudyCarousel } from "@/features/projects/components/case-study-carousel"
+import { CaseStudyContentWidth } from "@/features/projects/components/case-study-content-width"
 import { CaseStudyFigure } from "@/features/projects/components/case-study-figure"
 import { CaseStudyVideo } from "@/features/projects/components/case-study-video"
 import { ChallengeList } from "@/features/projects/components/challenge-list"
+import { CollapsibleCaseStudyBlock } from "@/features/projects/components/collapsible-case-study-block"
 import { KeyTakeawaysList } from "@/features/projects/components/key-takeaways-list"
-import { MetricsGrid } from "@/features/projects/components/metrics-grid"
-import { ProjectFactsGrid } from "@/features/projects/components/project-facts-grid"
+import { ProjectHighlightsGrid } from "@/features/projects/components/project-highlights-grid"
 import { ProjectTimeline } from "@/features/projects/components/project-timeline"
 import { RelatedProjects } from "@/features/projects/components/related-projects"
+import { ResultsList } from "@/features/projects/components/results-list"
+import { RichContentSections } from "@/features/projects/components/rich-content-sections"
+import { TechStackSection } from "@/features/projects/components/tech-stack-section"
 import { TradeoffsList } from "@/features/projects/components/tradeoffs-list"
 import { PageBreadcrumbs } from "@/features/site-shell/components/page-breadcrumbs"
 import { ViewTracker } from "@/features/site-shell/components/view-tracker"
@@ -57,21 +60,6 @@ type ProjectCaseStudyProps = {
   relatedProjects: RelatedProject[]
   expertiseTitlesBySlug?: Record<string, string>
   relatedKnowledge?: RelatedKnowledgeBundle | null
-}
-
-function CaseStudyBlock({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <section className="case-study-block">
-      <h2 className="case-study-block-title">{title}</h2>
-      <div className="case-study-block-body">{children}</div>
-    </section>
-  )
 }
 
 function ProseParagraphs({ text }: { text: string }) {
@@ -94,6 +82,22 @@ function ProseParagraphs({ text }: { text: string }) {
   )
 }
 
+function NumberedList({ items }: { items: string[] }) {
+  if (items.length === 0) {
+    return null
+  }
+
+  return (
+    <ol className="case-study-numbered-list">
+      {items.map((item, index) => (
+        <li className="case-study-numbered-list-item" key={`${item}-${index}`}>
+          {item}
+        </li>
+      ))}
+    </ol>
+  )
+}
+
 function BulletList({ items }: { items: string[] }) {
   if (items.length === 0) {
     return null
@@ -107,30 +111,6 @@ function BulletList({ items }: { items: string[] }) {
         </li>
       ))}
     </ul>
-  )
-}
-
-function VerticalSteps({ steps }: { steps: string[] }) {
-  if (steps.length === 0) {
-    return null
-  }
-
-  return (
-    <div className="case-study-flow">
-      {steps.map((step, index) => (
-        <div className="case-study-flow-item" key={`${step}-${index}`}>
-          <div className="case-study-flow-node">
-            <span className="case-study-step-index">{index + 1}</span>
-            <span className="case-study-step-text">{step}</span>
-          </div>
-          {index < steps.length - 1 ? (
-            <div aria-hidden className="case-study-flow-arrow">
-              ↓
-            </div>
-          ) : null}
-        </div>
-      ))}
-    </div>
   )
 }
 
@@ -202,235 +182,275 @@ export function ProjectCaseStudy({
         event="project_view"
         payload={{ slug: project.slug, title: project.title }}
       />
-      <header className="project-case-study-header">
-        <PageBreadcrumbs currentLabel={project.title} />
-        {metadataLine ? (
-          <p className="project-case-study-meta">{metadataLine}</p>
+      <CaseStudyContentWidth>
+        <header className="project-case-study-header">
+          <PageBreadcrumbs currentLabel={project.title} />
+          <h1 className="project-case-study-title">{project.title}</h1>
+          {metadataLine ? (
+            <>
+              <p className="project-case-study-meta">{metadataLine}</p>
+              <div aria-hidden className="project-case-study-meta-divider" />
+            </>
+          ) : null}
+          {project.tagline ? (
+            <blockquote className="project-case-study-tagline">
+              <p>{project.tagline}</p>
+            </blockquote>
+          ) : null}
+          {project.overview ? (
+            <div className="project-case-study-overview">
+              <ProseParagraphs text={project.overview} />
+            </div>
+          ) : null}
+          {project.ai_summary ? (
+            <AiSummaryBlock summary={project.ai_summary} />
+          ) : null}
+          {project.expertise_slugs?.length ? (
+            <ExpertiseBadges
+              slugs={project.expertise_slugs}
+              titlesBySlug={expertiseTitlesBySlug}
+            />
+          ) : null}
+          {coverImage ? (
+            <CaseStudyCover title={project.title} url={coverImage} />
+          ) : null}
+        </header>
+
+        {Object.keys(projectFacts).length > 0 || metrics.length > 0 ? (
+          <section className="project-case-study-highlights">
+            <ProjectHighlightsGrid facts={projectFacts} metrics={metrics} />
+          </section>
         ) : null}
-        <h1 className="project-case-study-title">{project.title}</h1>
-        {project.tagline ? (
-          <p className="project-case-study-tagline">{project.tagline}</p>
-        ) : null}
-        {project.overview ? (
-          <div className="project-case-study-overview">
-            <ProseParagraphs text={project.overview} />
+
+        <div className="project-case-study-sections">
+          {project.problem ? (
+            <CollapsibleCaseStudyBlock icon="problem" title="Problem">
+              <ProseParagraphs text={project.problem} />
+              {problemScreenshot ? (
+                <CaseStudyFigure
+                  className="case-study-inline-figure"
+                  item={problemScreenshot}
+                  projectTitle={project.title}
+                />
+              ) : null}
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {project.why_built ? (
+            <CollapsibleCaseStudyBlock
+              icon="whyBuilt"
+              title="Why I Built This?"
+            >
+              <ProseParagraphs text={project.why_built} />
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {approachSteps.length > 0 ? (
+            <CollapsibleCaseStudyBlock icon="approach" title="Approach">
+              <NumberedList items={approachSteps} />
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {contribution.length > 0 ? (
+            <CollapsibleCaseStudyBlock
+              icon="contribution"
+              title="My Contribution"
+            >
+              <BulletList items={contribution} />
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {hasArchitectureGraph(aiDesignGraph) ? (
+            <CollapsibleCaseStudyBlock
+              fullWidthContent
+              icon="aiArchitecture"
+              title="AI System Architecture"
+            >
+              <ArchitectureDiagramLazy
+                edges={aiDesignGraph.edges}
+                nodes={aiDesignGraph.nodes}
+              />
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {hasArchitectureGraph(architectureGraph) || architectureImage ? (
+            <CollapsibleCaseStudyBlock
+              fullWidthContent
+              icon="systemArchitecture"
+              title="System Architecture"
+            >
+              {architectureImage ? (
+                <CaseStudyFigure
+                  className="case-study-inline-figure case-study-inline-figure-architecture"
+                  item={{
+                    url: architectureImage,
+                    type: "diagram",
+                    caption: "System architecture overview",
+                    alt: `${project.title} architecture diagram`,
+                  }}
+                  projectTitle={project.title}
+                />
+              ) : null}
+              {hasArchitectureGraph(architectureGraph) ? (
+                <ArchitectureDiagramLazy
+                  edges={architectureGraph.edges}
+                  nodes={architectureGraph.nodes}
+                />
+              ) : null}
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {showWalkthrough ? (
+            <CollapsibleCaseStudyBlock
+              icon="walkthrough"
+              title="System Walkthrough"
+            >
+              <CaseStudyCarousel
+                items={walkthroughItems}
+                projectTitle={project.title}
+              />
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {techStackGroups.length > 0 ? (
+            <TechStackSection groups={techStackGroups} />
+          ) : null}
+
+          {challenges.length > 0 ? (
+            <CollapsibleCaseStudyBlock
+              fullWidthContent
+              icon="challenges"
+              title="Challenges"
+            >
+              <ChallengeList items={challenges} />
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {tradeoffs.length > 0 ? (
+            <CollapsibleCaseStudyBlock
+              fullWidthContent
+              icon="tradeoffs"
+              title="Engineering Tradeoffs"
+            >
+              <TradeoffsList items={tradeoffs} />
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {results.length > 0 || hasDemoVideo || resultsDemo ? (
+            <CollapsibleCaseStudyBlock
+              fullWidthContent
+              icon="results"
+              title="Results"
+            >
+              {hasDemoVideo && demoVideoUrl ? (
+                <CaseStudyVideo title={project.title} url={demoVideoUrl} />
+              ) : null}
+              {resultsDemo && resultsDemo.url !== walkthroughItems[0]?.url ? (
+                <CaseStudyFigure
+                  className="case-study-inline-figure"
+                  item={resultsDemo}
+                  projectTitle={project.title}
+                />
+              ) : null}
+              <ResultsList items={results} />
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {learnings.length > 0 ? (
+            <CollapsibleCaseStudyBlock icon="learnings" title="Key Learnings">
+              <BulletList items={learnings} />
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {keyTakeaways.length > 0 ? (
+            <CollapsibleCaseStudyBlock icon="takeaways" title="Key Takeaways">
+              <KeyTakeawaysList items={keyTakeaways} title="" />
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {timeline.length > 0 ? (
+            <CollapsibleCaseStudyBlock
+              fullWidthContent
+              icon="timeline"
+              title="Timeline"
+            >
+              <ProjectTimeline items={timeline} />
+            </CollapsibleCaseStudyBlock>
+          ) : null}
+
+          {showRichContent ? (
+            <RichContentSections blocks={contentDocument.blocks ?? []} />
+          ) : null}
+        </div>
+
+        {(project.github_url || project.live_url) && (
+          <div className="project-case-study-links">
+            {project.github_url ? (
+              <Link
+                className="project-case-study-link"
+                href={project.github_url}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                GitHub
+              </Link>
+            ) : null}
+            {project.live_url ? (
+              <Link
+                className="project-case-study-link"
+                href={project.live_url}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Live demo
+              </Link>
+            ) : null}
+          </div>
+        )}
+
+        <FaqSection
+          items={faqItems}
+          limit={PROJECT_FAQ_DETAIL_LIMIT}
+          pageType="project"
+          slug={project.slug}
+          viewAllHref={
+            faqItems.length > PROJECT_FAQ_DETAIL_LIMIT
+              ? `/projects/${project.slug}/faq`
+              : undefined
+          }
+        />
+
+        {relatedKnowledge ? (
+          <div className="project-case-study-knowledge-related">
+            <KnowledgeRelatedSection
+              items={relatedKnowledge.research}
+              title="Related Research"
+            />
+            <KnowledgeRelatedSection
+              items={relatedKnowledge.writing}
+              title="Related Articles"
+            />
+            <KnowledgeRelatedSection
+              items={relatedKnowledge.automations}
+              title="Related Automations"
+            />
+            <KnowledgeRelatedSection
+              items={relatedKnowledge.concepts}
+              title="Related Concepts"
+            />
+            <KnowledgeRelatedSection
+              items={relatedKnowledge.technologies}
+              title="Related Technologies"
+            />
+            <KnowledgeRelatedSection
+              items={relatedKnowledge.expertise}
+              title="Related Expertise"
+            />
           </div>
         ) : null}
-        {project.ai_summary ? (
-          <AiSummaryBlock summary={project.ai_summary} />
-        ) : null}
-        {project.expertise_slugs?.length ? (
-          <ExpertiseBadges
-            slugs={project.expertise_slugs}
-            titlesBySlug={expertiseTitlesBySlug}
-          />
-        ) : null}
-        {coverImage ? (
-          <CaseStudyCover title={project.title} url={coverImage} />
-        ) : null}
-      </header>
 
-      {Object.keys(projectFacts).length > 0 ? (
-        <section className="project-case-study-facts-band">
-          <ProjectFactsGrid facts={projectFacts} />
-        </section>
-      ) : null}
-
-      {metrics.length > 0 ? (
-        <section className="project-case-study-metrics-band">
-          <MetricsGrid items={metrics} />
-        </section>
-      ) : null}
-
-      <div className="project-case-study-sections">
-        {project.problem ? (
-          <CaseStudyBlock title="Problem">
-            <ProseParagraphs text={project.problem} />
-            {problemScreenshot ? (
-              <CaseStudyFigure
-                className="case-study-inline-figure"
-                item={problemScreenshot}
-                projectTitle={project.title}
-              />
-            ) : null}
-          </CaseStudyBlock>
-        ) : null}
-
-        {project.why_built ? (
-          <CaseStudyBlock title="Why I Built This">
-            <ProseParagraphs text={project.why_built} />
-          </CaseStudyBlock>
-        ) : null}
-
-        {approachSteps.length > 0 ? (
-          <CaseStudyBlock title="Approach">
-            <VerticalSteps steps={approachSteps} />
-          </CaseStudyBlock>
-        ) : null}
-
-        {contribution.length > 0 ? (
-          <CaseStudyBlock title="My Contribution">
-            <BulletList items={contribution} />
-          </CaseStudyBlock>
-        ) : null}
-
-        {hasArchitectureGraph(aiDesignGraph) ? (
-          <CaseStudyBlock title="AI System Architecture">
-            <ArchitectureDiagramLazy
-              edges={aiDesignGraph.edges}
-              nodes={aiDesignGraph.nodes}
-            />
-          </CaseStudyBlock>
-        ) : null}
-
-        {hasArchitectureGraph(architectureGraph) || architectureImage ? (
-          <CaseStudyBlock title="System Architecture">
-            {architectureImage ? (
-              <CaseStudyFigure
-                className="case-study-inline-figure case-study-inline-figure-architecture"
-                item={{
-                  url: architectureImage,
-                  type: "diagram",
-                  caption: "System architecture overview",
-                  alt: `${project.title} architecture diagram`,
-                }}
-                projectTitle={project.title}
-              />
-            ) : null}
-            {hasArchitectureGraph(architectureGraph) ? (
-              <ArchitectureDiagramLazy
-                edges={architectureGraph.edges}
-                nodes={architectureGraph.nodes}
-              />
-            ) : null}
-          </CaseStudyBlock>
-        ) : null}
-
-        {showWalkthrough ? (
-          <CaseStudyBlock title="System Walkthrough">
-            <CaseStudyCarousel
-              items={walkthroughItems}
-              projectTitle={project.title}
-            />
-          </CaseStudyBlock>
-        ) : null}
-
-        {techStackGroups.length > 0 ? (
-          <CaseStudyBlock title="Tech Stack">
-            <TechStackCategories groups={techStackGroups} />
-          </CaseStudyBlock>
-        ) : null}
-
-        {challenges.length > 0 ? (
-          <CaseStudyBlock title="Challenges">
-            <ChallengeList items={challenges} />
-          </CaseStudyBlock>
-        ) : null}
-
-        {tradeoffs.length > 0 ? (
-          <CaseStudyBlock title="Engineering Tradeoffs">
-            <TradeoffsList items={tradeoffs} />
-          </CaseStudyBlock>
-        ) : null}
-
-        {results.length > 0 || hasDemoVideo || resultsDemo ? (
-          <CaseStudyBlock title="Results">
-            {hasDemoVideo && demoVideoUrl ? (
-              <CaseStudyVideo title={project.title} url={demoVideoUrl} />
-            ) : null}
-            {resultsDemo && resultsDemo.url !== walkthroughItems[0]?.url ? (
-              <CaseStudyFigure
-                className="case-study-inline-figure"
-                item={resultsDemo}
-                projectTitle={project.title}
-              />
-            ) : null}
-            <BulletList items={results} />
-          </CaseStudyBlock>
-        ) : null}
-
-        {learnings.length > 0 ? (
-          <CaseStudyBlock title="Key Learnings">
-            <BulletList items={learnings} />
-          </CaseStudyBlock>
-        ) : null}
-
-        {keyTakeaways.length > 0 ? (
-          <CaseStudyBlock title="Key Takeaways">
-            <KeyTakeawaysList items={keyTakeaways} title="" />
-          </CaseStudyBlock>
-        ) : null}
-
-        {timeline.length > 0 ? (
-          <CaseStudyBlock title="Timeline">
-            <ProjectTimeline items={timeline} />
-          </CaseStudyBlock>
-        ) : null}
-      </div>
-
-      {showRichContent ? (
-        <section className="project-case-study-rich-content">
-          <RichContentRenderer document={contentDocument} />
-        </section>
-      ) : null}
-
-      {(project.github_url || project.live_url) && (
-        <div className="project-case-study-links">
-          {project.github_url ? (
-            <Link
-              className="project-case-study-link"
-              href={project.github_url}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              GitHub
-            </Link>
-          ) : null}
-          {project.live_url ? (
-            <Link
-              className="project-case-study-link"
-              href={project.live_url}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Live demo
-            </Link>
-          ) : null}
-        </div>
-      )}
-
-      <FaqSection items={faqItems} pageType="project" slug={project.slug} />
-
-      {relatedKnowledge ? (
-        <div className="project-case-study-knowledge-related">
-          <KnowledgeRelatedSection
-            items={relatedKnowledge.research}
-            title="Related Research"
-          />
-          <KnowledgeRelatedSection
-            items={relatedKnowledge.writing}
-            title="Related Articles"
-          />
-          <KnowledgeRelatedSection
-            items={relatedKnowledge.automations}
-            title="Related Automations"
-          />
-          <KnowledgeRelatedSection
-            items={relatedKnowledge.concepts}
-            title="Related Concepts"
-          />
-          <KnowledgeRelatedSection
-            items={relatedKnowledge.technologies}
-            title="Related Technologies"
-          />
-          <KnowledgeRelatedSection
-            items={relatedKnowledge.expertise}
-            title="Related Expertise"
-          />
-        </div>
-      ) : null}
-
-      <RelatedProjects projects={relatedProjects} />
+        <RelatedProjects projects={relatedProjects} />
+      </CaseStudyContentWidth>
     </article>
   )
 }

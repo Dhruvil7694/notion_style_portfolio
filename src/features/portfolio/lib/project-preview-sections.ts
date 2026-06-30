@@ -26,6 +26,7 @@ export type ProjectListPreviewItem = Pick<
   | "cover_image"
   | "thumbnail"
   | "gallery"
+  | "hover_preview_enabled"
 >
 
 export type ProjectPreviewSection = {
@@ -69,7 +70,12 @@ export function getProjectPreviewSections(
   })
 }
 
-export function hasProjectPreview(project: ProjectPreviewFields): boolean {
+export function hasProjectPreview(
+  project: ProjectPreviewFields & Pick<Project, "hover_preview_enabled">
+): boolean {
+  if (project.hover_preview_enabled === false) {
+    return false
+  }
   return getProjectPreviewSections(project).length > 0
 }
 

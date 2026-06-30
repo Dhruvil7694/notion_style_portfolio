@@ -4,6 +4,11 @@ type TradeoffsListProps = {
   items: ProjectTradeoffV2[]
 }
 
+function formatCell(value: string | undefined) {
+  const text = value?.trim()
+  return text || "—"
+}
+
 export function TradeoffsList({ items }: TradeoffsListProps) {
   if (items.length === 0) {
     return null
@@ -22,9 +27,15 @@ export function TradeoffsList({ items }: TradeoffsListProps) {
         <tbody>
           {items.map((item, index) => (
             <tr key={`${item.decision}-${index}`}>
-              <td className="case-study-tradeoffs-decision">{item.decision}</td>
-              <td>{item.alternative || "—"}</td>
-              <td>{item.reason || item.tradeoff || "—"}</td>
+              <td className="case-study-tradeoffs-cell case-study-tradeoffs-cell--decision">
+                {item.decision}
+              </td>
+              <td className="case-study-tradeoffs-cell">
+                {formatCell(item.alternative)}
+              </td>
+              <td className="case-study-tradeoffs-cell">
+                {formatCell(item.reason || item.tradeoff)}
+              </td>
             </tr>
           ))}
         </tbody>

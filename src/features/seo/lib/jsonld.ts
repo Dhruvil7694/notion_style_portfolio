@@ -223,16 +223,26 @@ export function buildBreadcrumbJsonLd(
 export function buildProjectBreadcrumbJsonLd(
   projectTitle: string,
   projectSlug: string,
-  siteUrl: string
+  siteUrl: string,
+  currentPageLabel?: string
 ): JsonLdObject {
-  return buildBreadcrumbJsonLd([
+  const crumbs = [
     { name: "Home", url: siteUrl },
     { name: "Projects", url: generateCanonicalUrl(siteUrl, "/projects") },
     {
       name: projectTitle,
       url: generateCanonicalUrl(siteUrl, `/projects/${projectSlug}`),
     },
-  ])
+  ]
+
+  if (currentPageLabel) {
+    crumbs.push({
+      name: currentPageLabel,
+      url: generateCanonicalUrl(siteUrl, `/projects/${projectSlug}/faq`),
+    })
+  }
+
+  return buildBreadcrumbJsonLd(crumbs)
 }
 
 export function buildContentBreadcrumbJsonLd(

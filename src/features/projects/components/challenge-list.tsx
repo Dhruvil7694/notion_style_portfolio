@@ -1,4 +1,5 @@
 import type { ProjectChallenge } from "@/features/portfolio/lib/project-case-study"
+import { CardSplitAccordion } from "@/shared/ui/card-split-accordion"
 
 type ChallengeListProps = {
   items: ProjectChallenge[]
@@ -9,17 +10,16 @@ export function ChallengeList({ items }: ChallengeListProps) {
     return null
   }
 
+  const accordionItems = items.map((item, index) => ({
+    content: item.solution,
+    id: `${item.challenge}-${index}`,
+    title: item.challenge,
+  }))
+
   return (
-    <div className="case-study-challenges">
-      {items.map((item, index) => (
-        <article
-          className="case-study-challenge"
-          key={`${item.challenge}-${index}`}
-        >
-          <p className="case-study-challenge-problem">{item.challenge}</p>
-          <p className="case-study-challenge-solution">{item.solution}</p>
-        </article>
-      ))}
-    </div>
+    <CardSplitAccordion
+      className="case-study-challenges-accordion"
+      items={accordionItems}
+    />
   )
 }

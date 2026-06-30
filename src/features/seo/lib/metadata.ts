@@ -184,6 +184,43 @@ export function buildProjectMetadata(
   })
 }
 
+export function buildProjectFaqMetadata(
+  context: MetadataContext,
+  project: {
+    title: string
+    summary: string
+    slug: string
+    seo_title?: string | null
+    seo_description?: string | null
+    published_at?: string | null
+    updated_at?: string
+    tech_stack?: string[] | null
+    category?: string | null
+    role?: string | null
+  }
+): Metadata {
+  const title = project.seo_title?.trim() || project.title
+
+  return buildBaseMetadata(context, {
+    title: `FAQ — ${title}`,
+    description: `Frequently asked questions about ${project.title}. ${project.seo_description?.trim() || project.summary}`,
+    path: `/projects/${project.slug}/faq`,
+    imagePath: `/projects/${project.slug}`,
+    imageAlt: `${project.title} FAQ`,
+    ogType: "article",
+    publishedTime: project.published_at,
+    modifiedTime: project.updated_at,
+    tags: project.tech_stack ?? undefined,
+    keywords: [
+      ...SEO_KEYWORDS,
+      ...(project.tech_stack ?? []),
+      project.category,
+      project.role,
+      "FAQ",
+    ].filter(Boolean) as string[],
+  })
+}
+
 export function buildResearchIndexMetadata(context: MetadataContext): Metadata {
   return buildBaseMetadata(context, {
     title: "Research",

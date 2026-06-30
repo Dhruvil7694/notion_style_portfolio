@@ -1,11 +1,7 @@
-import Link from "next/link"
-
 import type { Project } from "@/shared/types/database.helpers"
+import { RelatedProjectCard } from "@/shared/ui/card-08"
 
-type RelatedProject = Pick<
-  Project,
-  "id" | "slug" | "title" | "summary" | "tech_stack"
->
+type RelatedProject = Pick<Project, "id" | "slug" | "title" | "summary">
 
 type RelatedProjectsProps = {
   projects: RelatedProject[]
@@ -22,18 +18,11 @@ export function RelatedProjects({ projects }: RelatedProjectsProps) {
       <ul className="project-related-list">
         {projects.map((project) => (
           <li className="project-related-item" key={project.id}>
-            <Link
-              className="project-related-link"
+            <RelatedProjectCard
+              body={project.summary ?? "View this project case study."}
               href={`/projects/${project.slug}`}
-            >
-              <span className="project-related-name">{project.title}</span>
-              <span className="project-related-summary">{project.summary}</span>
-              {project.tech_stack && project.tech_stack.length > 0 ? (
-                <span className="project-related-meta">
-                  {project.tech_stack.slice(0, 5).join(" · ")}
-                </span>
-              ) : null}
-            </Link>
+              title={project.title}
+            />
           </li>
         ))}
       </ul>
