@@ -36,6 +36,7 @@ export default async function AdminUnauthorizedPage() {
         <Link
           className={cn(buttonVariants({ variant: "outline" }))}
           href="/admin/logout"
+          prefetch={false}
         >
           Sign out
         </Link>

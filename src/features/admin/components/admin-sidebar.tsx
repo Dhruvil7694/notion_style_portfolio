@@ -577,6 +577,7 @@ export function AdminSidebarNav({
                 className="text-muted-foreground hover:bg-muted/60 hover:text-foreground flex size-9 items-center justify-center rounded-md transition-colors"
                 href="/admin/logout"
                 onClick={onNavigate}
+                prefetch={false}
               >
                 <LogOut aria-hidden className="size-[1.125rem]" />
               </Link>
@@ -676,6 +677,7 @@ export function AdminSidebarNav({
           className="text-muted-foreground hover:bg-muted/60 hover:text-foreground flex items-center gap-3 rounded-md px-3 py-2.5 text-[0.9375rem] transition-colors"
           href="/admin/logout"
           onClick={onNavigate}
+          prefetch={false}
         >
           <LogOut aria-hidden className="size-[1.125rem] shrink-0" />
           <span>Logout</span>
