@@ -145,7 +145,6 @@ function CaseStudyCover({ url, title }: { url: string; title: string }) {
           priority
           sizes="(max-width: 768px) 100vw, 720px"
           src={url}
-          unoptimized
         />
       </div>
     </figure>

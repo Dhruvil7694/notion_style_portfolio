@@ -249,11 +249,13 @@ function AISuggestions({ insights }: { insights: PostHogInsights }) {
     })
   } else {
     const top = insights.topEvents[0]
-    suggestions.push({
-      title: `"${top.event}" is your most-used feature`,
-      body: `This event fired ${fmt(top.count)} times — more than any other interaction. This feature is clearly valuable. Ensure its flow is optimised, consider A/B testing variations, and prioritise related features.`,
-      type: "good",
-    })
+    if (top) {
+      suggestions.push({
+        title: `"${top.event}" is your most-used feature`,
+        body: `This event fired ${fmt(top.count)} times — more than any other interaction. This feature is clearly valuable. Ensure its flow is optimised, consider A/B testing variations, and prioritise related features.`,
+        type: "good",
+      })
+    }
   }
 
   const typeStyles = {

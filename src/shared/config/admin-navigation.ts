@@ -14,6 +14,7 @@ import {
   GraduationCap,
   HeartPulse,
   IdCard,
+  Inbox,
   LayoutDashboard,
   Lightbulb,
   LineChart,
@@ -227,6 +228,12 @@ export const adminNavGroups: AdminNavGroup[] = [
     title: "Admin",
     icon: Shield,
     items: [
+      {
+        title: "Inbox",
+        href: "/admin/contact",
+        icon: Inbox,
+        description: "Contact form submissions",
+      },
       {
         title: "Launch",
         href: "/admin/launch",

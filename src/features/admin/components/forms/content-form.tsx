@@ -43,6 +43,7 @@ import {
   type ContentFormValues,
   contentTypeSchema,
 } from "@/features/admin/lib/schemas"
+import { parseCommaList } from "@/features/admin/lib/schemas/common"
 import { deserializeContent } from "@/features/content/lib/serializer"
 import {
   buildContentFaqTemplate,
@@ -382,10 +383,11 @@ export function ContentForm({ mode, content }: ContentFormProps) {
                       excerpt: watched.excerpt,
                       ai_summary: watched.ai_summary,
                       key_takeaways: watched.key_takeaways,
-                      tags: (watched.tags ?? "")
-                        .split(",")
-                        .map((item) => item.trim())
-                        .filter(Boolean),
+                      tags: parseCommaList(
+                        Array.isArray(watched.tags)
+                          ? watched.tags.join(", ")
+                          : String(watched.tags ?? "")
+                      ),
                       expertise_slugs: watched.expertise_slugs,
                     })
                   }}

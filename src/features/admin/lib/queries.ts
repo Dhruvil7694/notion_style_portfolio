@@ -2,7 +2,11 @@ import "server-only"
 
 import { createAdminClient } from "@/shared/lib/supabase/admin"
 
-export const ADMIN_PAGE_SIZE = 50
+import { ADMIN_PAGE_SIZE } from "./admin-constants"
+import type { AdminContactSubmission } from "./contact-types"
+
+export { ADMIN_PAGE_SIZE } from "./admin-constants"
+export type { AdminContactSubmission } from "./contact-types"
 
 export type AdminListParams = {
   q?: string
@@ -362,6 +366,51 @@ export async function getConceptsList(params: AdminListParams = {}) {
   }
 
   return query
+}
+
+export type ContactSubmission = AdminContactSubmission
+
+export async function getContactSubmissions(params: AdminListParams = {}) {
+  const supabase = await getSupabase()
+  const { from, to } = listRange(params.page)
+
+  let query = supabase
+    .from("contact_submissions")
+    .select("id, name, email, subject, message, created_at, read_at", {
+      count: "exact",
+    })
+    .order("created_at", { ascending: false })
+    .range(from, to)
+
+  if (params.q) {
+    query = query.or(
+      `name.ilike.%${params.q}%,email.ilike.%${params.q}%,subject.ilike.%${params.q}%`
+    )
+  }
+
+  return query
+}
+
+export async function getContactSubmissionById(id: string) {
+  const supabase = await getSupabase()
+  return supabase
+    .from("contact_submissions")
+    .select("id, name, email, subject, message, created_at, read_at")
+    .eq("id", id)
+    .maybeSingle()
+}
+
+export async function markContactRead(id: string) {
+  const supabase = await getSupabase()
+  return supabase
+    .from("contact_submissions")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", id)
+}
+
+export async function deleteContactSubmission(id: string) {
+  const supabase = await getSupabase()
+  return supabase.from("contact_submissions").delete().eq("id", id)
 }
 
 export async function getAdminSettings() {

@@ -24,7 +24,13 @@
       "Bash(find d:\\\\\\\\notion-style-portfolio -name \"*provider-keys*\" -type f)",
       "Bash(grep -E \"\\\\.tsx?$\")",
       "Bash(awk '{print $NF}')",
-      "Bash(grep -E \"insights|health|derive|portfolio-analysis|admin.*page\\\\.tsx$\")"
+      "Bash(grep -E \"insights|health|derive|portfolio-analysis|admin.*page\\\\.tsx$\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\notion-style-portfolio\\\\src\\\\app\\\\admin\\\\\\(protected\\)\\\\contact\")",
+      "mcp__claude_ai_Supabase__list_projects",
+      "mcp__claude_ai_Supabase__list_migrations",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\notion-style-portfolio\\\\src\\\\app\\\\admin\\\\reset-password\")",
+      "Bash(xargs wc -l)",
+      "Bash(grep -E \"^\\\\+|^\\\\s+├.*chunks|^\\\\s+└.*chunks|○  /\\\\b|ƒ  /\\\\b|○ /about|○ /projects|ƒ /projects\")"
     ]
   }
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { useEffect } from "react"
 
 import type { AboutContent } from "@/features/about/lib/about-content"
@@ -8,7 +9,11 @@ import { caveatHandwriting } from "@/shared/lib/fonts/caveat"
 
 import { AboutPortrait } from "./about-portrait"
 import { AboutScrollParagraph } from "./about-scroll-paragraph"
-import { AboutSnakeGame } from "./about-snake-game"
+
+const AboutSnakeGame = dynamic(
+  () => import("./about-snake-game").then((m) => m.AboutSnakeGame),
+  { ssr: false }
+)
 
 type AboutPageContentProps = {
   ownerName: string

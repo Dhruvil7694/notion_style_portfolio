@@ -104,7 +104,7 @@ const MessageAction = ({
   side = "top",
   ...props
 }: MessageActionProps) => {
-  const trigger = isValidElement(children) ? children : null
+  const trigger = isValidElement(children) ? children : undefined
 
   return (
     <TooltipProvider>

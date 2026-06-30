@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { ContactForm } from "@/features/contact/components/contact-form"
 import { ContactLink } from "@/features/contact/components/contact-link"
 import { PageShell } from "@/features/knowledge-base/components/content-shell"
 import { getPublicSettings } from "@/features/portfolio/lib/queries"
@@ -130,6 +131,11 @@ export default async function ContactPage() {
             Contact details will appear here once configured in CMS settings.
           </p>
         ) : null}
+      </div>
+
+      <div className="mt-8 border-t border-border/50 pt-8">
+        <h2 className="mb-4 text-sm font-semibold">Send a message</h2>
+        <ContactForm />
       </div>
     </PageShell>
   )

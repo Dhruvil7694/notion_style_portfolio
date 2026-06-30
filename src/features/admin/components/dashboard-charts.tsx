@@ -110,7 +110,7 @@ export function ContentTypeDonut({ data }: { data: ContentTypeEntry[] }) {
             dataKey="value"
             innerRadius={62}
             label={({ name, percent }) =>
-              percent > 0.08
+              (percent ?? 0) > 0.08
                 ? `${name} ${Math.round((percent ?? 0) * 100)}%`
                 : ""
             }

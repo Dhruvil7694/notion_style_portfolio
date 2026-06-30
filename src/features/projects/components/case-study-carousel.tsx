@@ -47,7 +47,6 @@ export function CaseStudyCarousel({
           key={item.url}
           sizes="(max-width: 768px) 100vw, 720px"
           src={item.url}
-          unoptimized
         />
         {items.length > 1 ? (
           <>

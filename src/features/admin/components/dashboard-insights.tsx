@@ -10,12 +10,7 @@ import {
   X,
   Zap,
 } from "lucide-react"
-import {
-  AnimatePresence,
-  motion,
-  MotionConfig,
-  type Transition,
-} from "motion/react"
+import { motion, MotionConfig, type Transition } from "motion/react"
 import Link from "next/link"
 import { useCallback, useEffect, useState } from "react"
 

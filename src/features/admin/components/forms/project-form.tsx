@@ -55,6 +55,7 @@ import {
   projectFormSchema,
   type ProjectFormValues,
 } from "@/features/admin/lib/schemas"
+import { parseCommaList } from "@/features/admin/lib/schemas/common"
 import { deserializeContent } from "@/features/content/lib/serializer"
 import {
   parseArchitectureGraph,
@@ -464,7 +465,11 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
                   }
                   projectId={project?.id}
                   projectSlug={watched.slug}
-                  value={watched.cover_image ?? ""}
+                  value={
+                    typeof watched.cover_image === "string"
+                      ? watched.cover_image
+                      : ""
+                  }
                 />
 
                 <FormField
@@ -1063,14 +1068,16 @@ export function ProjectForm({ mode, project }: ProjectFormProps) {
                         solution: watched.solution,
                         impact: watched.impact,
                         approach: watched.approach,
-                        tech_stack: (watched.tech_stack ?? "")
-                          .split(",")
-                          .map((item) => item.trim())
-                          .filter(Boolean),
-                        technologies: (watched.technologies ?? "")
-                          .split(",")
-                          .map((item) => item.trim())
-                          .filter(Boolean),
+                        tech_stack: parseCommaList(
+                          Array.isArray(watched.tech_stack)
+                            ? watched.tech_stack.join(", ")
+                            : String(watched.tech_stack ?? "")
+                        ),
+                        technologies: parseCommaList(
+                          Array.isArray(watched.technologies)
+                            ? watched.technologies.join(", ")
+                            : String(watched.technologies ?? "")
+                        ),
                         results: watched.results,
                         learnings: watched.learnings,
                         role: watched.role,

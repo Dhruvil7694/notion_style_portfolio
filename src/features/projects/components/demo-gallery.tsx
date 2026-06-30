@@ -31,7 +31,6 @@ export function DemoGallery({ items, projectTitle }: DemoGalleryProps) {
                 className="case-study-demo-image"
                 height={720}
                 src={item.url}
-                unoptimized
                 width={1280}
               />
             </div>

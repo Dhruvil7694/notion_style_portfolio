@@ -83,7 +83,9 @@ export function AdminMobileNav({ userEmail }: AdminMobileNavProps) {
         </div>
         <AdminSidebarNav
           className="h-[calc(100%-3.5rem)]"
+          collapsed={false}
           onNavigate={() => setOpen(false)}
+          onToggleCollapsed={() => {}}
           pathname={pathname}
           userEmail={userEmail}
         />

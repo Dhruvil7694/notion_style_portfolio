@@ -34,7 +34,6 @@ export function CaseStudyFigure({
           priority={priority}
           sizes="(max-width: 768px) 100vw, 720px"
           src={item.url}
-          unoptimized
         />
       </div>
       {item.caption?.trim() ? (

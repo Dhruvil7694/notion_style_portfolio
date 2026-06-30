@@ -21,7 +21,7 @@ import {
 } from "@/features/portfolio/lib/project-preview-sections"
 import { cn } from "@/shared/lib/utils"
 
-const SAMPLE_PROJECT_IMAGE = "/sample_image.png"
+const SAMPLE_PROJECT_IMAGE = "/langgraph-light.webp"
 
 const CARD_WIDTH = 400
 const VIEWPORT_PADDING = 16

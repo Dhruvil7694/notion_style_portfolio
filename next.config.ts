@@ -21,17 +21,20 @@ const securityHeaders = buildSecurityHeaders({
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   transpilePackages: ["@joint/core", "@joint/react"],
-  images: supabaseHostname
-    ? {
-        remotePatterns: [
-          {
-            protocol: "https",
-            hostname: supabaseHostname,
-            pathname: "/storage/v1/object/public/**",
-          },
-        ],
-      }
-    : undefined,
+  images: {
+    formats: ["image/avif", "image/webp"],
+    ...(supabaseHostname
+      ? {
+          remotePatterns: [
+            {
+              protocol: "https",
+              hostname: supabaseHostname,
+              pathname: "/storage/v1/object/public/**",
+            },
+          ],
+        }
+      : {}),
+  },
   async headers() {
     return [
       {
@@ -57,11 +60,21 @@ const nextConfig: NextConfig = {
     ]
   },
   skipTrailingSlashRedirect: true,
+  outputFileTracingExcludes: {
+    "*": ["**/.next/static/development/**"],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "11mb",
     },
     middlewareClientMaxBodySize: "11mb",
+    optimizePackageImports: [
+      "lucide-react",
+      "framer-motion",
+      "motion",
+      "@radix-ui/react-icons",
+      "date-fns",
+    ],
   },
   webpack: (config) => {
     config.resolve.alias.canvas = false
