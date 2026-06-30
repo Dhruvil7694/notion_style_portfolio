@@ -1,0 +1,33 @@
+name: Sync Notion docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "supabase/migrations/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/notion-sync/**"
+  workflow_dispatch:
+
+jobs:
+  sync-notion:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Sync dev docs to Notion
+        run: node scripts/notion-sync/sync.mjs
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_TECH_STACK_PAGE_ID: ${{ secrets.NOTION_TECH_STACK_PAGE_ID }}
+          NOTION_FEATURES_PAGE_ID: ${{ secrets.NOTION_FEATURES_PAGE_ID }}
+          NOTION_SCHEMA_DATABASE_ID: ${{ secrets.NOTION_SCHEMA_DATABASE_ID }}

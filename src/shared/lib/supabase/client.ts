@@ -16,9 +16,12 @@ import { clientEnv } from "@/shared/lib/env/client"
  * const supabase = createClient()
  * ```
  */
-export function createClient() {
+export function createClient(options?: { persistSession?: boolean }) {
   return createBrowserClient(
     clientEnv.NEXT_PUBLIC_SUPABASE_URL,
-    clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    options?.persistSession === false
+      ? { auth: { storage: window.sessionStorage } }
+      : undefined
   )
 }

@@ -9,37 +9,29 @@ export const metadata = {
 
 export default function AdminLoginPage() {
   return (
-    <main className="flex min-h-screen w-full items-center justify-center bg-[#111113] p-6 md:p-10">
-      {/* Card */}
-      <div className="flex w-full max-w-5xl overflow-hidden rounded-2xl border border-white/8 shadow-2xl">
-        {/* Left — image panel, fills full card height */}
-        <div className="relative hidden w-[48%] shrink-0 md:block">
-          <Image
-            alt=""
-            className="h-full w-full object-cover object-center"
-            fill
-            priority
-            sizes="(max-width: 1280px) 48vw, 560px"
-            src="/login-bg.jpg"
-          />
-          {/* right-edge fade into form panel bg */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#18181b]/60" />
-        </div>
+    <main className="relative flex min-h-screen w-full items-stretch overflow-hidden bg-[#0c1410]">
+      <Image
+        alt=""
+        className="object-cover object-center"
+        fill
+        priority
+        sizes="100vw"
+        src="/login-bg.jpg"
+      />
+      <div className="absolute inset-0 bg-black/20" />
 
-        {/* Right — form panel */}
-        <div className="flex flex-1 flex-col justify-center bg-[#18181b] px-10 py-14 sm:px-14">
-          <div className="mx-auto w-full max-w-[340px] space-y-10">
-            <header className="space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                Portfolio Admin
-              </p>
-              <h1 className="text-[2rem] font-semibold tracking-tight text-white">
-                Sign in
-              </h1>
-            </header>
+      {/* Top-left brand mark */}
+      <div className="absolute left-6 top-6 z-10 sm:left-10 sm:top-10">
+        <p className="text-lg font-semibold tracking-tight text-white">
+          Dhruvil Patel
+        </p>
+        <p className="text-xs text-white/60">AI Engineer · Portfolio Admin</p>
+      </div>
 
-            <AdminLoginForm />
-          </div>
+      {/* Glass panel — floating, right side on desktop, full width on mobile */}
+      <div className="relative z-10 my-3 ml-auto mr-3 flex w-full flex-col justify-center overflow-hidden rounded-2xl border border-white/10 bg-black/30 px-6 py-12 shadow-2xl backdrop-blur-2xl sm:px-10 md:my-6 md:mr-6 md:w-1/2 md:px-16 lg:w-[42%]">
+        <div className="mx-auto w-full max-w-[360px]">
+          <AdminLoginForm />
         </div>
       </div>
     </main>

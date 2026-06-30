@@ -289,6 +289,11 @@ function AdminNavGroupSection({
   )
   const [ref, setRef] = useState<HTMLDivElement | null>(null)
   const [height, setHeight] = useState<number | "auto">("auto")
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (!ref) return
@@ -299,6 +304,10 @@ function AdminNavGroupSection({
     setHeight(ref.scrollHeight)
     return () => observer.disconnect()
   }, [ref])
+
+  const titleLayoutId = mounted ? `${group.id}-title` : undefined
+  const iconLayoutId = (href: string) =>
+    mounted ? `${group.id}-icon-${href}` : undefined
 
   return (
     <MotionConfig transition={springConfig}>
@@ -344,7 +353,7 @@ function AdminNavGroupSection({
                             : "bg-muted-foreground/20 text-muted-foreground"
                         )}
                         key={`${group.id}-icon-${index}`}
-                        layoutId={`${group.id}-icon-${item.href}`}
+                        layoutId={iconLayoutId(item.href)}
                         transition={{ ...springConfig, delay: 0.01 }}
                       >
                         <ItemIcon aria-hidden className="size-2.5 shrink-0" />
@@ -357,7 +366,7 @@ function AdminNavGroupSection({
                   <motion.span
                     className="text-[0.8125rem] font-semibold uppercase tracking-wide"
                     layout="position"
-                    layoutId={`${group.id}-title`}
+                    layoutId={titleLayoutId}
                   >
                     {group.title}
                   </motion.span>
@@ -382,7 +391,7 @@ function AdminNavGroupSection({
                   <motion.span
                     className="text-foreground flex-1 text-[0.8125rem] font-semibold uppercase tracking-wide"
                     layout="position"
-                    layoutId={`${group.id}-title`}
+                    layoutId={titleLayoutId}
                   >
                     {group.title}
                   </motion.span>
@@ -420,7 +429,7 @@ function AdminNavGroupSection({
                               ? "bg-foreground text-background"
                               : "bg-muted-foreground/20 text-muted-foreground"
                           )}
-                          layoutId={`${group.id}-icon-${item.href}`}
+                          layoutId={iconLayoutId(item.href)}
                         >
                           <ItemIcon aria-hidden className="size-2.5" />
                         </motion.div>

@@ -18,6 +18,8 @@
     "security:audit": "node scripts/audit-public-security.mjs",
     "favicons:generate": "node scripts/generate-favicons.mjs",
     "load-test": "npx tsx scripts/load-test-assistant.ts",
+    "sync:notion": "node scripts/notion-sync/sync.mjs",
+    "sync:notion:dry": "node scripts/notion-sync/sync.mjs --dry-run",
     "prepare": "husky && node -e \"require('fs').copyFileSync('node_modules/@lottiefiles/dotlottie-web/dist/dotlottie-player.wasm','public/dotlottie-player.wasm')\" "
   },
   "dependencies": {

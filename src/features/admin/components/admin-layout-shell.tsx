@@ -51,10 +51,10 @@ export function AdminLayoutShell({
   return (
     <AdminPageMetaProvider>
       <div className="admin-shell bg-background h-screen overflow-hidden">
-        {/* Desktop sidebar */}
+        {/* Desktop sidebar — floating */}
         <motion.aside
           animate={{ width: mounted ? sidebarW : SIDEBAR_W_EXPANDED }}
-          className="border-border/60 bg-background fixed inset-y-0 left-0 z-40 hidden flex-col border-r md:flex"
+          className="border-border/60 bg-background fixed inset-y-3 left-3 z-40 hidden flex-col rounded-2xl border shadow-sm md:flex"
           initial={false}
           transition={spring}
         >
@@ -68,7 +68,9 @@ export function AdminLayoutShell({
 
         {/* Main content */}
         <motion.div
-          animate={{ paddingLeft: mounted ? sidebarW : SIDEBAR_W_EXPANDED }}
+          animate={{
+            paddingLeft: mounted ? sidebarW + 24 : SIDEBAR_W_EXPANDED + 24,
+          }}
           className="flex h-screen flex-col overflow-hidden"
           initial={false}
           transition={spring}
